@@ -1,0 +1,47 @@
+﻿
+@{
+    ViewBag.Title = "APIStatus";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">介接設定</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive" style="overflow:auto">
+                            <table class="table mb-0 table-striped">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="row">外部系統名稱</th>
+                                        <th scope="row">單位</th>
+                                        <th scope="row">網址</th>
+                                        <th scope="row">最近一次更新日期</th>
+                                    </tr>  
+                                </thead>
+                                <tbody>
+                                    @{
+                                        foreach (var m in Model)
+                                        {
+                                            <tr>
+                                                <td>@m.Name </td>
+                                                <td>@m.UnitName </td>
+                                                <td>@m.Url </td>
+                                                <td>@(m.UpdatedAt == null ? m.CreatedAtStr : m.UpdatedAtStr)</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>   
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

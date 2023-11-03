@@ -1,0 +1,160 @@
+﻿@model InformationSystem.ViewModel.Event.EventListViewModel
+@{
+    ViewBag.Title = "EventList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">活動報名管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="qureyForm" method="post">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>日期區間：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <input type="date" name="StartDate" class="form-control mr-2" value="@(Model.QueryReq.StartDate.HasValue ? Model.QueryReq.StartDate.Value.ToString("yyyy-MM-dd") :"")"/>
+                                                <span>～</span>
+                                                <input type="date" name="EndDate" class="form-control ml-2" value="@(Model.QueryReq.EndDate.HasValue ? Model.QueryReq.EndDate.Value.ToString("yyyy-MM-dd") :"")" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">活動類型：</th>
+                                        <td style="width:40%">
+                                            <select name="Code" class="form-control mr-2">
+                                                <option value="">請選擇</option>
+                                                @{
+                                                    foreach (var defCode in Model.Types)
+                                                    {
+                                                        <option value="@defCode.Code" @(defCode.Code == Model.QueryReq.Code ? "selected":"")>@defCode.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>顯示狀態：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select name="Show" class="form-control mr-2">
+                                                <option value="">請選擇</option>                                                
+                                                <option value="true" @(Model.QueryReq.Show == true ? "selected" : "")>上架</option>                                                
+                                                <option value="false" @(Model.QueryReq.Show == false ? "selected" : "")>下架</option>                                                
+                                            </select>
+                                        </td>
+                                        @*<td>
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="Show" value="true" @(Model.QueryReq.Code ? "selected" : "") />上架</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="Show" value="false" />下架</label>
+                                            </div>
+                                        </td>*@
+                                        <th colspan="2"></th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="submit" class="btn btn-primary m-2"><i class="fas fa-search mr-2"></i>查詢</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/Event/EventInfo'"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                                <button type="button" class="btn btn-secondary m-2" onclick="handleSubmit(event, 'delete')"><i class="fas fa-minus-circle mr-2"></i>刪除</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="overflow-x:auto">
+                            <form id="deleteForm" method="post">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col" style="width: 50px;"></th>
+                                            <th scope="col">項次</th>
+                                            <th scope="col">活動日期</th>
+                                            <th scope="col">類型</th>
+                                            <th scope="col">活動名稱</th>
+                                            <th scope="col">報名設定</th>
+                                            <th scope="col">報名人數</th>
+                                            <th scope="col">資料狀態</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int i = Model.CurrentPage == 1 ? 0 : Model.CurrentPage * Model.PageCounts;
+                                            foreach (var PlanModel in Model.Plans)
+                                            {
+                                                i++;
+                                                <tr>
+                                                    <td>
+                                                        <input type="checkbox" name="DeleteIDs[]" value="@PlanModel.ID" />
+                                                    </td>
+                                                    <td>@i</td>
+                                                    <td>@PlanModel.StartDateStr ~ @PlanModel.EndDateStr</td>
+                                                    <td>@PlanModel.TypeName</td>
+                                                    <td>@PlanModel.Name</td>
+                                                    <td>@(PlanModel.Open ? $"{PlanModel.RegistrationStartDateStr}~{PlanModel.RegistrationEndDateStr}" : "不須報名" )</td>
+                                                    <td>@(PlanModel.Open ? (PlanModel.IsFull ? "已額滿" : "未額滿") : "" )</td>
+                                                    <td>@(PlanModel.Show ? "上架" : "下架")</td>
+                                                    <td>
+                                                        @if (PlanModel.Open)
+                                                        {
+                                                            <button type="button" class="btn btn-primary" onclick="location.href = '/Event/RegisterList?ID=@PlanModel.ID'">報名管理</button>
+                                                            <button type="button" class="btn btn-primary" onclick="location.href='/Event/Achievement?ID=@PlanModel.ID'">辦理成果</button>
+                                                        }
+                                                        <button type="button" class="btn btn-danger" onclick="location.href='/Event/EventInfo?ID=@PlanModel.ID'">編輯</button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function handleSubmit(e, action) {
+            e.preventDefault();
+            let formData = $('form').serializeArray();
+            console.log(action, formData)
+            if (action == 'delete') {
+                if (formData.findIndex(d => d.name === 'DeleteIDs[]') < 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '請先選擇預刪除項次'
+                    });
+                    return;
+                }
+                document.getElementById('deleteForm').submit();
+            } else {
+                document.getElementById('qureyForm').submit();
+            }
+        }
+    </script>
+}

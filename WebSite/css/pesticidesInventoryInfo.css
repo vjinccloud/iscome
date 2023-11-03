@@ -1,0 +1,19 @@
+﻿@media print {
+    @page {
+        size: landscape;
+    }
+    .printPage {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .ticketPage__head {
+        min-width: 180px;
+        max-width: 180px;
+    }
+    .ticketPage__field {
+        min-width: calc(100%-180px);
+        max-width: calc(100%-180px);
+    }
+}

@@ -1,0 +1,93 @@
+﻿
+@{
+    ViewBag.Title = "AuditorEdit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">農藥販售業者資料-編輯</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    <th style="width:15%">
+                                        <span class="important">營業狀態：</span>
+                                    </th>
+                                    <td style="width:40%">
+                                        <div class="form-inline">
+                                            <label class="mr-2"><input type="radio" class="form-control mr-2" name="Status" />營業中</label>
+                                            <label class="mr-2"><input type="radio" class="form-control mr-2" name="Status" />停業</label>
+                                            <label class="mr-2"><input type="radio" class="form-control mr-2" name="Status" />歇業</label>
+                                        </div>
+                                    </td>
+                                    <th style="width:10%">
+                                        <span class="important">執照號碼：</span>
+                                    </th>
+                                    <td style="width:40%">
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span class="important">業者名稱：</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                    <th>
+                                        <span class="important">聯繫電話：</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span>綠色友善資材站：</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                                <tr>
+                                    <th style="vertical-align:top !important">
+                                        <span class="important">營業地址：</span>
+                                    </th>
+                                    <td colspan="2">
+                                        <div class="form-inline mb-2">
+                                            <label class="mr-2">有效期間</label>
+                                            <input type="date" class="form-control mr-2" />
+                                            <span>～</span>
+                                            <input type="date" class="form-control ml-2" />
+                                        </div>
+                                        <div class="form-inline">
+                                            <input type="text" class="form-control" />
+                                            <button type="button" class="btn btn-primary m-2">定位</button>
+                                            <div class="mt-2">
+                                                <iframe src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d18389.750560252996!2d120.9104800545344!3d23.85453417873876!3m2!1i1024!2i768!4f13.1!5e0!3m2!1szh-TW!2stw!4v1525337319754" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <th></th>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="display:flex;justify-content:center">
+                            <button type="button" class="btn btn-primary m-2">儲存</button>
+                            <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,150 @@
+﻿@model InformationSystem.Models.SystemLog.Model_Operate
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">系統操作歷程Log</h1>
+    </div>
+
+    @using (Html.BeginForm("OperateRecord", "SystemLog", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @*換頁區塊*@
+        @*HiddenFor目前的頁面*@
+
+        @Html.HiddenFor(x => x.qrybeg, new { id = "hidqrybeg" })
+        @Html.HiddenFor(x => x.qryend, new { id = "hidqryend" })
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-inline">
+                                        <input type="hidden" value="1" name="Page" id="setPage" />
+                                        <label for="inputEmail3" class="col-sm-2 control-label">日期區間</label>
+                                        <div class="col-sm-10 form-inline">
+                                            <input type="date" class="form-control" style="width:150px;" id="qryBeg">
+                                            <span style="align-self: center; margin: 8px;">~</span>
+                                            <input type="date" class="form-control" style="width:150px;" id="qryEnd">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-primary float-right" onclick="BeforeSearch(1);"><i class="fa fa-search" aria-hidden="true"></i> 查詢</button>
+                                </div>
+
+                                <div class="col-12 mt-4">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table01 text-center">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text_C" style="width:15%">紀錄編號</th>
+                                                    <th class="text_C" style="width:20%">時間</th>
+                                                    <th class="text_C" style="width:25%">帳號</th>
+                                                    <th class="text_C" style="width:15%">功能位置</th>
+                                                    <th class="text_C" style="width:15%">動作</th>
+                                                    <th class="text_C" style="width:10%">操作IP</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in Model.LogList)
+                                                {
+                                                    <tr>
+                                                        <td style="text-align:center">@item.ID</td>
+                                                        <td style="text-align:center">@item.CDate</td>
+                                                        <td style="text-align:center">@item.LoginID</td>
+                                                        <td style="text-align:center">@item.Path</td>
+                                                        @if (string.IsNullOrEmpty(item.Remark))
+                                                        {
+                                                            <td style="text-align:center">@item.Act</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td style="text-align:center">@item.Act (@item.Remark)</td>
+                                                        }
+                                                        <td style="text-align:center">@item.LoginIP</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a @(Model.Page > 1 ? "" : "style=pointer-events:none;") onclick="BeforeSearch('@(Model.Page-1)')" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                                        <nav aria-label="...">
+                                            <ul class="pagination">
+                                                @{
+                                                    int sPage = 1, endPage = Model.TotalPage;
+                                                    if (Model.TotalPage > 5)
+                                                    {
+                                                        if (Model.TotalPage < (Model.Page + 2))
+                                                        {
+                                                            sPage = Model.TotalPage - 4;
+                                                        }
+                                                        else if ((Model.Page - 2) <= 0)
+                                                        {
+                                                            endPage = 5;
+                                                        }
+                                                        else
+                                                        {
+                                                            sPage = Model.Page - 2;
+                                                            endPage = Model.Page + 2;
+                                                        }
+                                                    }
+
+                                                    for (int p = sPage; p <= endPage; p++)
+                                                    {
+
+                                                        if (p == Model.Page)
+                                                        {
+                                                            <li class="page-item active" aria-current="page">
+                                                                <span class="page-link">@p<span class="sr-only"></span></span>
+                                                            </li>
+                                                        }
+                                                        else
+                                                        {
+                                                            <li class="page-item"><a class="page-link" onclick="BeforeSearch('@(p)')">@p</a></li>
+                                                        }
+                                                    }
+                                                }
+                                            </ul>
+                                        </nav>
+                                        <a @(Model.Page < Model.TotalPage ? "" : "style=pointer-events:none;") onclick="BeforeSearch('@(Model.Page+1)')" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Script {
+    <script>
+        $(function () {
+            //將查詢條件帶入查詢欄位(因為日期格式要轉換)
+            @if (Model.qrybeg != null) {
+                <text> $('#qryBeg').val("</text>@Model.qrybeg.Value.ToString("yyyy-MM-dd")<text>");</text>
+            }
+            @if (Model.qryend != null) {
+                <text> $('#qryEnd').val("</text>@Model.qryend.Value.ToString("yyyy-MM-dd")<text>");</text>
+            }
+            });
+
+        function BeforeSearch(page) {
+            $('#hidqrybeg').val($('#qryBeg').val());
+            $('#hidqryend').val($('#qryEnd').val());
+            $("#AjaxLoading").show(); // Loading畫面
+            $('#setPage').val(page);
+            $('form').submit();
+            //$("#AjaxLoading").hide(); 畫面刷新後 自動關閉
+        }
+    </script>
+}

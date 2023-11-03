@@ -1,0 +1,149 @@
+﻿@model Website.ViewModel.Home.NewsViewModel
+@{
+    ViewBag.Title = "News";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .ellipsis > span {
+        cursor: pointer;
+    }
+
+    .search-input-group {
+        align-self: center;
+        height: 40px;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Home/Introduce">平台簡介</a></li>
+            <li><a href="~/Home/News">最新消息</a></li>
+            <li><a href="~/Home/Links">相關網站</a></li>
+            <li><a href="~/Home/Search">全站搜尋</a></li>
+            <li><a href="~/Home/Sitemaps">網站導覽</a></li>
+            <li><a href="~/Home/QA">常見問答</a></li>
+            <li><a href="~/Home/DoctorDailyJob">植醫日常</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">最新消息</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Home/Index">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">最新消息</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+
+                                @{
+                                    for (int i = 0; i < Model.Types.Count; i++)
+                                    {
+                                        <a class="nav-link @(i == 0 ? "active" : "")"
+                                           id="nav-@Model.Types[i].Code-tab"
+                                           data-toggle="tab"
+                                           href="#nav-@Model.Types[i].Code"
+                                           role="tab"
+                                           aria-controls="nav-@Model.Types[i].Code"
+                                           aria-selected="@(i == 0 ? true : false)">
+                                            @Model.Types[i].Name
+                                        </a>
+                                    }
+                                }
+
+                                <div style="display:flex;flex:auto"></div>
+                                <div class="search search-input-group">
+                                    <input id="KeyWord" class="form-control form-control-sm" placeholder="關鍵字搜尋" value="@Model.KeyWord" />
+                                    <button type="button" class="btn btn-dark btn-sm" onclick="search(event)">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            @{
+                                int j = 0;
+                                foreach (var type in Model.Types)
+                                {
+
+                                    <div class="tab-pane @(j == 0 ? "active" : "fade")"
+                                         id="nav-@type.Code"
+                                         role="tabpanel"
+                                         aria-labelledby="nav-@type.Code-tab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="row" style="width: 30px;"></th>
+                                                        <th scope="row" style="width: 120px;"></th>
+                                                        <th scope="row" style="width: 150px;"></th>
+                                                        <th scope="row" style="width: auto;"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        foreach (var NewModel in Model.List[type.Code].OrderByDescending(x => x.CreatedAt))
+                                                        {
+                                                            <tr>
+                                                                <td><i class="fas fa-chevron-right"></i></td>
+                                                                <td>@((NewModel.CreatedAt.Year-1911).ToString() + "-" + NewModel.CreatedAt.ToString("MM-dd"))</td>
+                                                                <td>
+                                                                    <span class="tip-g">
+                                                                        @NewModel.TypeName
+                                                                    </span>
+                                                                </td>
+                                                                <td class="ellipsis">
+                                                                    <span onclick="location.href = '/Home/News_Detail?ID=@NewModel.ID'">
+                                                                        @NewModel.Title
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    j++;
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4" style="text-align:center">
+                    <button type="button" class="btn btn-primary" onclick="window.history.back()"><i class="fas fa-hand-point-left mr-2"></i>回上一頁</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+@section Script {
+    <script type="text/javascript">
+        function search(e) {
+            let KeyWord = $("#KeyWord").val();
+            if (KeyWord) {
+                window.location = "/Home/News?KeyWord=" + KeyWord;
+            } else {
+                window.location =  "/Home/News";
+            }
+        }
+    </script>
+}

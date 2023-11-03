@@ -1,0 +1,228 @@
+﻿
+@{
+    ViewBag.Title = "EventAdd";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">活動報名管理-新增</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    <th style="width:15%">
+                                        <span class="important">活動類型：</span>
+                                    </th>
+                                    <td style="width:35%">
+                                        <select class="form-control">
+                                            <option>請選擇</option>
+                                        </select>
+                                    </td>
+                                    <th style="width:15%">
+                                        <span class="important">顯示狀態：</span>
+                                    </th>
+                                    <td style="width:35%">
+                                        <div class="form-inline">
+                                            <label class="mr-2"><input type="radio" class="form-control mr-2" name="Status" />上架</label>
+                                            <label class="mr-2"><input type="radio" class="form-control mr-2" name="Status" />下架</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span class="important">活動日期起訖：</span>
+                                    </th>
+                                    <td>
+                                        <div class="form-inline">
+                                            <input type="date" class="form-control mr-2" style="width:46%" />
+                                            <span>～</span>
+                                            <input type="date" class="form-control ml-2" style="width:46%" />
+                                        </div>
+                                    </td>
+                                    <th>
+                                        <span class="important">活動名稱：</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span>地點：</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                    <th>
+                                        <span>承辦人：</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span>連絡電話：</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                    <th>
+                                        <span class="important">是否開放報名：</span>
+                                    </th>
+                                    <td>
+                                        <div class="form-inline">
+                                            <label class="mr-2"><input type="radio" class="form-control mr-2" name="register" />開放報名</label>
+                                            <label class="mr-2"><input type="radio" class="form-control mr-2" name="register" />否，無需報名</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span>上課時數：</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                    <th>
+                                        <span class="important">開放報名起訖：</span>
+                                    </th>
+                                    <td>
+                                        <div class="form-inline">
+                                            <input type="date" class="form-control mr-2" style="width:46%" />
+                                            <span>～</span>
+                                            <input type="date" class="form-control ml-2" style="width:46%" />
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span class="important">報名欄位設定：</span>
+                                    </th>
+                                    <td>
+                                        <div class="form-inline">
+                                            <label class="mr-2"><input type="checkbox" class="form-control mr-2" />姓名，是否必填</label>
+                                            <select class="form-control">
+                                                <option>是</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-inline mt-2">
+                                            <label class="mr-2"><input type="checkbox" class="form-control mr-2" />身分證字號，是否必填</label>
+                                            <select class="form-control">
+                                                <option>是</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-inline mt-2">
+                                            <label class="mr-2"><input type="checkbox" class="form-control mr-2" />行動電話，是否必填</label>
+                                            <select class="form-control">
+                                                <option>是</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-inline mt-2">
+                                            <label class="mr-2"><input type="checkbox" class="form-control mr-2" />農藥管理人員證照號碼，是否必填</label>
+                                            <select class="form-control">
+                                                <option>是</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-inline mt-2">
+                                            <label class="mr-2"><input type="checkbox" class="form-control mr-2" />農藥管理人員證照到期日，是否必填</label>
+                                            <select class="form-control">
+                                                <option>是</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-inline mt-2">
+                                            <label class="mr-2"><input type="checkbox" class="form-control mr-2" />服務單位，是否必填</label>
+                                            <select class="form-control">
+                                                <option>是</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-inline mt-2">
+                                            <label class="mr-2"><input type="checkbox" class="form-control mr-2" />便當種類，是否必填</label>
+                                            <select class="form-control">
+                                                <option>是</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <th>報名場次選項：</th>
+                                    <td colspan="3">
+                                        <div style="display:flex;justify-content:flex-start">
+                                            <button type="button" class="btn btn-secondary">新增</button>
+                                        </div>
+                                        <div class="table-responsive mt-2">
+                                            <table class="table mb-0">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>項次</th>
+                                                        <th>場次名稱</th>
+                                                        <th>日期</th>
+                                                        <th>時間</th>
+                                                        <th>名額上限</th>
+                                                        <th>動作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>1</td>
+                                                        <td>
+                                                            <input type="text" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="date" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <div class="form-inline">
+                                                                <label class="mr-2"><input type="checkbox" class="form-control mr-2" />無人數限制</label>
+                                                                <input type="text" class="form-control" />
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-secondary">刪除</button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span class="important">內容：</span>
+                                    </th>
+                                    <td colspan="3">
+                                        <textarea class="form-control" rows="6"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span class="important">附加檔案：</span>
+                                    </th>
+                                    <td>
+                                        <input type="file" class="form-control" />
+                                    </td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="display:flex;justify-content:center">
+                            <button type="button" class="btn btn-primary m-2">儲存</button>
+                            <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

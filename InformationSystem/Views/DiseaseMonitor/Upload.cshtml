@@ -1,0 +1,102 @@
+﻿
+@{
+    ViewBag.Title = "Upload";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">監測數據上傳</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="form" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>資料匯入範本：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            @*<a href="javascript:void(0)">下載檔案</a>*@
+                                            <a href="~/疫病蟲害監測數據範本.xlsx">下載檔案</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>資料匯入規則：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            1.[專案名稱、年度、調查起始日、調查結束日、調查對象類型、行政區、編號、日期] 皆為必填欄位<br />
+                                            2.上述欄位除[日期]外，其餘應用於對應舊資料，如對應成功則為修改資料<br />
+                                            3.日期格式可接受西元年與民國年，分隔符號僅接受 - 與 / ，例：110-8-1、2021/8/1<br />
+                                            4.[調查對象類型]需依據格式輸入，農業局、公所、農會，或可依序輸入1~3，擇一種輸入<br />
+                                            5.[調查頻率]需依據格式輸入，每週一次、每旬一次、每2週一次、每月一次，或可依序輸入1~4，擇一種輸入<br />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>舊資料匯入：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="file" class="form-control" name="importFile" accept=".xls, .xlsx" />
+                                                <button type="button" class="btn btn-secondary ml-2" onclick="handleSubmit(event)">上傳</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2" style="text-align:center">
+                                            @*<span>匯入結果：成功5筆，<span style="color:red">失敗1筆(作物名稱無法對應)</span></span>*@
+                                            <span>@Model.Msg</span>
+                                        </th>
+                                    </tr>
+                                </table>
+                            </form>
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    <td colspan="2" style="text-align:right">
+                                        <button type="submit" class="btn btn-primary m-2" onclick="location.href='/DiseaseMonitor/YearList'">回上一頁</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script{
+    <script>
+        function handleSubmit(e, act) {
+            e.preventDefault();
+
+            var validate = $("form").valid();
+
+            console.log($('form').serializeArray())
+            document.getElementById('form').submit();
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+
+
+

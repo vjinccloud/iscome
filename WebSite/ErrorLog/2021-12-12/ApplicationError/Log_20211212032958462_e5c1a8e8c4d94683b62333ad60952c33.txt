@@ -1,0 +1,78 @@
+﻿path:/?
+堆疊資訊
+System.InvalidOperationException: 無法將 Null 值指派給型別 System.Byte 的成員，該型別不可為 Null 值。
+   於 Read_memberInfo(ObjectMaterializer`1 )
+   於 System.Data.Linq.SqlClient.ObjectReaderCompiler.ObjectReader`2.MoveNext()
+   於 System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   於 System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   於 ICCModule.Repository.RepositoryUtility.GetList[T](String& sErrMsg, Expression`1 filter) 於 D:\OtherProject\OPPIP\01_SourceCode\ICCModule\Repository\RepositoryUtility.cs: 行 30
+   於 ICCModule.Repository.RepositoryUtility.GetDetail[T](String& sErrMsg, Expression`1 filter) 於 D:\OtherProject\OPPIP\01_SourceCode\ICCModule\Repository\RepositoryUtility.cs: 行 207
+   於 ICCModule.Repository.RepositoryUtility.GetDetail[T](Expression`1 filter) 於 D:\OtherProject\OPPIP\01_SourceCode\ICCModule\Repository\RepositoryUtility.cs: 行 220
+   於 ICCModule.EntityService.Service.Service_MemberInfo.GetAccountDetail(String Account) 於 D:\OtherProject\OPPIP\01_SourceCode\ICCModule\EntityService\Service\Service_MemberInfo.cs: 行 35
+   於 Website.Controllers.HomeController.Index(LoginReq req) 於 D:\OtherProject\OPPIP\01_SourceCode\WebSite\Controllers\HomeController.cs: 行 89
+   於 lambda_method(Closure , ControllerBase , Object[] )
+   於 System.Web.Mvc.ControllerActionInvoker.InvokeActionMethod(ControllerContext controllerContext, ActionDescriptor actionDescriptor, IDictionary`2 parameters)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c.<BeginInvokeSynchronousActionMethod>b__9_0(IAsyncResult asyncResult, ActionInvocation innerInvokeState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`2.CallEndDelegate(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.EndInvokeActionMethod(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.<InvokeActionMethodFilterAsynchronouslyRecursive>b__11_0()
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.<>c__DisplayClass11_1.<InvokeActionMethodFilterAsynchronouslyRecursive>b__2()
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.EndInvokeActionMethodWithFilters(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass3_6.<BeginInvokeAction>b__3()
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass3_1.<BeginInvokeAction>b__5(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.EndInvokeAction(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Controller.<>c.<BeginExecuteCore>b__152_1(IAsyncResult asyncResult, ExecuteCoreState innerState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallEndDelegate(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Controller.EndExecuteCore(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallEndDelegate(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Controller.EndExecute(IAsyncResult asyncResult)
+   於 System.Web.Mvc.MvcHandler.<>c.<BeginProcessRequest>b__20_1(IAsyncResult asyncResult, ProcessRequestState innerState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallEndDelegate(IAsyncResult asyncResult)
+   於 System.Web.Mvc.MvcHandler.EndProcessRequest(IAsyncResult asyncResult)
+   於 System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   於 System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   於 System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)   於 Read_memberInfo(ObjectMaterializer`1 )
+   於 System.Data.Linq.SqlClient.ObjectReaderCompiler.ObjectReader`2.MoveNext()
+   於 System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   於 System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   於 ICCModule.Repository.RepositoryUtility.GetList[T](String& sErrMsg, Expression`1 filter) 於 D:\OtherProject\OPPIP\01_SourceCode\ICCModule\Repository\RepositoryUtility.cs: 行 30
+   於 ICCModule.Repository.RepositoryUtility.GetDetail[T](String& sErrMsg, Expression`1 filter) 於 D:\OtherProject\OPPIP\01_SourceCode\ICCModule\Repository\RepositoryUtility.cs: 行 207
+   於 ICCModule.Repository.RepositoryUtility.GetDetail[T](Expression`1 filter) 於 D:\OtherProject\OPPIP\01_SourceCode\ICCModule\Repository\RepositoryUtility.cs: 行 220
+   於 ICCModule.EntityService.Service.Service_MemberInfo.GetAccountDetail(String Account) 於 D:\OtherProject\OPPIP\01_SourceCode\ICCModule\EntityService\Service\Service_MemberInfo.cs: 行 35
+   於 Website.Controllers.HomeController.Index(LoginReq req) 於 D:\OtherProject\OPPIP\01_SourceCode\WebSite\Controllers\HomeController.cs: 行 89
+   於 lambda_method(Closure , ControllerBase , Object[] )
+   於 System.Web.Mvc.ControllerActionInvoker.InvokeActionMethod(ControllerContext controllerContext, ActionDescriptor actionDescriptor, IDictionary`2 parameters)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c.<BeginInvokeSynchronousActionMethod>b__9_0(IAsyncResult asyncResult, ActionInvocation innerInvokeState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`2.CallEndDelegate(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.EndInvokeActionMethod(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.<InvokeActionMethodFilterAsynchronouslyRecursive>b__11_0()
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.<>c__DisplayClass11_1.<InvokeActionMethodFilterAsynchronouslyRecursive>b__2()
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.EndInvokeActionMethodWithFilters(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass3_6.<BeginInvokeAction>b__3()
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass3_1.<BeginInvokeAction>b__5(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.EndInvokeAction(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Controller.<>c.<BeginExecuteCore>b__152_1(IAsyncResult asyncResult, ExecuteCoreState innerState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallEndDelegate(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Controller.EndExecuteCore(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallEndDelegate(IAsyncResult asyncResult)
+   於 System.Web.Mvc.Controller.EndExecute(IAsyncResult asyncResult)
+   於 System.Web.Mvc.MvcHandler.<>c.<BeginProcessRequest>b__20_1(IAsyncResult asyncResult, ProcessRequestState innerState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallEndDelegate(IAsyncResult asyncResult)
+   於 System.Web.Mvc.MvcHandler.EndProcessRequest(IAsyncResult asyncResult)
+   於 System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   於 System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   於 System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)   於 IscomG2C.Utility.ErrorLog.SaveErrorLog(Exception ex, String CategoryDirName, String Message)
+   於 Website.WebApiApplication.Application_Error(Object sender, EventArgs e)
+   於 System.EventHandler.Invoke(Object sender, EventArgs e)
+   於 System.Web.HttpApplication.RaiseOnError()
+   於 System.Web.HttpApplication.RecordError(Exception error)
+   於 System.Web.HttpApplication.PipelineStepManager.ResumeSteps(Exception error)
+   於 System.Web.HttpApplication.BeginProcessRequestNotification(HttpContext context, AsyncCallback cb)
+   於 System.Web.HttpRuntime.ProcessRequestNotificationPrivate(IIS7WorkerRequest wr, HttpContext context)
+   於 System.Web.Hosting.PipelineRuntime.ProcessRequestNotificationHelper(IntPtr rootedObjectsPointer, IntPtr nativeRequestContext, IntPtr moduleData, Int32 flags)
+   於 System.Web.Hosting.PipelineRuntime.ProcessRequestNotification(IntPtr rootedObjectsPointer, IntPtr nativeRequestContext, IntPtr moduleData, Int32 flags)
+   於 System.Web.Hosting.UnsafeIISMethods.MgdIndicateCompletion(IntPtr pHandler, RequestNotificationStatus& notificationStatus)
+   於 System.Web.Hosting.UnsafeIISMethods.MgdIndicateCompletion(IntPtr pHandler, RequestNotificationStatus& notificationStatus)
+   於 System.Web.Hosting.PipelineRuntime.ProcessRequestNotificationHelper(IntPtr rootedObjectsPointer, IntPtr nativeRequestContext, IntPtr moduleData, Int32 flags)
+   於 System.Web.Hosting.PipelineRuntime.ProcessRequestNotification(IntPtr rootedObjectsPointer, IntPtr nativeRequestContext, IntPtr moduleData, Int32 flags)
+

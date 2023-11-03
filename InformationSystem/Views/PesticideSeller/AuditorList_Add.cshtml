@@ -1,0 +1,142 @@
+﻿@model InformationSystem.ViewModel.PesticideAuditEditModel
+@{
+    ViewBag.Title = "AuditorList_Add";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">農藥販售業者資料-@(Model.ID >0?"編輯":"新增")檢查紀錄</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <form id="form" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                @Html.Hidden("ID", Model.ID)
+                                @Html.Hidden("SellerID", Model.SellerID)
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:15%">
+                                            <span class="important">檢查日期：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <input type="date" class="form-control" name="Date" value="@(Model.ID >0?Model.Date.ToString("yyyy-MM-dd") : "")" required title="檢查日期為必填欄位" />
+                                        </td>
+                                        <th style="width:50%"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">檢查結果：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="Result" @(Model.Result ? "checked" : "") value="true" />合規定</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="Result" @(!Model.Result ? "checked" : "") value="false" />不合規定</label>
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">檢查結果說明：</span>
+                                        </th>
+                                        <td>
+                                            <textarea class="form-control" rows="6" name="Instructions" required title="結果說明為必填欄位">@Model.Instructions</textarea>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>檢查文件檔案上傳：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                @foreach (var item in Model.OldFiles)
+                                                {
+                                                    <div id="of_@item.ID">
+                                                        @Html.Hidden("EditOldFiles[]", item.ID, new { @id = "of_" + item.ID })
+                                                        <a href="@item.FilePath" target="_blank">@item.FileName</a><a class="btn" onclick="DelFile('of_@item.ID')">x</a>
+                                                    </div>
+                                                }
+                                                <input type="file" multiple name="NewFiles" accept=".doc, .docx, .odt, .ods, .ppt, .pdf, .xls, .xlsx, .jpg, .png, .jpeg, .csv, .gif, .txt" />
+                                                @*<input type="file" class="form-control" />
+                                                    <button type="button" class="btn btn-primary ml-2">更多檔案</button>*@
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script{
+    <script>
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+        function SetPoint() {
+            $('#gmap_canvas').attr("src", "https://maps.google.com/maps?q=" + $('#vendorAddress').val() + "&t=&z=17&ie=UTF8&iwloc=&output=embed")
+        }
+        function DelFile(id) {
+            $('#' + id).html('');
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+

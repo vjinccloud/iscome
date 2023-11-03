@@ -1,0 +1,1 @@
+﻿您好，您已完成網路預約，#Date#(星期#Weekday#) 預計看診時間#Time#(線上預約取消，請連結至預約取消網址(#CancelReserveUrl#)

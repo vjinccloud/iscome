@@ -1,0 +1,89 @@
+﻿@model InformationSystem.ViewModel.TAP.resumeProductCheckListModel
+@{
+    ViewBag.Title = "AuditorList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">產銷履歷產品-檢查紀錄列表</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    <th>
+                                        <span>組織代碼</span>
+                                    </th>
+                                    <td>
+                                        <span>@Model.OrganizationCode</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span>經營業者名稱</span>
+                                    </th>
+                                    <td>@Model.VendorName</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/TAP/AuditorInfo?pid=@Model.ProductId'"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">項次</th>
+                                        <th scope="col">檢查日期</th>
+                                        <th scope="col">標示結果</th>
+                                        <th scope="col">品質結果</th>
+                                        <th scope="col">裁處情形(說明)</th>
+                                        <th scope="col">功能</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.resumeProductChecks)
+                                    {
+                                        int i = 0;
+                                        <tr>
+                                            <td>i</td>
+                                            <td>@item.Date.ToString("yyyy-MM-dd")</td>
+                                            <td>@(!item.TagResult.HasValue ? "": (item.TagResult == true ?"合格":"不合格"))</td>
+                                            <td>@(!item.QuilityResult.HasValue ? "" : (item.QuilityResult == true ? "合格" : "不合格"))</td>
+                                            <td>@item.ArbitrationInstructions</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <button type="button" class="btn btn-danger m-2" onclick="location.href='/TAP/AuditorInfo?Id=@item.ID&pid=@item.ProductID'">編輯</button>
+                                                    @using (Html.BeginForm("AuditorDelete", "TAP", FormMethod.Post, new { onclick = "return confirm('確定刪除?');" }))
+                                                    {
+                                                        @Html.Hidden("Id", item.ID)
+                                                        @Html.Hidden("pid", item.ProductID)
+                                                        <button type="submit" class="btn btn-secondary m-2">刪除</button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        i++;
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="form-inline" style="justify-content:center">
+                            <button type="button" class="btn btn-primary m-2" onclick="location.href='/TAP/ProductList'">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

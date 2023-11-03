@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewBag.Title = "GroupList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">群組與權限管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">角色</th>
+                                        <th scope="col">數量</th>
+                                        <th scope="col">帳號管理</th>
+                                        <th scope="col">權限管理</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@item.RoleName</td>
+                                            <td>@item.RoleCount</td>
+                                            <td><button type="button" class="btn btn-primary" onclick="location.href='/Management/SysUserList?Identify=@item.RoleID'">人員列表</button></td>
+                                            <td><button type="button" class="btn btn-success" onclick="location.href='/Management/GroupInfo?RoleID=@item.RoleID'">編輯權限</button></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

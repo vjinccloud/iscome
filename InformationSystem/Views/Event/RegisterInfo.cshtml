@@ -1,0 +1,128 @@
+﻿
+@{
+    ViewBag.Title = "RegisterInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var jsonData = Newtonsoft.Json.JsonConvert.SerializeObject(Model);
+    var opid = Request.QueryString["ID"] ?? "0";
+}
+
+    @section HeadScript {
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    @*<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>*@
+}
+
+<style>
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">活動報名管理-查看名單</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div id="RegisterInfo" class="card-body">
+                        <div style="display:flex" class="mb-2">
+                            <button type="button" class="btn btn-primary m-2" v-on:click="show = !show">
+                                {{ show ? "隱藏" : "顯示" }}資料
+                            </button>
+                            @using (Html.BeginForm("OutputExcel", "Event", FormMethod.Post))
+                            {
+                                <input type="hidden" name="Id" value="@opid"/>
+                                <button id="outputExcel" type="button" class="btn btn-export m-2">匯出報名表</button>
+                            }
+                        </div>
+                        <div class="table-responsive" style="overflow-x:auto">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">序號</th>
+                                        <th scope="col" style="width: 120px;">姓名</th>
+                                        <th scope="col" style="width: 200px;">身份證字號</th>
+                                        <th scope="col">行動電話</th>
+                                        <th scope="col">上課時數</th>
+                                        <th scope="col">完成課程</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(d, i) in list" v-bind:key="i">
+                                        <td>{{ i+1 }}</td>
+                                        <td>{{ d.Name }}</td>
+                                        <td>{{ d.IdentifiedID }}</td>
+                                        <td>{{ d.Phone }}</td>
+                                        <td>{{ d.ClassHours }}</td>
+                                        <td>
+                                            @using (Html.BeginForm("ChangeCheck", "Event", FormMethod.Post))
+                                            {
+                                                <input type="hidden" name="Id" v-model="d.ID" />
+                                                <input type="hidden" name="PlanOpenTimeID" v-model="d.PlanOpenTimeID" />
+                                                <input type="checkbox" v-bind:checked="d.Status == 1" v-on:click="changeStatus(d.ID)" />
+                                            }
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="display:flex;justify-content:center">
+                            <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script>
+        $(function () {
+            $("input[type=checkBox]").on('click', function () {
+                this.form.submit();
+            });
+            $("#outputExcel").on('click', function () {
+                this.form.submit();
+            });
+        });
+
+        const RegisterInfo = new Vue({
+            el: "#RegisterInfo",
+            data: {
+                show: false,
+                RegisterData: @Html.Raw(jsonData),
+                list: [],
+            },
+            watch: {
+                show(val, old) {
+                    console.log(val, old)
+                    if (val) {
+                        this.list = JSON.parse(JSON.stringify(this.RegisterData));
+                    } else {
+                        this.list = this.hiddenKeyStr();
+                    }
+                }
+            },
+            methods: {
+                hiddenKeyStr() {
+                    let list = JSON.parse(JSON.stringify(this.RegisterData));
+                    list.forEach(l => {
+                        l.Name = l.Name.substring(0, 1) + "O" + l.Name.substring(2, l.Name.length);
+                        l.IdentifiedID = l.IdentifiedID.substring(0, 4) + "OOO" + l.IdentifiedID.substring(7, l.IdentifiedID.length);
+                    });
+                    return list;
+                },
+                changeStatus(ID) {
+                    console.log('changeStatus', ID)
+                }
+            },
+            mounted() {
+                this.list = this.hiddenKeyStr();
+            }
+        });
+    </script>
+}

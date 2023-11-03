@@ -1,0 +1,156 @@
+﻿@model ICCModule.Entity.Tables.Platform.memberInfo
+@{
+    ViewBag.Title = "UpdatePwd";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool Reset = Convert.ToBoolean(TempData["Reset"]);
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    table > tbody > tr th {
+        text-align: right !important;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">@(Model.PasswordExpiredAt.HasValue ? "重設密碼" : "個人資料管理 - 首次登入變更密碼")  </span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Member/SignUp">會員專區</a></li>
+                            @if(Reset)
+                            {
+                                <li class="breadcrumb-item"><a href="~/Member/Forgot">忘記密碼</a></li>
+                            }
+                            <li class="breadcrumb-item active" aria-current="page">重設密碼</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div style="text-align:left">
+                            <div class="mb-3">請重新設定您的登入密碼，以下為密碼原則：</div>
+                            <div class="mb-2">
+                                1.密碼長度：最少8字元以上，最多20字元
+                                <br />
+                                2.密碼限制：英文大寫小寫、特殊符號或數字三種以上組合
+                                <br />
+                                3.密碼不可與前 3 次相同（三代）
+                                <br />
+                                4.每90天應更換1次密碼，要求於到期後第1次登入須立即更改密碼
+                                <br />
+                                5.累計輸入密碼錯誤超過3次之後，鎖定該帳號。
+                                <br />
+                                6.帳號鎖定15分鐘之後即可再次輸入帳號密碼登入。
+                            </div>
+                            <div style="font-size:14px">
+                                @(Model.Name)您好，請立即重新設定您的登入密碼!
+                                <br />
+                                會員帳號：@Model.LoginID
+                            </div>
+                        </div>
+                        <table class="table rwd-table">
+                            <tbody>
+                                @using (Html.BeginForm())
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <tr>
+                                        <th>
+                                            <span class="important">新密碼</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                @Html.Hidden("MemberId", Model.ID)
+                                                @Html.Password("NewPwd", "", new { @class = "form-control mr-2" })
+                                                <button type="button" style="width:50px" class="btn btn-default" onclick="showpwd('NewPwd')" id="Second"><i class="far fa-eye" id="Secondfont-awesome"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">再次輸入新密碼</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                @Html.Password("ConfirnPwd", "", new { @class = "form-control mr-2" })
+                                                <button type="button" style="width:50px" class="btn btn-default" onclick="showpwd('ConfirnPwd')" id="Third"><i class="far fa-eye" id="Thirdfont-awesome"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" style="text-align:center">
+                                            <a class="btn btn-secondary" onclick="location.href='/Home/Index'">返回首頁</a>
+                                            <button class="btn btn-orange mr-2 mb-3 mt-3">變更密碼</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</section>
+
+<script>
+    //秀密碼
+    function showpwd(x) {
+        var inputbox = "#" + x
+       // var font = "#" + id + "font-awesome"
+        if ($(inputbox)[0].type == 'password') {
+            $(inputbox)[0].type = 'text'
+            //$(font).removeClass('far fa-eye')
+            //$(font).addClass('far fa-eye-slash')
+        }
+        else {
+            $(inputbox)[0].type = 'password'
+            //$(font).removeClass('far fa-eye-slash')
+            //$(font).addClass('far fa-eye')
+        }
+    }
+</script>
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>

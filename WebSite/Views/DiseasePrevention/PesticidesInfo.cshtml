@@ -1,0 +1,187 @@
+﻿@model Website.ViewModel.PesticidesInfoShowModel
+@{
+    ViewBag.Title = "PesticidesInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .table > thead > tr th {
+        text-align: center;
+    }
+
+    .table > thead > tr th,
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+
+    .table > tbody > tr td {
+        background-color: white
+    }
+
+    .orange > tbody > tr th {
+        background-color: #f4c430 !important;
+    }
+
+    .table-fixed {
+        position: sticky;
+        right: 0;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/DiseasePrevention/Preventlist">病蟲害防治</a></li>
+            <li><a href="~/DiseasePrevention/Map">農藥販賣業者地圖</a></li>
+            <li><a href="~/DiseasePrevention/Dashboard">病蟲害即時動態儀表板</a></li>
+            <li><a href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a></li>
+            <li><a href="~/Event/AllEvent">活動資訊</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3 style="display:inline-block">
+                        <span class="line">農藥資訊查詢</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/DiseasePrevention/Preventlist">植物防疫</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">農藥資訊查詢</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mt-2">
+                            <span>輸入任一個農藥關鍵字，按下查詢，立即查詢防檢局-農藥資料！(因資料繁多，需輸入條件方可查詢，資料將僅顯示前30筆)</span>
+                        </div>
+                        <div class="mt-2">
+                            <form id="form" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <table class="table rwd-table-pesticidesInfo table-hover orange">
+                                    <tbody>
+                                        <tr>
+                                            <th class="rwd-table-pesticidesInfo_head">許可證號</th>
+                                            <td>
+                                                @Html.TextBox("Permit", "", new { @class = "form-control" })
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="rwd-table-pesticidesInfo_head">農藥中文名稱</th>
+                                            <td>
+                                                @Html.TextBox("ChineseName", "", new { @class = "form-control" })
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="rwd-table-pesticidesInfo_head">廠商名稱</th>
+                                            <td colspan="3">
+                                                @Html.TextBox("CompanyName", "", new { @class = "form-control" })
+                                            </td>
+                                        </tr>
+                                        @*<tr>
+                                                <th>指定查詢作物</th>
+                                                <td colspan="3">
+                                                    @Html.TextBox("Crop", "", new { @class = "form-control" })
+                                                </td>
+                                            </tr>*@
+                                    </tbody>
+                                </table>
+                                <div class="m-2">
+                                    <button type="button" class="btn btn-primary" onclick="handleSubmit(event)">查詢</button>
+                                </div>
+                            </form>
+                            <div style="overflow-x:auto">
+                                <table class="table rwd-table-pesticidesInfo table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>項次</th>
+                                            <th>許可證字號</th>
+                                            <th>農藥中文名稱</th>
+                                            <th>含量</th>
+                                            <th>劑型</th>
+                                            <th>廠牌名稱</th>
+                                            <th>廠商名稱</th>
+                                            <th>許可證效期</th>
+                                            <th class="d-block d-md-none">功能</th>
+                                            <th class="d-none d-md-block table-fixed">功能</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int i = 1;
+                                            foreach (var item in Model.DataModel)
+                                            {
+                                                <tr>
+                                                    <td>@i</td>
+                                                    <td>@(item.LicenseWord)字<br />第@(item.LicenseNumber)號</td>
+                                                    <td>@item.ChineseName</td>
+                                                    <td>@item.Content</td>
+                                                    <td>@item.DosageForm</td>
+                                                    <td>@item.BrandName</td>
+                                                    <td>@item.TradeName</td>
+                                                    <td>@item.ValidityPeriod</td>
+                                                    <td class="d-block d-md-none">
+                                                        @if (Model.IsLogin && !item.IsAlready)
+                                                        {
+                                                            using (Html.BeginForm("InventoryAdd", "DiseasePrevention", FormMethod.Post, new { onclick = "return confirm('確定新增?');" }))
+                                                            {
+                                                                @Html.AntiForgeryToken()
+                                                                @Html.Hidden("LicenseWord", item.LicenseWord)
+                                                                @Html.Hidden("LicenseNumber", item.LicenseNumber)
+                                                                <input type="submit" class="btn btn-secondary m-2" value="加入資材紀錄" />
+                                                                @*<button type="button" class="btn btn-secondary m-2">刪除</button>*@
+                                                            }
+                                                        }
+                                                        <button class="btn btn-default m-2" onclick="window.open('/DiseasePrevention/PesticidesInventoryInfo?id=@item.LicenseNumber')"><i class="fas fa-external-link-alt mr-2"></i>查看農藥使用範圍</button>
+                                                    </td>
+                                                    <td class="d-none d-md-block table-fixed">
+                                                        @if (Model.IsLogin && !item.IsAlready)
+                                                        {
+                                                            using (Html.BeginForm("InventoryAdd", "DiseasePrevention", FormMethod.Post, new { onclick = "return confirm('確定新增?');" }))
+                                                            {
+                                                                @Html.AntiForgeryToken()
+                                                                @Html.Hidden("LicenseWord", item.LicenseWord)
+                                                                @Html.Hidden("LicenseNumber", item.LicenseNumber)
+                                                                <input type="submit" class="btn btn-secondary m-2" value="加入資材紀錄" />
+                                                                @*<button type="button" class="btn btn-secondary m-2">刪除</button>*@
+                                                            }
+                                                        }
+                                                        <button class="btn btn-default m-2" onclick="window.open('/DiseasePrevention/PesticidesInventoryInfo?id=@item.LicenseNumber')"><i class="fas fa-external-link-alt mr-2"></i>查看農藥使用範圍</button>
+                                                    </td>
+                                                </tr>
+                                                i++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@section Script {
+    <script>
+        function handleSubmit(e) {
+            e.preventDefault();
+
+            console.log($('form').serializeArray())
+            document.getElementById('form').submit();
+        }
+    </script>
+}
+

@@ -1,0 +1,247 @@
+﻿
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title -->
+    <title>高雄市政府農業局線上植物防疫平台</title>
+
+
+    <!-- Core Stylesheet -->
+    <link href="../css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="../icon/css/all.min.css" rel="stylesheet" />
+    <link href="../css/vnstyle.css" rel="stylesheet" />
+    <link href="../css/anstyle.css" rel="stylesheet" />
+
+    <link href="../css/bootstrap/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="../packages/core/main.css" rel="stylesheet" />
+    <link href="../packages/daygrid/main.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+    <link href="../Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="../css/pesticidesInventoryInfo.css" rel="stylesheet" />
+    <!-- jQuery-->
+    <script src="../Scripts/jquery-3.6.3.min.js"></script>
+    <script src="../Scripts/jquery.validate.min.js"></script>
+    <script src="../Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="../Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="../Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="../js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="../js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="../Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Moment -->
+    <script src="../Scripts/moment.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="../js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="../js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <script src="../packages/core/main.js"></script>
+    <script src="../packages/core/locales-all.js"></script>
+    <script src="../packages/daygrid/main.js"></script>
+    <script src="../packages/interaction/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <style>
+        body {
+            font-size: 14px;
+            font-size: 1rem;
+        }
+    </style>
+    <style>
+        .important:before {
+            content: "*";
+            color: red;
+        }
+
+        table > tbody > tr th {
+            text-align: right !important;
+        }
+
+        .no-hover:hover {
+            background-color: white !important;
+        }
+
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            bottom: -30px;
+            color: red;
+            font-size: 14px;
+            position: absolute;
+        }
+
+        .form-inline label.error {
+            bottom: -20px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        /* form css */
+
+
+        .formList {
+            position: relative;
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            transition: all .3s;
+            border-bottom: 1px solid rgba(0, 0, 0, .125)
+        }
+
+            .formList > div > span {
+                font-weight: bold;
+                min-width: 100px;
+                text-align: right;
+                margin-right: 10px;
+            }
+
+            .formList:hover {
+                background: rgba(0, 0, 0, .075);
+            }
+
+        .btn-primary2 {
+            background-color: #169bd5;
+            border-color: #169bd5;
+            border-bottom: 3px #0f6990 solid;
+            color: white;
+        }
+
+
+
+        .row {
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+            margin: 0 auto;
+        }
+
+        .card-body {
+            -ms-flex: 1 1 auto;
+            flex: 1 1 auto;
+            min-height: 1px;
+            padding: 10px;
+        }
+
+        .btn-orange {
+            background-color: #f57d31;
+            border-color: #f57d31;
+            color: white;
+            border-bottom: 3px #cf570a solid;
+        }
+    </style>
+</head>
+
+<body class="bg-img">
+
+    <div class="container2">
+
+        <div class="text-center">
+            <a href="../Home/Index">
+                <img src="../images/logo2.png" style="width:200px; margin:40px 0;">
+            </a>
+        </div>
+
+
+
+        <!-- 內頁 -->
+        <section id="SignUp" class="">
+            <div class="con-box">
+                <div class="con-head">
+                    <div class="title d-flex justify-content-between pb-0 align-items-end">
+                        <h5><span class="line">植物醫師線上掛號服務</span></h3>
+                    </div>
+                </div>
+                <div class="con-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="form" method="post" class="row">
+                                <input name="__RequestVerificationToken"
+                                       type="hidden"
+                                       value="nmeHIlOM8oLfDExGAJ1iRMh7VWjTh9h4HNJlVl5s9tHxNUyRBsPDtW_MOZ_QfwHgg_0k-lI7V8jCHu8kQ2npfUf8b4ywLTjuP35AHu-9hHc1">
+
+
+
+                                <div class="col-12 d-flex align-items-center justify-content-center py-3 border-bottom">
+
+                                    <div class="row detail">
+                                        <div class="mt-3">
+                                            一、線上預約植物醫師診斷掛號需請您先進行<span class="text-blue" style="cursor:pointer" data-toggle="modal" data-target="#LoginModal">會員註冊/登入</span>，完成後根據預約日期與時段進行線上掛號填單。
+                                        </div>
+                                        <div class="mt-3">
+                                            二、植物醫師診斷之作物類別<span class="text-red">以水稻、蔬菜、果樹等作物為主</span>，觀賞植物例如：龜背芋、盆栽等，請您聯繫<a href="https://www.tari.gov.tw/sub/content/index.asp?Parser=1,34,511,492" target="_blank">鳳山熱帶園藝試驗分所</a>協助。
+                                        </div>
+                                        <div class="mt-3">
+                                            三、線上掛號諮詢以電話、Line視訊為主，掛號資料可以上傳病徵照片、最近使用農藥照片，或是肥料照片，歡迎您先行備妥資料後再進行線上預約掛號。植物醫師若因臨時狀況取消您的預約，將會以簡訊方式通知您，不便之處，敬請見諒。
+                                        </div>
+                                        <div class="mt-3">
+                                            四、每人諮詢時間為30分鐘為限，提供上午9:30-12:00；下午14:30-16:00，場次預約名額，遲到10分鐘以上取消當日預約資格。預約未到滿3次，會暫停您1個月進行線上預約。但若有需求，您仍可到辦公室進行植物醫師問診。
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+                            </form>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+
+    </div>
+
+    <!-- footer -->
+    <footer>
+        <div class="footer-top">
+            <div class="container2">
+                <div class="row">
+                    <div class="col-12 ">
+                        <ul class="content-list">
+                            <li><i class="far fa-envelope-open"></i>客服信箱 ppi@iscom.com.tw</li>
+                            <li><i class="fas fa-phone-alt"></i>客服專線 (04)-23265200 #364</li>
+                            <li><i class="fas fa-clock"></i>服務時間 週一至週五 AM 09:00~PM 6:00</li>
+                        </ul>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </footer>
+
+
+
+</body>
+
+</html>

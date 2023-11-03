@@ -1,0 +1,124 @@
+﻿@model InformationSystem.Models.SystemLog.Model_Login
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+</style>
+<script>
+    $(function () {
+        //將查詢條件帶入查詢欄位(因為日期格式要轉換)
+        @*var dateBeg = "@Model.qrybeg.Value.ToString("yyyy-MM-ddTHH:mm")";*@
+        @*var datenow = "@Model.qryend.Value.ToString("yyyy-MM-ddTHH:mm")";*@
+        //$('#qryBeg').val(dateBeg);
+        //$('#qryEnd').val(datenow);
+        @if (Model.qrybeg != null) {
+            <text> $('#qryBeg').val("</text>@Model.qrybeg.Value.ToString("yyyy-MM-ddTHH:mm")<text>");</text>
+        }
+        @if (Model.qryend != null) {
+            <text> $('#qryEnd').val("</text>@Model.qryend.Value.ToString("yyyy-MM-ddTHH:mm")<text>");</text>
+        }
+
+    });
+
+
+    function BeforeSearch() {
+        $('#hidqrybeg').val($('#qryBeg').val());
+        $('#hidqryend').val($('#qryEnd').val());
+        $("#AjaxLoading").show(); // Loading畫面
+        $('form').submit();
+        //$("#AjaxLoading").hide(); 畫面刷新後 自動關閉
+    }
+</script>
+@*麵包屑區塊*@
+@section breadcrumb {
+    <ol class="breadcrumb">
+        <li>系統管理</li>
+        <li>系統登入紀錄</li>
+        <li>清單</li>
+    </ol>
+}
+<section class="section">
+    @using (Html.BeginForm("LoginRecord", "SystemLog", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @*換頁區塊*@
+        @*HiddenFor目前的頁面*@
+        @Html.HiddenFor(n => n.page.m_iPageIndex, new { id = "hiddenCurrentPage" })
+        @Html.HiddenFor(n => n.page.m_iPageCount, new { id = "hiddenPageCount" })
+        @Html.HiddenFor(x => x.qrybeg, new { id = "hidqrybeg" })
+        @Html.HiddenFor(x => x.qryend, new { id = "hidqryend" })
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="card sameheight-item">
+                    <div class="card-block">
+                        <div class="card-title-block">
+                            <!-- <h3 class="title"><img src="assets/img/icon_06.png">搜尋列表</h3> -->
+                        </div>
+                        <section class="section">
+                            <div class="form-horizontal">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="form-group">
+                                            <label for="inputEmail3" class="col-sm-2 control-label">時間區間</label>
+                                            <div class="col-sm-10 form-inline">
+                                                <input type="datetime-local" class="form-control" style="width:45%; font-size:small" id="qryBeg">
+                                                <span style="margin:5px; width:5%">~</span>
+                                                <input type="datetime-local" class="form-control" style="width:45%; font-size:small" id="qryEnd">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="inputEmail3" class="col-sm-4 control-label">登入帳號</label>
+                                            <div class="col-sm-8">
+                                                @Html.DropDownListFor(x => x.LoginID, Model.LoginIDList, new { @class = "form-control" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-info pull py-1" onclick="BeforeSearch();"><i class="fa fa-search" aria-hidden="true"></i> 查詢</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-xs-12">
+                <div class="card sameheight-item">
+                    <div class="card-block">
+                        <section class="section table-responsive">
+                            <table class="table table-hover table01 text-center">
+                                <thead>
+                                    <tr>
+                                        <th class="text_C" style="width:25%">日期時間</th>
+                                        <th class="text_C" style="width:25%">登入名稱</th>
+                                        <th class="text_C" style="width:25%">登入者IP</th>
+                                        <th class="text_C" style="width:25%">紀錄</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.LogList)
+                                    {
+                                        <tr>
+                                            <td style="text-align:center">@item.CDate</td>
+                                            <td style="text-align:center">@item.UserName</td>
+                                            <td style="text-align:center">@item.LoginIP</td>
+                                            <td style="text-align:center">@item.Record</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </section>
+                        @*換頁區塊*@
+                        @Html.Partial("CommonPager", Model.page)
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+    }
+</section>

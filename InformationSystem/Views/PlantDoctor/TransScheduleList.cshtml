@@ -1,0 +1,195 @@
+﻿@model InformationSystem.ViewModel.PlantDoctor.TransSchedukeViewModel
+@using Newtonsoft.Json;
+@{
+    ViewBag.Title = "TransScheduleList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+<div class="container-fluid" id="TicketList">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">代收轉案</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="form" method="post">
+                                @Html.AntiForgeryToken()
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>查詢日期：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <input type="date" name="StartDate" class="form-control" style="width: 150px;" v-model="StartDate" />
+                                                <span style="margin:auto">～</span>
+                                                <input type="date" name="EndDate" class="form-control" style="width: 150px;" v-model="EndDate" />
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <label>關鍵字：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="text" name="KeyWord" class="form-control" v-model="KeyWord" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="submit" class="btn btn-primary m-2" v-on:click="querySubmit($event)"><i class="fas fa-search mr-2"></i>查詢</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <br/>
+                        <div class="table-responsive">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">案號</th>
+                                            <th scope="col">轉案日期</th>
+                                            <th scope="col">行政區</th>
+                                            <th scope="col">植物醫師</th>
+                                            <th scope="col">姓名</th>
+                                            <th scope="col">作物名稱</th>
+                                            <th scope="col">來源</th>
+                                            <th scope="col">功能</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(record, r) in doctorScheduleList" v-bind:key="'record_' + r">
+                                            <td>{{ record.CaseNo }}</td>
+                                            <td>{{ record.TransDate }}</td>
+                                            <td>{{ record.TransDistrict }}</td>
+                                            <td>{{ record.TransDocName }}</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <span>{{ getMemberInfoName(record.Name, record.hideName) }}</span>
+                                                    <button type="button" class="btn btn-default"
+                                                            v-on:click="changeHideName(r)"
+                                                            v-show="record.Name.length > 1">
+                                                        <i class="far fa-eye" v-show="record.hideName"></i>
+                                                        <i class="fas fa-eye-slash" v-show="!record.hideName"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td>{{ record.CropName }}</td>
+                                            <td>{{ record.Origin }}</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <button type="button" class="btn btn-danger m-2" v-if="record.TransDocId == LoginID" v-on:click="receiveRecord(record)">收案</button>
+                                                    <button type="button" class="btn btn-primary m-2" v-if="RoleCode != 'R08' && record.TransDocId != LoginID" v-on:click="checkRecord(record)">查看</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const TicketList = new Vue({
+                el: "#TicketList",
+                data: {
+                    token: $('input[name="__RequestVerificationToken"]').val(),
+                    StartDate: @(new HtmlString(JsonConvert.SerializeObject((Model.StartDate.HasValue ? Model.StartDate.Value.ToString("yyyy-MM-dd") : "")))),
+                    EndDate: @(new HtmlString(JsonConvert.SerializeObject((Model.EndDate.HasValue ? Model.EndDate.Value.ToString("yyyy-MM-dd") : "")))),
+                    KeyWord: @(new HtmlString(JsonConvert.SerializeObject(Model.KeyWord ?? ""))),
+                    doctorSchedules: @(new HtmlString(JsonConvert.SerializeObject(Model.doctorSchedule))),
+                    LoginID: '@SessionHelper.Get("LoginID")',
+                    RoleCode: @(new HtmlString(JsonConvert.SerializeObject(Model.RoleCode)))
+                },
+                computed: {
+                    doctorScheduleList() {
+                        if (!this.doctorSchedules) {
+                            return [];
+                        }
+                        return this.doctorSchedules.map(d => {
+                            if (d.hideName == undefined) {
+                                d.hideName = true;
+                            }
+                            return d;
+                        });
+                    },
+                },
+                methods: {
+                    getMemberInfoName(name, hide) {
+                        if (hide) {
+                            let nameArr = name.split('');
+                            if (nameArr.length > 1) {
+                                nameArr.splice(1, 1, '○')
+                                return nameArr.join('');
+                            }
+                        }
+                        return name;
+                    },
+                    changeHideName(index) {
+                        let record = this.doctorSchedules[index];
+                        record.hideName = !record.hideName;
+                        this.doctorSchedules.splice(index, 1, record);
+                    },
+                    querySubmit(e) {
+                        e.preventDefault();
+                        document.getElementById('form').submit();
+                    },
+                    receiveRecord(record) {
+                        if (confirm("是否確認進行收案？")) {
+                            $.ajax({
+                                url: '/PlantDoctor/ReceiveSchedule',
+                                data: {
+                                    __RequestVerificationToken: this.token,
+                                    ScheduleId: record.ID,
+                                },
+                                type: 'POST',
+                                cache: false,
+                                dataType: 'json',
+                                success: function (data) {
+                                    Swal.fire({
+                                        icon: data.result ? "info" : "error",
+                                        title: data.result ? "收案成功" : "收案失敗"
+                                    }).then(res => {
+                                        if (res.isConfirmed && data.result) {
+                                            location.reload();
+                                        }
+                                    })
+                                },
+                                error: function (jqXHR, exception) {
+                                    if (jqXHR.status == 401) {
+                                        location.assign('/');
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    checkRecord(record) {
+                        location.href = '/PlantDoctor/ViewTrans?ID=' + record.ID;
+                    },
+                },
+            });
+        });
+    </script>
+}

@@ -1,0 +1,176 @@
+﻿
+@{
+    ViewBag.Title = "Forgot";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    table > tbody > tr th {
+        text-align: right !important;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">忘記密碼</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Home/Index">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">忘記密碼</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            本系統提供兩種方式進行密碼重新設定，請選擇「以Email設定」或是「以手機簡訊設定」
+                        </div>
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                @*<a class="nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">Email</a>
+                                    <a class="nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">手機簡訊</a>*@
+                                <a class="nav-link active" id="nav-home-tab" onclick="ChangeWord('MAIL')" href="#nav-homes">Email</a>
+                                <a class="nav-link" id="nav-profile-tab" onclick="ChangeWord('SMS')" href="#nav-profiles">手機簡訊</a>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                                @using (Html.BeginForm())
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <table class="table rwd-table">
+                                        <tbody>
+                                            <tr>
+                                                <th colspan="2">
+                                                    <input type="hidden" id="hidValidateMethod" name="ValidateMethod" value="Email" />
+                                                    <span id="RemindWord">請輸入您會員註冊所填寫的Email進行驗證，送出後請稍後5分鐘後至您的信箱收信，以利重新設定您的登入密碼！</span>
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <span class="important" id="Vmethod">Email</span>
+                                                </th>
+                                                <td>
+                                                    @Html.TextBox("ValidateData", "", new { @class = "form-control" })
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <span for="username" class="important">驗證碼</span>
+                                                </th>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <figure class="mr-2 mt-2 mb-2">
+                                                            <img id="verifyimage" src="/Member/GetValidateCodeImage?SessionName=ValidateForgot" href="#" onclick="Refresh_ValidateCode(event)" title="刷新驗證碼">
+                                                        </figure>
+                                                        @Html.TextBox("ValidateCode", "", new { @class = "form-control underlined mr-2", @placeholder = "請輸入圖形驗證碼", @autocomplete = "off", @style = "flex:auto;" })
+                                                        <button class="btn btn-warning" style="color:white !important;" onclick="Refresh_ValidateCode(event)"><i class="fas fa-undo mr-2"></i>重新取得驗證碼</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" style="text-align:center">
+                                                    <button class="btn btn-orange mr-2 mb-3 mt-3">送出</button>
+                                                    <button type="button" class="btn btn-secondary" onclick="location.href='/Home/Index'">返回首頁</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4" style="text-align:center">
+                    <button type="button" class="btn btn-primary" onclick="window.history.back()"><i class="fas fa-hand-point-left mr-2"></i>回上一頁</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<script>
+    //重新整理驗證碼
+    function Refresh_ValidateCode(event) {
+        event.preventDefault();
+        document.getElementById('verifyimage').src = '/Member/GetValidateCodeImage?SessionName=ValidateForgot';
+    }
+    //秀密碼
+    function showpwd(x) {
+        var id = x[0].id
+        var inputbox = "#" + id + "Pwd"
+        var font = "#" + id + "font-awesome"
+        if ($(inputbox)[0].type == 'password') {
+            $(inputbox)[0].type = 'text'
+            $(font).removeClass('far fa-eye')
+            $(font).addClass('far fa-eye-slash')
+        }
+        else {
+            $(inputbox)[0].type = 'password'
+            $(font).removeClass('far fa-eye-slash')
+            $(font).addClass('far fa-eye')
+        }
+    }
+    //秀密碼
+    function ChangeWord(vmethod) {
+        $('#hidValidateMethod').val(vmethod);
+        if (vmethod == 'MAIL') {
+            $('#RemindWord').html('請輸入您會員註冊所填寫的Email進行驗證，送出後請稍後5分鐘後至您的信箱收信，以利重新設定您的登入密碼！');
+            $('#Vmethod').html('Email');
+            $('#nav-home-tab').addClass('active');
+            $('#nav-profile-tab').removeClass('active');
+        } else {
+            $('#RemindWord').html('請輸入您會員註冊所填寫的行動電話號碼進行驗證，送出後請稍後簡訊驗證碼，以利重新設定您的登入密碼！');
+            $('#Vmethod').html('手機號碼');
+            $('#nav-home-tab').removeClass('active');
+            $('#nav-profile-tab').addClass('active');
+        }
+
+    }
+</script>
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: sMessage
+            });
+        }
+</script>

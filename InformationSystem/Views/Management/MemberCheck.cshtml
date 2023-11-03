@@ -1,0 +1,366 @@
+﻿@using Newtonsoft.Json;
+
+@{
+    ViewBag.Title = "MemberCheck";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    .form-control.error {
+        border-color: red;
+        border-width: 2px;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .form-inline .form-control.error {
+        width: auto;
+    }
+
+    .form-check-input.error {
+        width: auto !important;
+    }
+
+    label.error {
+        bottom: -30px;
+        color: red;
+        font-size: 14px;
+        justify-content: flex-start;
+        position: absolute;
+    }
+
+    .form-inline label.error {
+        bottom: -20px;
+    }
+
+    .error-border {
+        border-color: red;
+        border-width: 2px;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .text-red {
+        color: red;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="container-fluid" id="MemberCheck">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">帳號資料-審核</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <form id="form" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="IsFront" v-bind:value="IsFront" />
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="min-width:120px;">
+                                            <span>帳號狀態：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="d-flex flex-column position-relative">
+                                                <div class="form-inline">
+                                                    <label class="mr-2">
+                                                        <input type="radio" class="form-control mr-2" name="Status" value="Y" v-model="Info.Status" />啟用
+                                                    </label>
+                                                    <label class="mr-2">
+                                                        <input type="radio" class="form-control mr-2" name="Status" value="N" v-model="Info.Status" />停用
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <th style="min-width: 120px;">所在區域：</th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <input type="hidden" name="City" value="@Model.City" />
+                                                <select class="form-control mr-2" style="width:48%" disabled>
+                                                    <option>高雄市</option>
+                                                </select>
+                                                <select class="form-control" name="Zip" id="District" v-model="Info.Zip" v-bind:readonly="IsFront">
+                                                    <option value="">請選擇</option>
+                                                    @{
+                                                        foreach (var District in Model.Districts)
+                                                        {
+                                                            bool selected = false;
+                                                            if (!String.IsNullOrEmpty(Model.Zip))
+                                                            {
+                                                                selected = District.Zip.ToString() == Model.Zip.ToString();
+                                                            }
+                                                            <option selected="@selected" value="@District.Zip">@District.Name</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>帳號：</span>
+                                        </th>
+                                        <td>
+                                            @Model.LoginID
+                                            <input type="hidden" name="LoginID" value="@Model.LoginID" />
+                                        </td>
+                                        <th>性別：</th>
+                                        <td>
+                                            <select class="form-control" style="width: 200px;" v-model="Info.Sexy" v-bind:readonly="IsFront">
+                                                <option value="M">男</option>
+                                                <option value="F">女</option>
+                                                @*<option value="O">第三性</option>*@
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>Email：</span>
+                                        </th>
+                                        <td>
+                                            @Model.Email
+                                            <input type="hidden" name="Email" value="@Model.Email" />
+                                        </td>
+                                        <th>出生年次：</th>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @{
+                                                    var currentYear = DateTime.Now.Year - 1911;
+                                                }
+                                                <input type="text" name="YearOfBirth" style="width: 100px;" class="form-control" placeholder="民國年" min="30" max="@currentYear" v-model="Info.YearOfBirth" v-bind:readonly="IsFront" />
+                                                <span>年次</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>姓名：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="text" name="Name" class="form-control" v-model="Name" v-bind:readonly="IsFront" />
+                                                <button type="button" class="btn btn-default"
+                                                        v-on:click="changeHide('Name')">
+                                                    <i class="far fa-eye" v-show="hideName"></i>
+                                                    <i class="fas fa-eye-slash" v-show="!hideName"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <th>行動電話：</th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="text" name="Mobile" class="form-control" v-model="Mobile" v-bind:readonly="IsFront" />
+                                                <button type="button" class="btn btn-default"
+                                                        v-on:click="changeHide('Mobile')">
+                                                    <i class="far fa-eye" v-show="hideMobile"></i>
+                                                    <i class="fas fa-eye-slash" v-show="!hideMobile"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @if (!Model.IsFront)
+                                    {
+                                        <tr>
+                                            <th>
+                                                <span>角色別：</span>
+                                            </th>
+                                            <td>
+                                                <select class="form-control" style="width: 200px;" name="RoleCode" v-model="Info.RoleCode">
+                                                    @{
+                                                        foreach (var defCode in Model.defCodes)
+                                                        {
+                                                            <option value="@defCode.RoleCode">@defCode.RoleName</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </td>
+                                            <th>身分證字號：</th>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <input type="text" name="IdentifyID" class="form-control" v-model="IdentifyID" v-bind:readonly="IsFront" />
+                                                    <button type="button" class="btn btn-default"
+                                                            v-on:click="changeHide('IdentifyID')">
+                                                        <i class="far fa-eye" v-show="hideIdentifyID"></i>
+                                                        <i class="fas fa-eye-slash" v-show="!hideIdentifyID"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <th>角色別：</th>
+                                            <td>
+                                                <select class="form-control" style="width: 200px;" name="IdentifyID" v-model="Info.IdentifyID" readonly>
+                                                    @{
+                                                        <option value="">請選擇</option>
+                                                        foreach (var defCode in Model.defCodesIdentify)
+                                                        {
+                                                            <option @(defCode.Code == Model.IdentifyID.ToString() ? "selected='selected''" : "") value="@defCode.Code">@defCode.Name</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </td>
+                                            <th colspan="2"></th>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <th>帳號來源：</th>
+                                        <td>@Model.Origin</td>
+                                        <th colspan="2"></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="submit" class="btn btn-primary m-2">送出</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const MemberCheck = new Vue({
+                el: "#MemberCheck",
+                data: {
+                    error: @(new HtmlString(JsonConvert.SerializeObject(TempData["error"]))),
+                    IsFront: @(new HtmlString(JsonConvert.SerializeObject(Model.IsFront))),
+                    Info: {
+                        Status: '@(Model.Status??"")',
+                        Name: '@Model.Name',
+                        Mobile: '@(Model.Mobile)',
+                        Sexy:'@(Model.Sexy)',
+                        Zip: '@(Model.Zip)',
+                        YearOfBirth: '@(Model.YearOfBirth)',
+                        RoleCode: '@(Model.RoleCode)',
+                        IdentifyID: '@(Model.IdentifyID)',
+                    },
+                    Name: '',
+                    Mobile: '',
+                    IdentifyID: '',
+                    hideName: true,
+                    hideMobile: true,
+                    hideIdentifyID: true,
+                    validator: null
+                },
+                methods: {
+                    changeHide(key) {
+                        switch (key) {
+                            case "Name":
+                                this.hideName = !this.hideName;
+                                if (this.hideName) {
+                                    let NameArr = this.Info.Name.split('');
+                                    if (NameArr.length > 1) {
+                                        NameArr.forEach(function (s, i) {
+                                            if (i != 0 && i != (NameArr.length - 1)) {
+                                                NameArr[i] = '○';
+                                            }
+                                        });
+                                    }
+                                    this.Name = NameArr.join('');
+                                } else {
+                                    this.Name = this.Info.Name;
+                                }
+                                break;
+                            case "Mobile":
+                                this.hideMobile = !this.hideMobile;
+                                if (this.hideMobile) {
+                                    let MobileArr = this.Info.Mobile.split('');
+                                    if (MobileArr.length > 1) {
+                                        MobileArr.forEach(function (s, i) {
+                                            if (i > 3 && i < (MobileArr.length - 3)) {
+                                                MobileArr[i] = '○';
+                                            }
+                                        });
+                                    }
+                                    this.Mobile = MobileArr.join('');
+                                } else {
+                                    this.Mobile = this.Info.Mobile;
+                                }
+                                break;
+                            case "IdentifyID":
+                                this.hideIdentifyID = !this.hideIdentifyID;
+                                if (this.hideIdentifyID) {
+                                    let IdentifyIDArr = this.Info.IdentifyID.split('');
+                                    if (IdentifyIDArr.length > 1) {
+                                        IdentifyIDArr.forEach(function (s, i) {
+                                            if (i > 3) {
+                                                IdentifyIDArr[i] = '○';
+                                            }
+                                        });
+                                    }
+                                    this.IdentifyID = IdentifyIDArr.join('');
+                                } else {
+                                    this.IdentifyID = this.Info.IdentifyID;
+                                }
+                                break;
+                        }
+                    },
+                },
+                mounted() {
+                    this.Name = this.Info.Name;
+                    this.Mobile = this.Info.Mobile;
+                    this.IdentifyID = this.Info.IdentifyID;
+
+                    this.validator = $('#form').validate({
+                        rules: {
+                            "Status": "required",
+                            "RoleCode": "required"
+                        },
+                        messages: {
+                            "Status": "請選擇狀態",
+                            "RoleCode": "請選擇角色",
+                        },
+                        errorPlacement: function(error, element) {
+                            if ($(element).hasClass('form-check-input')) {
+                                error.appendTo($(element).parent().parent().parent());
+                            } else {
+                                error.appendTo(element.parent());
+                            }
+                        },
+                        submitHandler: function (form) {
+                            form.submit();
+                        }
+                    });
+                    if (this.error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: this.error
+                        });
+                    }
+                }
+            });
+        });
+
+
+    </script>
+}

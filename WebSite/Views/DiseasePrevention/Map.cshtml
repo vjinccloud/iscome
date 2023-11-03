@@ -1,0 +1,919 @@
+﻿@using Newtonsoft.Json;
+@{
+    ViewBag.Title = "Map";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+@Html.Partial("LeafletMap")
+
+<style>
+    .map-word-family {
+        font-family: 'Arial Negreta', 'Arial Normal', 'Arial';
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    .level-1 {
+        font-size: 24px;
+    }
+
+    .level-2 {
+        font-size: 20px;
+    }
+
+    .level-3 {
+        font-size: 18px;
+    }
+
+    .is-selected {
+        background-color: lightblue;
+    }
+
+    #map_container {
+        max-height: 1200px;
+        height: 75vh;
+        width: 100%;
+    }
+
+    .material-icons {
+        vertical-align: middle;
+        display: inline;
+        padding-left: 1px;
+        padding-top: 1px;
+    }
+
+    .easy-button-button {
+        padding: 0;
+        font-size: 1.1rem;
+    }
+
+    /* The slider */
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+
+    input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 34px;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    #InfoCardList {
+        margin-bottom: 10px;
+    }
+
+    .InfoCard {
+        border-width: 1px;
+        border-style: solid;
+        border-color: black;
+        padding: 5px;
+        margin-top: 10px;
+    }
+
+        .InfoCard:hover {
+            background-color: lightblue;
+        }
+
+        .InfoCard.Highlight {
+            background-color: lightblue;
+        }
+
+    .leaflet-sprite {
+        transition-duration: 0s;
+    }
+
+    .Qualified {
+        color: green;
+        font-weight: bold;
+        font-size: 0.875em;
+    }
+
+    .Unqualified {
+        color: red;
+        font-weight: bold;
+        font-size: 0.875em;
+    }
+
+    .NeedImprove {
+        color: orange;
+        font-weight: bold;
+        font-size: 0.875em;
+    }
+
+    .Other {
+        color: dodgerblue;
+        font-weight: bold;
+        font-size: 0.875em;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/DiseasePrevention/Preventlist">病蟲害防治</a></li>
+            <li><a href="~/DiseasePrevention/Map">農藥販賣業者地圖</a></li>
+            <li><a href="~/DiseasePrevention/Dashboard">病蟲害即時動態儀表板</a></li>
+            <li><a href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a></li>
+            <li><a href="~/Event/AllEvent">活動資訊</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <div><span class="line">農藥販售業者地圖</span></div>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">農藥販售業者地圖</li>
+                        </ol>
+                    </nav>
+
+                </div>
+            </div>
+            <div class="con-body" id="SellerMap">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between">
+                                        <label>行政區</label>
+                                        <div class="form-group form-check" style="margin-bottom: 0px;">
+                                            <input type="checkbox" class="" id="Near" v-model="Near">
+                                            <label class="form-check-label" for="Near" id="checkNear">查詢我的附近</label>
+                                        </div>
+                                    </div>
+                                    <select name="Zip" class="form-control" v-model="Zip" v-bind:disabled="DisableZip">
+                                        <option value="">請選擇</option>
+                                        <option v-for="(s, i) in Districts" v-bind:key="s.Zip" v-bind:value="s.Zip">
+                                            {{ s.Name }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>關鍵字查詢</label>
+                                    <input class="form-control" v-model="KeyWord">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="row  align-items-end">
+                                    <div class="col-12 col-lg-8 mb-2 mb-lg-0">
+                                        <div class="form-group form-check" style="padding-left: 0px;">
+                                            <input type="checkbox" class="" id="Friendly" v-model="Friendly">
+                                            <label class="form-check-label" for="Friendly">綠色友善資材站</label>
+                                        </div>
+                                        <p class="red font-weight-bold mb-0">請務必先電話聯繫業者今日是否營業，以及詢問是否販售您所需的農藥!</p>
+                                    </div>
+                                    <div class="col-12 col-lg-4 text-lg-right">
+                                        <button type="button" class="btn btn-secondary" v-on:click="Reset">
+                                            <i class="fas fa-eraser mr-2"></i>清除資料
+                                        </button>
+                                        <button type="button" class="btn btn-warning" v-on:click="StartSearch">
+                                            <i class="fas fa-search mr-2"></i>開始查詢
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="MapHint" style="color:crimson; font-size:larger" v-show="IsMap">
+                    <strong>
+                        有關店家點位可能過少，可改至[清單模式]查看。
+                    </strong>
+                </p>
+
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <a class="nav-link active" id="nav-list-tab" data-toggle="tab" href="#nav-list" role="tab" aria-controls="nav-list" aria-selected="true">
+                            <i class="fas fa-list-ul mr-2"></i>清單模式
+                        </a>
+                        <a class="nav-link" id="nav-map-tab" data-toggle="tab" href="#nav-map" role="tab" aria-controls="nav-map" aria-selected="false" v-on:click="AdjustMap">
+                            <i class="far fa-calendar-alt mr-2"></i>地圖模式
+                        </a>
+                    </div>
+                </nav>
+                <div class="tab-content" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="nav-list" role="tabpanel" aria-labelledby="nav-list-tab">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table style02 rwd-table">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>業者名稱</th>
+                                                <th>聯繫電話</th>
+                                                <th>營業地址</th>
+                                                <th>狀態</th>
+                                                <th>更新日期</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(d, i) in ShowData" v-bind:key="'seller_' + i" class="text-center">
+                                                <td>{{ d.VendorName }}</td>
+                                                <td>{{ d.ContactPhone }}</td>
+                                                <td>{{ d.VendorAddress }}</td>
+                                                <td>{{ d.StatusString }}</td>
+                                                <td>{{ d.UpdateString }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-pagebox">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <li class="page-item" v-if="TotalPage > 1 && CurrentPage > 1">
+                                        <span class="page-link" aria-label="Previous" v-on:click="ChangePage(-1)">
+                                            <i class="fas fa-long-arrow-alt-left"></i>
+                                        </span>
+                                    </li>
+                                    <li class="page-item" v-bind:class="{'active': p === CurrentPage}"
+                                        v-for="(p, i) in PageIndex"
+                                        v-bind:key="'page_' + i"
+                                        v-if="TotalPage > 0">
+                                        <span class="page-link" v-on:click="DisplayPage(p)">{{ p }}</span>
+                                    </li>
+                                    <li class="page-item" v-if="TotalPage > 1 && CurrentPage < TotalPage">
+                                        <span class="page-link" aria-label="Next" v-on:click="ChangePage(1)">
+                                            <i class="fas fa-long-arrow-alt-right"></i>
+                                        </span>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <div class="page-n">
+                                <span class="mr-2">每頁</span>
+                                <select class="form-control" v-model="DataPerPage">
+                                    <option v-for="page in PerPages" v-bind:key="'page_' + page" v-bind:value="page">{{ page }}</option>
+                                </select>
+                                <span class="ml-2">筆 資料：{{ Data.length }}筆，共 {{ TotalPage }}頁。</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="nav-map" role="tabpanel" aria-labelledby="nav-map-tab">
+                        <div>
+                            <!--放置地圖的DIV-->
+                            <div id="map_container"></div>
+
+                            <!--放置側邊攔的DIV-->
+                            <div id="sidebar">
+                                <span style="font-size: 2rem; font-weight: bold; font-family: 'Microsoft JhengHei'">
+                                    農藥販售業者
+                                </span>
+                                <hr>
+
+                                <div id="InfoCardList">
+                                    <div class="InfoCard map-word-family"
+                                         v-bind:class="{ 'is-selected' : d.selected }"
+                                         v-for="(d, i) in Data"
+                                         v-bind:key="'list_' + i "
+                                         v-bind:id="'InfoCard_' + d.LicenseNum"
+                                         v-on:mouseenter="GoToMarker(d)"
+                                         v-on:mouseover="hoverInfoCard(d)"
+                                         v-on:mouseleave="d.Selected = false">
+
+                                        <span class="level-1">{{ d.VendorName }}</span>
+                                        <br />
+                                        <span class="level-2" style="font-weight: 400;">{{ d.ContactPhone }}</span>
+                                        <br />
+                                        <span class="level-1" style="font-weight: 400;">{{ d.VendorAddress }}</span>
+                                        <br />
+                                        <span class="level-1" style="color: #008000;">{{ d.Friendly ? '綠色友善資材站' : '' }}</span>
+
+                                        <hr class="my-2">
+
+                                        <a v-bind:href="'https://www.google.com/maps/dir/?api=1&destination=' + d.VendorAddress"
+                                           target="_blank">
+                                            使用GoogleMap導航
+                                            <i aria-hidden="true" class="fas fa-external-link-alt pl-1"></i>
+                                        </a>
+                                        <br>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!--側邊攔的DIV End-->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Script {
+    <script type="text/javascript">
+        const MarkerTooltipVue = Vue.extend({
+            template: `<div class="map-word-family level-3" v-bind:id="'Marker_' + item.LicenseNum + '_tooltip'">
+                            <span>{{ item.VendorName }}</span>
+                            <br />
+                            <span>{{ item.ContactPhone }}</span>
+                            <br />
+                            <span>{{ item.VendorAddress }}</span>
+                            <br />
+                            <span>狀態：{{ item.StatusString }}</span>
+                            <br />
+                            <span>更新日期：{{ item.UpdateString }}</span>
+                        </div>`,
+            props: {
+                item: {
+                    type: Object,
+                    default: () => {
+                        return {
+                            LicenseNum: '',
+                            VendorName: '',
+                            ContactPhone: '',
+                        }
+                    }
+                }
+            }
+        });
+        const MarkerPopupVue = Vue.extend({
+            template: `<div class="map-word-family" v-bind:id="'Marker_' + item.LicenseNum + '_popup'">
+                        <span class="level-1">{{ item.VendorName }}</span>
+                        <br />
+                        <span class="level-2">{{ item.ContactPhone }}</span>
+                        <br />
+                        <span class="level-2">{{ item.VendorAddress }}</span>
+                        <br />
+                        <span class="level-2">狀態：{{ item.StatusString }}</span>
+                        <br />
+                        <span class="level-2">更新日期：{{ item.UpdateString }}</span>
+                    </div>`,
+            props: {
+                item: {
+                    type: Object,
+                    default: () => {
+                        return {
+                            LicenseNum: '',
+                            VendorName: '',
+                            ContactPhone: '',
+                            VendorAddress: ''
+                        }
+                    }
+                }
+            }
+        });
+
+        //座標轉換
+        proj4.defs([
+            [
+                'EPSG:4326',
+                '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees'],
+            [
+                'EPSG:3826',
+                '+title=TWD97 TM2+proj=tmerc +lat_0=0 +lon_0=121 +k=0.9999 +x_0=250000 +y_0=0 +ellps=GRS80 +units=m +no_defs']
+        ]);
+
+        var EPSG3826 = new proj4.Proj('EPSG:3826');//TWD97 121 2度分帶 (Tgos)
+        var EPSG4326 = new proj4.Proj('EPSG:4326');//WGS84
+
+        //---------------------------------------
+
+        //設定MarkerCluster參數
+        var MarkerList = L.markerClusterGroup({ disableClusteringAtZoom: 16 });
+        MarkerList.maxClusterRadius = 1000;
+
+        $(document).ready(function () {
+            const SellerMap = new Vue({
+                el: "#SellerMap",
+                data: {
+                    Districts: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
+                    DistCentroid: {
+                        '800': [ 22.62992906,120.3067337],
+                        '801': [ 22.6269905, 120.2944217],
+                        '802': [ 22.62359448,120.3209103],
+                        '803': [ 22.62424585,120.2842331],
+                        '804': [ 22.65019525,120.274163],
+                        '805': [ 22.58565583,120.2891539],
+                        '806': [ 22.59269724,120.3146749],
+                        '807': [ 22.64989883,120.3179187],
+                        '811': [ 22.72109961,120.300758],
+                        '812': [ 22.55140207,120.3592605],
+                        '813': [ 22.68395699,120.2951588],
+                        '814': [ 22.70120782,120.3605265],
+                        '815': [ 22.73983479,120.3707994],
+                        '820': [ 22.80505886,120.2978906],
+                        '821': [ 22.85724171,120.2659871],
+                        '822': [ 22.87022883,120.3210967],
+                        '823': [ 22.86394307,120.3959842],
+                        '824': [ 22.78769626,120.370799],
+                        '825': [ 22.75252398,120.3006534],
+                        '826': [ 22.748209,  120.2593989],
+                        '827': [ 22.77944528,120.2394571],
+                        '828': [ 22.82224585,120.228051],
+                        '829': [ 22.89324952,120.2259375],
+                        '830': [ 22.61379251,120.3554359],
+                        '831': [ 22.59283576,120.4111468],
+                        '832': [ 22.50813743,120.399052],
+                        '833': [ 22.66249302,120.3727783],
+                        '840': [ 22.71100364,120.425407],
+                        '842': [ 22.86497033,120.4754554],
+                        '843': [ 22.90005529,120.5634635],
+                        '844': [ 23.01195426,120.6585635],
+                        '845': [ 22.95668817,120.4719272],
+                        '846': [ 22.99694681,120.5621971],
+                        '847': [ 23.11654995,120.6232895],
+                        '848': [ 23.2249459, 120.8523383],
+                        '849': [ 23.275008,  120.741944],
+                        '851': [ 22.91993256,120.752384],
+                        '852': [ 22.88241399,120.1980519],
+
+                    },
+                    SourceData: [
+                        {
+                            VendorName: '小天農藥行',
+                            VendorAddress: '高雄市燕巢區鳳旗路1號',
+                            ContactPhone: '07-12345678',
+                            FriendlyStartDate: '2021-12-01',
+                            FriendlyEndDate: '2022-12-01',
+                            Status: 1,
+                            Center: [120.3067337, 22.62992906],
+                            Selected: false
+                        },
+                        {
+                            VendorName: '大天農藥行',
+                            VendorAddress: '高雄市燕巢區鳳旗路2號',
+                            ContactPhone: '07-22345678',
+                            FriendlyStartDate: '',
+                            FriendlyEndDate: '',
+                            Status: 1,
+                            Center: [120.1980519, 22.88241399],
+                            Selected: false
+                        }
+                    ],
+                    Data: [],
+                    ShowData: [],
+                    DefaultCenter: [22.6307027, 120.3414354],
+                    today: moment().format('YYYY-MM-DD'),
+                    Near: false,
+                    Zip: "",
+                    KeyWord: "",
+                    Friendly: false,
+                    DisableZip: false,
+                    IsMap: false,
+                    PageIndex: [1],
+                    DataPerPage: 15,
+                    PerPages: [15, 30, 50],
+                    CurrentPage: 1,
+                    TotalPage: 0,
+                    SelectedMarker: null,
+                    Adjusted: false,
+                },
+                watch: {
+                    Near(val) {
+                        this.Zip = "";
+                        this.DisableZip = val;
+                    },
+                    DataPerPage(val) {
+                        this.TotalPage = Math.ceil(this.Data.length / val);
+                        if (this.CurrentPage > this.TotalPage) {
+                            this.DisplayPage(this.TotalPage);
+                        }
+                    }
+                },
+                computed: {
+                    District() {
+                        let find = this.Districts.find(d => d.Zip == this.Zip);
+                        return find ? find.Name : '';
+                    }
+                },
+                methods: {
+                    AdjustMap() {
+                        if (!this.Adjusted) {
+                            this.Adjusted = true;
+                            setTimeout(() => {
+                                map.invalidateSize();
+                            }, 500);
+                        }
+                    },
+                    ChangePage(num) {
+                        let current = this.CurrentPage + num;
+                        if (current >= 1 || current <= this.TotalPage) {
+                            this.DisplayPage(current);
+                        }
+                    },
+                    Reset() {
+                        this.Near = false;
+                        this.Zip = "";
+                        this.KeyWord = "";
+                        this.Friendly = false;
+                    },
+                    async StartSearch() {
+                        const self = this;
+                        await $.get('/DiseasePrevention/PesticideSellerList', '', function (response) {
+                            //console.log('PesticideSellerList', response);
+                            self.SourceData = response.map(s => {
+                                //s['Friendly'] = s.FriendlyStartDate && s.FriendlyEndDate
+                                //    && moment(self.today).isBefore(s.FriendlyEndDate)
+                                //    && moment(self.today).isAfter(s.FriendlyStartDate);
+                                s['Selected'] = false;
+                                if (s.Status == 1 && s.Friendly) {
+                                    s.Status = 2;
+                                }
+                                //if (s.Location) {
+                                //    s['Center'] = s.Location.split(',');
+                                //}
+                                return s;
+                            });
+                        });
+                        if (this.Near) {
+                            //顯示使用者點位
+                            map.locate();
+                            const self = this;
+                            if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition(this.successGPS, this.errorGPS);
+                                return true;
+                            }
+                            self.Search(this.center);
+                            //navigator.permissions.query({ name: 'geolocation' }).then(function (result) {
+                            //        if (result.state == 'granted') {
+                            //            //定位並查詢
+                            //            navigator.geolocation.getCurrentPosition(function (e) {
+                            //                var Location = [e.coords.latitude, e.coords.longitude];
+                            //                self.Search(Location);
+                            //            })
+                            //        } else if (result.state == 'prompt') {
+                            //            console.log('prompt');
+                            //        } else if (result.state == 'denied') {
+                            //            console.log('denied');
+                            //        }
+                            //    });
+                        } else {
+                            this.Search();
+                        }
+                    },
+                    // 跟使用者要位置
+                    successGPS(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        this.center = [lat, lng];
+                    },
+                    errorGPS() {
+                        this.center = this.DefaultCenter;
+                        window.alert('定位失敗! 請確認您的瀏覽器有提供定位功能，並允許取得位置。預設地點將為 高雄市農業局');
+                    },
+                    filterCondition(seller) {
+                        // 查詢營業中
+                        if (seller.Status ==0 ) {
+                            return false;
+                        }
+                        /*console.log(seller.Friendly, seller.VendorName);*/
+                        // 行政區
+                        if (this.District && seller.VendorAddress.indexOf(this.District) == -1) {
+                            return false;
+                        }
+                        // 查詢綠色友善資材站
+                        if (this.Friendly && !seller.Friendly) {
+                            return false;
+                        }
+                        // 關鍵字
+                        if (this.KeyWord) {
+                            if (seller.VendorName.indexOf(this.KeyWord) == -1 && seller.VendorAddress.indexOf(this.KeyWord) == -1 && seller.ContactPhone.indexOf(this.KeyWord) == -1) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    },
+                    Search(UserLocation) {
+                        this.ToggleLoading(true);
+                        let filterData = this.SourceData.filter(s => {
+                            return this.filterCondition(s);
+                        });
+                        let QueryResult = [];
+                        //紀錄結果
+                        if (UserLocation && UserLocation.length == 2) {
+                            QueryResult = this.findNearbyData(filterData, UserLocation[0], UserLocation[1], 1000);
+                            //如果1公里內沒資料，放大搜尋3公里
+                            if (!QueryResult) {
+                                QueryResult = this.findNearbyData(filterData, UserLocation[0], UserLocation[1], 3000);
+                            }
+                        } else {
+                            QueryResult = filterData;
+                        }
+
+                        //上編號
+                        $.each(QueryResult, function (idx, item) { item.SerialNo = idx + 1; });
+                        //列表顯示查詢結果
+                        this.DisplayOnList(QueryResult);
+                        this.ShowPoint(QueryResult);
+                        //this.MoveToDist(this.Zip);
+                        this.ToggleLoading(false);
+                        location.href = "#MapHint";  //移動到內容區
+                    },
+                    findNearbyData(Data, UserLat, UserLng, radius) {
+
+                        var lat = parseFloat(UserLat);
+                        var lng = parseFloat(UserLng);
+
+                        //轉成平面座標
+                        var Proj3826 = proj4(EPSG4326, EPSG3826, [lng, lat]);
+
+                        //Boundary Box
+                        var X = Proj3826[0];
+                        var Y = Proj3826[1];
+                        var X_Max = X + radius;
+                        var X_min = X - radius;
+                        var Y_Max = Y + radius;
+                        var Y_min = Y - radius;
+
+                        //console.log({ X, Y });
+                        //console.log({ X_Max, X_min, Y_Max, Y_min });
+
+                        //找出Boundary Box內的項目
+                        var NearbyData =
+                            Data.filter(Point =>
+                                Point.TGOSX <= X_Max
+                                && Point.TGOSX >= X_min
+                                && Point.TGOSY <= Y_Max
+                                && Point.TGOSY >= Y_min);
+
+                        return NearbyData;
+                    },
+                    hoverInfoCard(item) {
+                        // 地圖移動到指定經緯度
+                        item.Selected = true;
+                    },
+                    DisplayOnList(Data) {
+                        this.DataPerPage = $(window).width() >= 1024 ? 15 : 10;
+                        this.Data = [];
+                        this.Data = Data;
+                        this.TotalPage = Math.ceil(Data.length / this.DataPerPage);
+                        this.DisplayPage(1);
+                    },
+                    DisplayPage(PageNo) {
+                        if (PageNo > 0 && PageNo <= this.TotalPage) {
+                            this.CurrentPage = PageNo;
+                            this.ShowData = this.Data.slice((PageNo - 1) * this.DataPerPage, PageNo * this.DataPerPage);
+                            let pageIndex = [];
+                            if (PageNo - 1 >= 1) {
+                                pageIndex.push(PageNo - 1);
+                            }
+                            pageIndex.push(PageNo);
+                            if (PageNo + 1 < this.TotalPage) {
+                                pageIndex.push(PageNo + 1);
+                            }
+                            if (pageIndex.length === 2 && (PageNo + 2) < this.TotalPage) {
+                                pageIndex.push(PageNo + 2);
+                            }
+
+                            this.PageIndex = pageIndex;
+                        }
+                        else {
+                            this.CurrentPage = PageNo;
+                            this.ShowData = this.Data;
+                            let pageIndex = [];
+                            this.PageIndex = pageIndex;
+                        }
+                    },
+                    GetIcon(Status) {
+                        switch (Status) {
+                            case 0: // 停業中
+                                return (Marker_err);
+                            case 1: // 營業中
+                                return (Marker_calendar);
+                            case 2: // 綠色
+                                return (Marker_pass);
+                        }
+                    },
+                    ShowPoint(PointList) {
+                        // 清空
+                        MarkerList.clearLayers();
+                        const self = this;
+                        var a = 0;
+                        let _c = [];
+                        $(PointList).each(
+                            function (idx, item) {
+                                let LatLng = item.Center || [];
+                                if (_c.length == 0 || a == 0) {
+                                    _c = item.Center || [];
+                                }
+                                if (LatLng.length == 0) {
+                                    return;
+                                }
+
+                                let InfoCardID = 'InfoCard_' + item.LicenseNum;
+                                let MarkerID = 'Marker_' + item.LicenseNum;
+
+                                if (item.TGOSX && item.TGOSY) {
+                                    //先把座標轉為WGS84
+                                    let X = parseFloat(item.TGOSX);
+                                    let Y = parseFloat(item.TGOSY);
+                                    //LngLat格式
+                                    let LngLat = proj4(EPSG3826, EPSG4326, [X, Y]);
+                                    //轉成LatLng格式
+                                    LatLng = [LngLat[1], LngLat[0]];
+                                    if (_c.length == 0 || a==0) {
+                                        _c = [LngLat[1], LngLat[0]];
+                                    }
+                                }
+                                //取得稽核結果對應的Icon
+                                var icon = self.GetIcon(item.Status);
+
+                                //建立標記
+                                var tmpMarker = L.marker(LatLng, { id: MarkerID, Status: item.Status, icon: icon });
+
+                                //設定zindex
+                                var zindex = 1000;
+                                var pos = map.latLngToLayerPoint(LatLng).round();
+                                tmpMarker.setZIndexOffset(zindex - pos.y);
+
+                                let MarkerTooltipVueInstance = new MarkerTooltipVue({
+                                    propsData: {
+                                        item: item
+                                    },
+                                }).$mount();
+                                //綁定tooltip
+                                tmpMarker.bindTooltip(MarkerTooltipVueInstance.$el.innerHTML).openTooltip();
+
+                                let MarkerPopupVueInstance = new MarkerPopupVue({
+                                    propsData: {
+                                        item: item
+                                    },
+                                }).$mount();
+
+                                //綁定Popup
+                                tmpMarker.bindPopup(MarkerPopupVueInstance.$el.innerHTML);
+
+                                //綁定事件
+                                tmpMarker.on('mouseover', function () { self.GoToInfoCard(InfoCardID); self.HighlightCard(InfoCardID, true); });
+
+                                tmpMarker.on('mouseout', function () { self.HighlightCard(InfoCardID, false); });
+
+                                tmpMarker.on('click', function (e) { self.ChangeSelectedMarker(e.target) });
+
+                                //加到叢集標記中
+                                MarkerList.addLayer(tmpMarker);
+                                a++;
+                            });
+
+                        map.addLayer(MarkerList);
+                        MarkerList.refreshClusters();
+                        if (PointList && _c.length == 2) {
+                            map.setView(_c, 13);
+                        } else {
+                            map.setView([22.62992906, 120.3067337], 13);
+                        }
+                    },
+                    // 移動到行政區中心
+                    MoveToDist(Zip) {
+                        if (Zip && this.DistCentroid[Zip]) {
+                            map.setView(this.DistCentroid[Zip], 13);
+                        }
+                    },
+                    HighlightCard(InfoCardID, SetHighlight) {
+                        if (SetHighlight) {
+                            $('#' + InfoCardID).addClass('Highlight');
+                        } else {
+                            $('#' + InfoCardID).removeClass("Highlight");
+                        }
+                    },
+                    GoToInfoCard(InfoCardID) {
+                        $('#sidebar').scrollTop(document.getElementById(InfoCardID).offsetTop || 0);
+                    },
+                    // 透過MarkerID尋找對應Marker
+                    // 回傳Marker物件
+                    FindMarker(MarkerID) {
+                        let Target;
+                        MarkerList.eachLayer(x => {
+                            if (x.options.id == MarkerID) {
+                                Target = x;
+                            }
+                        });
+                        return Target;
+                    },
+                    ChangeSelectedMarker(Marker) {
+                        if (this.SelectedMarker && this.SelectedMarker.options.id != Marker.options.id) {
+                            //變回原本
+                            this.SelectedMarker.disablePermanentHighlight();
+                        }
+                        Marker.enablePermanentHighlight();
+                        this.SelectedMarker = Marker;
+                    },
+                    GoToMarker(item) {
+                        let MarkerID = 'Marker_' + item.LicenseNum;
+                        let Marker = this.FindMarker(MarkerID);
+
+                        if (Marker) {
+                            this.ChangeSelectedMarker(Marker);
+                            map.setView(Marker.getLatLng(), 16);
+                        }
+                    },
+                    GetOffset(ElementID) {
+                        // get viewport offset for our main element
+                        var coords = $('#' + ElementID).offset();
+
+                        // get parent and parent viewport offset
+                        var parent = $('#' + ElementID).offsetParent();
+                        var parentCoords = $(parent).offset();
+
+                        return (coords.top - parentCoords.top);
+                    },
+                    ToggleLoading(state) {
+                        if (state) {
+                            $('#Loading').show();
+                        }
+                        else {
+                            $('#Loading').hide();
+                        }
+                    }
+                },
+                beforeMount() {
+                    const self = this;
+                    $.get('/DiseasePrevention/PesticideSellerList', '', function (response) {
+                        //console.log('PesticideSellerList', response);
+                        self.SourceData = response.map(s => {
+                            //s['Friendly'] = s.FriendlyStartDate && s.FriendlyEndDate
+                            //    && moment(self.today).isBefore(s.FriendlyEndDate)
+                            //    && moment(self.today).isAfter(s.FriendlyStartDate);
+                            s['Selected'] = false;
+                            if (s.Status == 1 && s.Friendly) {
+                                s.Status = 2;
+                            }
+                            //if (s.Location) {
+                            //    s['Center'] = s.Location.split(',');
+                            //}
+                            return s;
+                        });
+                    });
+                },
+                mounted() {
+                    //載入並初始化地圖
+                    LoadMap();
+
+                    map.setView(this.DefaultCenter, 15);
+
+                    //綁定定位事件
+                    map.on('locationfound', onLocationFound);
+                    map.on('locationerror', onLocationError);
+
+                    //載入按鈕
+                    LoadEasyButton();
+                    //載入側邊攔
+                    LoadSideBar();
+                }
+            });
+        });
+
+
+    </script>
+}

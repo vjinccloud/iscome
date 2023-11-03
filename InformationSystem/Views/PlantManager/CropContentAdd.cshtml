@@ -1,0 +1,145 @@
+﻿@model InformationSystem.ViewModel.Management.ControlHistoryCropsContentsEditModel
+@{
+    ViewBag.Title = "CropContentAdd";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">新增防治內容</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <form id="form" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <input type="hidden" name="Id" value="@Model.Id" />
+                                <input type="hidden" name="ControlHistoryCropId" value="@Model.ControlHistoryCropId" />
+                                <input type="hidden" name="ControlId" value="@Model.ControlId" />
+                                <input type="hidden" id="hidActName" name="ActName" value="" />
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="submit" class="btn btn-primary m-2" onclick="location.href='/PlantManager/CalendarAdd?id='+@Model.ControlHistoryCropId + '&cid=' + @Model.ControlId">回上一頁</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label class="important">防治階段</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select class="form-control" name="ControlStage" required title="請選擇防治階段">
+                                                <option @(string.IsNullOrEmpty(Model.ControlStage) ? "selected" : "") value="">請選擇</option>
+                                                <option @(Model.ControlStage == "生長期" ? "selected" : "") value="生長期">生長期</option>
+                                                <option @(Model.ControlStage == "生活史" ? "selected" : "") value="生活史">生活史</option>
+                                                <option @(Model.ControlStage == "慣行栽植" ? "selected" : "") value="慣行栽植">慣行栽植</option>
+                                                <option @(Model.ControlStage == "有機栽植" ? "selected" : "") value="有機栽植">有機栽植</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label class="important">顯示名稱</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <input type="text" class="form-control" value="@Model.Name" name="Name" required title="名稱為必填欄位" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label class="important">顯示方式</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="mr-2" name="ShowType" @(Model.ShowType ? "checked" : "") value="true" />區塊</label>
+                                                <label class="mr-2"><input type="radio" class="mr-2" name="ShowType" @(!Model.ShowType ? "checked" : "") value="false" />線塊</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label class="important">區間-起</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <input id="scount" type="@(Model.TypeId ? "date":"number")" class="form-control col-xs-2" value="@Model.StartBlock" name="StartBlock" required/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label class="important">區間-訖</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <input id="ecount" type="@(Model.TypeId ? "date":"number")" class="form-control col-xs-2" value="@Model.EndBlock" name="EndBlock" required/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="submit" class="btn btn-primary m-2" onclick="handleSubmit(event,'')"><i class="fas fa-search mr-2"></i>儲存</button>
+                                                <button type="button" class="btn btn-secondary m-2" onclick="handleSubmit(event,'del')">刪除</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        function confirmDel() {
+            if (confirm("確定刪除？")) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        function handleSubmit(e,act) {
+            $('#hidActName').val(act);
+            if(act == 'del')document.getElementById('form').submit();
+
+            e.preventDefault();
+            if ($('#scount').val() >= $('#ecount').val()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '開始區間需小於結束區間'
+                });
+                return;
+            }
+            var validate = $("form").valid();
+            if (validate) {
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}

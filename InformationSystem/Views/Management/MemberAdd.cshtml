@@ -1,0 +1,228 @@
+﻿
+@{
+    ViewBag.Title = "MemberAdd";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">帳號資料-新增</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="card shadow mb-4">
+                        <div class="card-header py-3 bg-white">
+                            <div class="card-body">
+                                <div class="table-responsive card">
+                                    <table class="table mb-0 no-border">
+                                        <tr>
+                                            <th style="width:10%">
+                                                <span class="important">帳號狀態：</span>
+                                            </th>
+                                            <td style="width:40%">
+                                                <div class="form-inline">
+                                                    <label class="mr-2"><input type="radio" class="form-control mr-2" name="State" id="State" value="Y" @(@Model.sysUserInfo.State == "Y" ? "checked" : "") />啟用</label>
+                                                    <label class="mr-2"><input type="radio" class="form-control mr-2" name="State" id="State" value="N" @(@Model.sysUserInfo.State == "N" ? "checked" : "") />停用</label>
+                                                </div>
+                                            </td>
+                                            <th style="width:50%"></th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span class="important">帳號：</span>
+                                            </th>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <input type="text" class="form-control" name="LoginID" id="LoginID" value="@Model.sysUserInfo.LoginID" />
+                                                    <input type="hidden" class="form-control" name="LoginPass" id="LoginPass" value="needtochange" />
+                                                    @*<button type="button" class="btn btn-primary ml-2" onclick="window.open ('/Management/MemberList', 'newwindow', 'height=100, width=400, top=0,left=0, toolbar=no, menubar=no, scrollbars=no, resizable=no,location=no,status=no')">檢查重複</button>*@
+                                                    <button type="button" class="btn btn-primary ml-2" onclick="ChkAccount()">檢查重複</button>
+                                                </div>
+                                            </td>
+                                            <th></th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span class="important">Email：</span>
+                                            </th>
+                                            <td>
+                                                <input type="text" class="form-control" name="EmailAddress" id="EmailAddress" value="@Model.sysUserInfo.EmailAddress" />
+                                            </td>
+                                            <th></th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span class="important">姓名：</span>
+                                            </th>
+                                            <td>
+                                                <input type="text" class="form-control" name="UserName" id="UserName" value="@Model.sysUserInfo.UserName" />
+                                            </td>
+                                            <th></th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span class="important">單位名稱：</span>
+                                            </th>
+                                            <td>
+                                                <input type="text" class="form-control" name="UnitName" id="UnitName" value="@Model.sysUserInfo.UnitName" />
+                                            </td>
+                                            <th></th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span class="important">角色別：</span>
+                                            </th>
+                                            <td>
+                                                <select class="form-control" name="RoleID" id="RoleID" value="@Model.sysUserInfo.RoleID">
+                                                    <option value="">請選擇</option>
+                                                    @{
+                                                        foreach (var role in Model.Roles)
+                                                        {
+                                                            bool selected = false;
+                                                            if (!String.IsNullOrEmpty(Model.sysUserInfo.RoleID))
+                                                            {
+                                                                selected = role.RoleCode == Model.sysUserInfo.RoleID.ToString();
+                                                            }
+
+                                                            <option selected="@selected" value="@role.RoleCode">@role.RoleName</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </td>
+                                            <th></th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span class="important">行政區：</span>
+                                            </th>
+                                            <td>
+                                                <select class="form-control select2" name="SelectDistrict" id="District" value="@Model.sysUserInfo.District" multiple="multiple">
+                                                    <option value="">請選擇</option>
+                                                    @{
+                                                        foreach (var District in Model.Districts)
+                                                        {
+                                                            bool selected = false;
+                                                            if (!String.IsNullOrEmpty(Model.sysUserInfo.District))
+                                                            {
+                                                                selected = District.Zip.ToString() == Model.sysUserInfo.District.ToString();
+                                                            }
+
+                                                            <option selected="@selected" value="@District.Zip">@District.Name</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </td>
+                                            <th></th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>行動電話：</span>
+                                            </th>
+                                            <td>
+                                                <input type="text" class="form-control" name="Mobile" id="Mobile" value="@Model.sysUserInfo.Mobile" />
+                                            </td>
+                                            <th></th>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div style="display:flex;justify-content:center">
+                                    <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">新增帳號</button>
+                                    <button type="button" class="btn btn-primary m-2" onclick="window.location = '/Management/MemberList'">回上一頁</button>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            var checkAcc = true;
+            $.ajax({
+                type: "Get",
+                url: "/Management/CheckAccount" + "?ChkAccount=" + $('#LoginID').val(),
+                data: '{}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    if (data != "") {
+                        if (data == "帳號已存在") {
+                            Swal.fire({
+                                icon: 'error',
+                                title: data
+                            });
+                            checkAcc = false;
+                        }
+                    }
+                },
+                failure: function (errMsg) {
+                    checkAcc = false;
+                }
+            });
+
+            if (validate && checkAcc) {
+                var StatusVal = "";
+                var obj = document.getElementsByName("State"); //這個是以標籤的name來取控制元件
+                for (i = 0; i < obj.length;) {
+                    if (obj[i].checked) {
+                        StatusVal = obj[i].value;
+                    }
+                    i++;
+                } 
+                if (StatusVal == "") { Swal.fire({ icon: 'error', title: '請輸入帳號狀態' }); return; }
+                if (document.getElementById('LoginID').value == "" || $.trim(document.getElementById('LoginID').value) == "") { Swal.fire({ icon: 'error', title: '請輸入帳號' }); return; }
+                if (document.getElementById('EmailAddress').value == "") { Swal.fire({ icon: 'error', title: '請輸入Email' }); return; }
+                if (document.getElementById('UserName').value == "") { Swal.fire({ icon: 'error', title: '請輸入姓名' }); return; }
+                if (document.getElementById('UnitName').value == "") { Swal.fire({ icon: 'error', title: '請輸入單位名稱' }); return; }
+                if (document.getElementById('District').value == "") { Swal.fire({ icon: 'error', title: '請輸入行政區' }); return; }
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+
+        function ChkAccount() {
+            var value = $.trim(document.getElementById('LoginID').value);
+            if (value == "") {
+                return;
+            }
+            $.ajax({
+                type: "Get",
+                url: "/Management/CheckAccount" + "?ChkAccount=" + value,
+                data: '{}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    if (data != "") {
+                        if (data == "帳號已存在")
+                        {
+                            Swal.fire({
+                                icon: 'error',
+                                title: data
+                            });
+                        }
+                        else
+                        {
+                            Swal.fire({
+                                icon: 'success',
+                                title: data
+                            });
+                        }
+                    }
+                },
+                failure: function (errMsg) {
+
+                }
+            })
+        }
+    </script>
+}
+

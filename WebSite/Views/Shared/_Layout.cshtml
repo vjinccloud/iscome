@@ -1,0 +1,571 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="植物防疫平台提供農友進行植醫掛號，尋找植物醫生來幫忙">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="google-site-verification" content="kATTwmJEJyRQxfwIGjMyOcjyPs_jKwuvSzShCaf1n9Y" />
+    <meta property="og:site_name" content="高雄植醫來幫忙" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://khpp.kcg.gov.tw" />
+    <meta property="og:title" content="高雄植醫來幫忙" />
+    <meta property="og:description" content="高雄市線上植物防疫平台即時預警植物疫情，提供本市農友作物病蟲害即時線上掛號求診管道。" />
+    <!-- Title -->
+    <title>高雄市政府農業局線上植物防疫平台</title>
+
+    <!-- Core Stylesheet -->
+    <link href="~/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/icon/css/all.min.css" rel="stylesheet" />
+    <link href="~/css/vnstyle.css" rel="stylesheet" />
+    <link href="~/css/bootstrap/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="~/packages/core/main.css" rel="stylesheet" />
+    <link href="~/packages/daygrid/main.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+    <link href="~/Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="~/css/pesticidesInventoryInfo.css" rel="stylesheet" />
+    <!-- jQuery-->
+    <script src="~/Scripts/jquery-3.6.3.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="~/js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="~/js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="~/Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Moment -->
+    <script src="~/Scripts/moment.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="~/js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="~/js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <script src="~/packages/core/main.js"></script>
+    <script src="~/packages/core/locales-all.js"></script>
+    <script src="~/packages/daygrid/main.js"></script>
+    <script src="~/packages/interaction/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2GH8FN5YHY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-2GH8FN5YHY');
+    </script>
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+
+    <style>
+
+        .table > thead > tr th {
+            background-color: #f4c430;
+        }
+
+        .table th,
+        .table td {
+            word-break: keep-all;
+            white-space: nowrap;
+        }
+
+        .btn {
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #169bd5;
+            border-color: #169bd5;
+            border-bottom: 3px #0f6990 solid;
+        }
+
+            .btn-primary:hover {
+                background-color: #148abe;
+                border-color: #148abe;
+            }
+
+        .btn-default {
+            background-color: white;
+            border-color: #bfbfbf;
+            border-bottom: 3px #8d8d8d solid;
+        }
+
+            .btn-default:hover {
+                background-color: #cccccc;
+                border-color: #cccccc;
+            }
+
+        .btn-danger {
+            border-bottom: 3px #921a25 solid;
+        }
+
+            .btn-danger:hover {
+                background-color: #bd2130;
+                border-color: #bd2130;
+            }
+
+        .btn-orange {
+            background-color: #f57d31;
+            border-color: #f57d31;
+            color: white;
+            border-bottom: 3px #cf570a solid;
+        }
+
+            .btn-orange:hover {
+                background-color: #f46e19;
+                border-color: #f46e19;
+                color: white;
+            }
+
+        .nav-link {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .font-size-s {
+            font-size: 20px;
+        }
+
+        .font-size-m {
+            font-size: 24px;
+        }
+
+        .font-size-l {
+            font-size: 28px;
+        }
+
+        .footer-top::after {
+            height: 0;
+            width: 0;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+    <style>
+        .LoadingIcon {
+            position: fixed;
+            left: 47%;
+            top: 47%;
+            border: 16px solid;
+            border-top: 16px solid;
+            border-color: deepskyblue;
+            border-top-color: blue;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            z-index: 9999;
+            animation: spin 2s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    @RenderSection("HeadScript", required: false)
+
+    @RenderSection("Style", required: false)
+</head>
+<body id="myBody" class="font-size-s">
+    <div id="Loading" class="LoadingIcon" style="display:none"></div>
+    <section id="master" class="header">
+        <div class="container">
+            <div class="top">
+                <div class="logo">
+                    <a href="~/Home/Index">
+                        <img src="~/images/logo.png" class="img-fluid d-none d-lg-block">
+                        <img src="~/images/logo-s.png" class="img-fluid d-lg-none">
+                    </a>
+                </div>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="top-link d-none d-lg-flex">
+                    <ul>
+                        <li><a href="https://agri.kcg.gov.tw/">農業局官網</a></li>
+                        <li><a href="/Home/Sitemaps">網站導覽</a></li>
+                        <li><a href="/">回首頁</a></li>
+                        <li>
+                            字級
+                            <select class="form-control form-control-sm" id="siteFontSizeChange">
+                                <option value="s">小</option>
+                                <option value="m">中</option>
+                                <option value="l">大</option>
+                            </select>
+                        </li>
+                    </ul>
+                    <div class="search">
+                        <input class="form-control form-control-sm" name="SharedKeyName" id="SharedKeyName" placeholder="關鍵字搜尋">
+                        <button type="submit" class="btn btn-dark btn-sm" onclick="GoSearch()"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="menu">
+            <div class="container">
+                <nav class="navbar navbar-expand-lg">
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav mr-auto nav-fill">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="~/Home/Index" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="img01"></span>首頁
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="~/Home/Introduce">平台簡介</a>
+                                    <a class="dropdown-item" href="~/Home/News">最新消息</a>
+                                    <a class="dropdown-item" href="~/Home/Links">相關網站</a>
+                                    <a class="dropdown-item" href="~/Home/Search">全站搜尋</a>
+                                    <a class="dropdown-item" href="~/Home/Sitemaps">網站導覽</a>
+                                    <a class="dropdown-item" href="~/Home/QA">常見問答</a>
+                                    <a class="dropdown-item" href="~/Home/DoctorDailyJob">植醫日常</a>
+                                </div>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="img02"></span>會員專區
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="~/Member/SignUp">會員註冊</a>
+                                    <a class="dropdown-item" href="~/PlantDoctor/Introduce">植醫掛號</a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="img05"></span>會員管理
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="~/Member/Manage">個人資料管理</a>
+                                    <a class="dropdown-item" href="~/PlantDoctor/RecordList">植醫輔導紀錄</a>
+                                    <a class="dropdown-item" href="~/Member/InventoryList">資材使用狀況</a>
+                                    <a class="dropdown-item" href="~/Member/Notify">疫情訊息訂閱</a>
+                                </div>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="img03"></span>植物防疫
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="~/DiseasePrevention/PreventList">病蟲害防治作業曆與防治曆</a>
+                                    <a class="dropdown-item" href="~/DiseasePrevention/Map">農藥販賣業者地圖查詢</a>
+                                    <a class="dropdown-item" href="~/DiseasePrevention/Dashboard">植物病蟲害發生即時動態儀表板</a>
+                                    <a class="dropdown-item" href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a>
+                                    <a class="dropdown-item" href="~/Event/AllEvent">活動資訊</a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="img04"></span>疫情資訊
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="~/PreventionInfo/Detail">疫情預警</a>
+                                    <a class="dropdown-item" href="~/PreventionInfo/CropMap">作物防災告警分布地圖</a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown d-none">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <img src="images/avatar.png">會員田區管理
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="~/Member/Manage">個人資料管理</a>
+                                    <a class="dropdown-item" href="~/PlantDoctor/RecordList">植醫輔導紀錄</a>
+                                    <a class="dropdown-item" href="~/Member/InventoryList">資材使用狀況</a>
+                                    <a class="dropdown-item" href="~/Member/Notify">疫情訊息訂閱</a>
+                                </div>
+                            </li>
+
+                            <li class="nav-item position-relative d-lg-none"><a href="https://agri.kcg.gov.tw/" class="nav-link"><i class="fas fa-caret-right mr-2"></i>農業局官網</a></li>
+                            <li class="nav-item position-relative d-lg-none"><a href="/Home/Sitemaps" class="nav-link"><i class="fas fa-caret-right mr-2"></i>網站導覽</a></li>
+                            <li class="nav-item position-relative d-lg-none"><a href="/" class="nav-link"><i class="fas fa-caret-right mr-2"></i>回首頁</a></li>
+                            <li class="nav-item d-flex d-lg-none text-left no-after">
+                                <span class="menu-style"><i class="fas fa-caret-right mr-2"></i>字級</span>
+                                <select class="form-control form-control-sm ml-2" id="siteFontSizeChangeMobile">
+                                    <option value="s">小</option>
+                                    <option value="m">中</option>
+                                    <option value="l">大</option>
+                                </select>
+                            </li>
+                            <li class="nav-item d-lg-none d-flex no-after">
+                                <input class="form-control form-control-sm">
+                                <button type="button" class="btn btn-warning btn-sm ml-3"><i class="fas fa-search"></i></button>
+                            </li>
+
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        @RenderBody()
+    </section>
+
+    <footer>
+        <div class="footer-top">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <img src="~/images/Logo.png" class="img-fluid">
+                        <ul class="content-list">
+                            <li><i class="far fa-envelope-open"></i>客服信箱   ppi@iscom.com.tw</li>
+                            <li><i class="fas fa-phone-alt"></i>客服專線   (04)-23265200 #364</li>
+                            <li><i class="fas fa-clock"></i>服務時間   週一至週五 AM 09:00~PM 6:00</li>
+                        </ul>
+                        <ul class="linkbox">
+                            <li><a href="~/Member/PrivacyPolicy">隱私權政策</a></li>
+                            <li><a href="~/Member/UserTerms">使用者條款</a></li>
+                            <li><a href="~/Member/GovOpenDoc">政府網站資料開放宣告</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-auto">
+                                <h4 class="font-weight-bold">首頁</h4>
+                                <ul class="footer-link">
+                                    <li><a href="~/Home/Introduce">平台簡介</a></li>
+                                    <li><a href="~/Home/News">最新消息</a></li>
+                                    <li><a href="~/Home/Links">相關網站</a></li>
+                                    <li><a href="~/Home/Search">全站搜尋</a></li>
+                                    <li><a href="~/Home/Sitemaps">網站導覽</a></li>
+                                    <li><a href="~/Home/QA">常見問答</a></li>
+                                    <li><a href="~/Home/DoctorDailyJob">植醫日常</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-auto">
+                                <h4 class="font-weight-bold">會員專區</h4>
+                                <ul class="footer-link">
+                                    <li><a href="~/Member/SignUp">會員註冊</a></li>
+                                    <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-auto">
+                                <h4 class="font-weight-bold">會員管理</h4>
+                                <ul class="footer-link">
+                                    <li><a href="~/Member/Manage">個人資料管理</a></li>
+                                    <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+                                    <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+                                    <li><a href="~/Member/Notify">疫情訊息訂閱</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-12 col-md-4 col-lg-3 col-xl-auto">
+                                <h4 class="font-weight-bold">植物防疫</h4>
+                                <ul class="footer-link">
+                                    <li><a href="~/DiseasePrevention/PreventList">病蟲害防治作業曆與防治曆</a></li>
+                                    <li><a href="~/DiseasePrevention/Map">農藥販賣業者地圖查詢</a></li>
+                                    <li><a href="~/DiseasePrevention/Dashboard">植物病蟲害發生即時動態儀表板</a></li>
+                                    <li><a href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a></li>
+                                    <li><a href="~/Event/AllEvent">活動資訊</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-auto">
+                                <h4 class="font-weight-bold">疫情資訊</h4>
+                                <ul class="footer-link">
+                                    <li><a href="~/PreventionInfo/Detail">疫情預警</a></li>
+                                    <li><a href="~/PreventionInfo/CropMap">作物防災告警分布地圖</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-auto d-none">
+                                <h4 class="font-weight-bold">會員田區管理</h4>
+                                <ul class="footer-link">
+                                    <li><a href="~/Member/Manage">個人資料管理</a></li>
+                                    <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+                                    <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+                                    <li><a href="~/Member/Notify">疫情訊息訂閱</a></li>
+                                </ul>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="community">
+                        <ul>
+                            <li>
+                                <a href="https://www.facebook.com/KSSG12/" target="_blank">
+                                    <img src="~/images/facebook.png" class="img-fluid">
+                                    <br />
+                                    <span>高通通粉絲頁</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.youtube.com/channel/UC_Y2Q65oDyk2h5QcSuZZZXw" target="_blank">
+                                    <img src="~/images/youtube.png" class="img-fluid">
+                                    <br />
+                                    <span>好農無限+</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://liff.line.me/1645278921-kWRPP32q/?accountId=kh_agrinfo_bot" target="_blank">
+                                    <img src="~/images/line.png" class="img-fluid">
+                                    <br />
+                                    <span>農來訊</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://liff.line.me/1645278921-kWRPP32q/?accountId=owl1337w" target="_blank">
+                                    <img src="~/images/line.png" class="img-fluid">
+                                    <br />
+                                    <span>好農無限+</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://lin.ee/pN76juR" target="_blank">
+                                    <img src="~/images/line.png" class="img-fluid">
+                                    <br />
+                                    <span>高雄植醫來幫忙</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="copyright">
+                        建議瀏覽器：Chrome、Firefox、Edge
+                    </div>
+                    <div class="date">
+                        <ul>
+                            <li>最近更新日期   111 / 05 / 25</li>
+                            <li class="ml-3">瀏覽人數  <span id="view_total_count">1688</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <p id="back-top">
+        <a href="#top"><img src="~/images/top.png" class="img-fluid">Top</a>
+    </p>
+
+
+    <script>
+        let NeedLogin = '@(TempData["NeedLogin"])';
+        $(document).ready(function () {
+            document.getElementById('siteFontSizeChange').addEventListener('change', function () {
+                let val = document.getElementById('siteFontSizeChange').value;
+                $('body').removeClass('font-size-s font-size-m font-size-l');
+                if (val == 's') {
+                    var element = document.getElementById("myBody");
+                    //追加該標前的class
+                    element.classList.add('font-size-s');
+                }
+                if (val == 'm') {
+                    var element = document.getElementById("myBody");
+                    //追加該標前的class
+                    element.classList.add('font-size-m');
+                }
+                if (val == 'l') {
+                    var element = document.getElementById("myBody");
+                    //追加該標前的class
+                    element.classList.add('font-size-l');
+                }
+            });
+            document.getElementById('siteFontSizeChangeMobile').addEventListener('change', function () {
+                let val = document.getElementById('siteFontSizeChangeMobile').value;
+                $('body').removeClass('font-size-s font-size-m font-size-l');
+                if (val == 's') {
+                    var element = document.getElementById("myBody");
+                    //追加該標前的class
+                    element.classList.add('font-size-s');
+                }
+                if (val == 'm') {
+                    var element = document.getElementById("myBody");
+                    //追加該標前的class
+                    element.classList.add('font-size-m');
+                }
+                if (val == 'l') {
+                    var element = document.getElementById("myBody");
+                    //追加該標前的class
+                    element.classList.add('font-size-l');
+                }
+            });
+
+            if (NeedLogin) {
+                Swal.fire({
+                    icon: "info",
+                    title: "請先登入"
+                });
+            }
+
+            // hide #back-top first
+            $("#back-top").hide();
+
+            // fade in #back-top
+            $(function () {
+                $(window).scroll(function () {
+                    if ($(this).scrollTop() > 100) {
+                        $('#back-top').fadeIn();
+                    } else {
+                        $('#back-top').fadeOut();
+                    }
+                });
+
+                // scroll body to 0px on click
+                $('#back-top a').click(function () {
+                    $('body,html').animate({
+                        scrollTop: 0
+                    }, 800);
+                    return false;
+                });
+            });
+
+        });
+
+        function GoSearch() {
+            var KeyName = document.getElementById('SharedKeyName').value.replaceAll("<", "").replaceAll(">", "");
+            var formData = new FormData();
+            formData.append("keyword", KeyName);
+            $.ajax({
+                url: "/Home/SearchKey",
+                data: formData,
+                type: "POST",
+                contentType: false,
+                processData: false,
+                dataType: "json",
+                success: function (data) {
+                    location.href = data;
+                },
+            });
+        }
+
+    </script>
+    <script type="text/javascript">
+        const master = new Vue({
+            created() {
+                const self = this;
+                $.get('/Home/GetViewCount', '', (response) => {
+                    $('#view_total_count').text(response.replaceAll("<", "").replaceAll(">", ""));
+                });
+            },
+        });
+        master.$mount('#master')
+    </script>
+
+    @RenderSection("Script", required: false)
+
+</body>
+
+
+</html>

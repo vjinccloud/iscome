@@ -1,0 +1,65 @@
+﻿@model IEnumerable<InformationSystem.ViewModel.MonitorYearViewModel>
+@{
+    ViewBag.Title = "YearList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var lid = (Session["LoginID"] ?? "").ToString();
+    var usr = ICCModule.EntityService.Service.Service_sysUserInfo.GetDetail(lid);
+    var sBtn = false;
+    if (usr != null)
+    {
+        sBtn = usr.RoleID == "R02";
+    }
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">疫病蟲害監測數據登錄 - 年度</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        @if (sBtn)
+                        {
+                            <div style="display:flex;">
+                                <div>
+                                    <button type="button" class="btn btn-primary m-2" onclick="location.href='/DiseaseMonitor/ProjectInfo'"><i class="fas fa-plus-circle mr-2"></i>新增專案</button>
+                                </div>
+                            </div>
+                        }
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">年度</th>
+                                        <th scope="col">專案監測數量</th>
+                                        <th scope="col">資料筆數</th>
+                                        <th scope="col">動作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.OrderByDescending(x => x.Years))
+                                    {
+                                        <tr>
+                                            <td>@(item.Years > 1911 ? item.Years - 1911 : item.Years)</td>
+                                            <td>@item.ProjectCount</td>
+                                            <td>@item.DataCount</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <button type="button" class="btn btn-danger m-2" onclick="location.href = '/DiseaseMonitor/ProjectList?year=@item.Years'">編輯</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

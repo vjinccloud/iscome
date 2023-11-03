@@ -1,0 +1,64 @@
+﻿.table.grow th {
+    text-align:center !important;
+}
+
+.table.grow td, .table.grow th {
+    position: relative;
+    padding-left: 0;
+    padding-right: 0;
+    height: 60px;
+}
+
+    .table.grow th:nth-child(1) {
+        width: 100px;
+    }
+
+.table.grow .progress-box {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 10px;
+    background-color: #000;
+    font-size: 1rem;
+    font-weight: bold;
+    line-height: 1rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .table.grow .progress-box.grow {
+        height: 40px;
+        /*color: #FFF;*/
+        background-color: #F4C43C;
+    }
+
+        .table.grow .progress-box.life01, .table.grow .progress-box.life02, .table.grow .progress-box.life03,
+        .table.grow .progress-box.grow.grow-style02, .table.grow .progress-box.grow.grow-style03 {
+            z-index: 9;
+        }
+
+    .table.grow .progress-box.life01 {
+        background-color: #7cb841;
+    }
+
+    .table.grow .progress-box.life02 {
+        background-color: #f57d31;
+    }
+
+    .table.grow .progress-box.life03 {
+        background-color: #1CAEC5;
+    }
+
+    .table.grow .progress-box.grow.grow-style02 {
+        background-color: #f57d31;
+    }
+
+    .table.grow .progress-box.grow.grow-style03 {
+        background-color: #1caec5;
+    }
+
+.table.grow {
+    min-width: 1000px;
+}

@@ -1,0 +1,274 @@
+﻿@using Newtonsoft.Json;
+@{
+    ViewBag.Title = "UserInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+<style>
+    .form-control.error {
+        border-color: red;
+        border-width: 2px;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .form-inline .form-control.error {
+        width: auto;
+    }
+
+    label.error {
+        bottom: -30px;
+        color: red;
+        font-size: 14px;
+        justify-content: flex-start;
+        position: absolute;
+    }
+
+    .form-inline label.error {
+        bottom: -20px;
+    }
+
+    .error-border {
+        border-color: red;
+        border-width: 2px;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+</style>
+
+<div class="container-fluid" id="UserInfo" v-cloak>
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">個人資料管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post">
+                @Html.AntiForgeryToken()
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <span class="important">姓名：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <div class="d-flex flex-column position-relative">
+                                                    <input type="text" class="form-control mr-2" name="UserName" required v-bind:value="name" v-on:blur="changeName" />
+                                                </div>
+                                                <button type="button" class="btn btn-default" v-on:click="hiddenName = !hiddenName">
+                                                    <i class="far fa-eye" v-show="hiddenName"></i>
+                                                    <i class="fas fa-eye-slash" v-show="!hiddenName"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <th style="width:10%">使用者帳號：</th>
+                                        <td style="width:40%">{{ Info.LoginID }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">Email：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <div class="d-flex flex-column position-relative">
+                                                    <input type="text" class="form-control mr-2" name="EmailAddress" required v-bind:value="email" v-on:blur="changeEmail" />
+                                                </div>
+                                                <button type="button" class="btn btn-default" v-on:click="hiddenEmail = !hiddenEmail">
+                                                    <i class="far fa-eye" v-show="hiddenEmail"></i>
+                                                    <i class="fas fa-eye-slash" v-show="!hiddenEmail"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <span class="important">行動電話：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <div class="d-flex flex-column position-relative">
+                                                    <input type="text" class="form-control mr-2" name="Mobile"
+                                                           placeholder="例：0911111111"
+                                                           minlength="10" maxlength="10" pattern="[0-9]{10}" required
+                                                           v-bind:value="mobile" v-on:blur="changeMobile" />
+                                                </div>
+                                                <button type="button" class="btn btn-default" v-on:click="hiddenMobile = !hiddenMobile">
+                                                    <i class="far fa-eye" v-show="hiddenMobile"></i>
+                                                    <i class="fas fa-eye-slash" v-show="!hiddenMobile"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>身分別：</span>
+                                        </th>
+                                        <td>{{ Info.RoleName }}</td>
+                                        <th>性別：</th>
+                                        <td>
+                                            <select class="form-control" name="Sexy" style="max-width: 200px;" v-model="Info.Sexy">
+                                                <option value="">請選擇</option>
+                                                <option value="F">男</option>
+                                                <option value="M">女</option>
+                                                @*<option value="O">第三性</option>*@
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>出生年次：</span>
+                                        </th>
+                                        <td>
+                                            @{
+                                                var currentYear = DateTime.Now.Year - 1911;
+                                            }
+                                            <input type="number" name="YearOfBirthStr" class="form-control" style="max-width: 200px;" placeholder="民國年" min="30" max="@currentYear" v-model="Info.YearOfBirthStr" />
+                                        </td>
+                                        <th>行政區：</th>
+                                        <td>
+                                            <select class="form-control" name="District" style="max-width: 200px;" v-model="Info.District">
+                                                <option value="">請選擇</option>
+                                                <option v-for="(d, i) in districts" v-bind:key="i" v-bind:value="d.Zip">
+                                                    {{ d.Name }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" v-on:click="handleSubmit">更新資料</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/Management/UserUpdatePwd'">更新密碼</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const UserInfo = new Vue({
+                el: "#UserInfo",
+                data: {
+                    token: $('input[name="__RequestVerificationToken"]').val(),
+                    districts: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
+                    Info: {
+                        UserName: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.UserName))),
+                        LoginID: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.LoginID))),
+                        EmailAddress: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.EmailAddress))),
+                        Mobile: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.Mobile))),
+                        District: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.District))),
+                        Sexy: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.Sexy))),
+                        RoleName: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.RoleName))),
+                        YearOfBirthStr: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.YearOfBirthStr))),
+                    },
+                    hiddenName: true,
+                    hiddenEmail: true,
+                    hiddenMobile: true,
+                    validator: null
+                },
+                computed: {
+                    name() {
+                        if (this.hiddenName) {
+                            if (this.Info.UserName && this.Info.UserName.length > 1) {
+                                let nameArr = this.Info.UserName.split('');
+                                nameArr.splice(1, 1, '○')
+                                return nameArr.join('');
+                            }
+                        }
+                        return this.Info.UserName;
+                    },
+                    email() {
+                        if (this.hiddenEmail) {
+                            if (this.Info.EmailAddress && this.Info.EmailAddress.length > 0) {
+                                // Razor identify is @@
+                                const index = this.Info.EmailAddress.indexOf('@@');
+                                return this.Info.EmailAddress.slice(0, 1) + '○'.repeat(index - 1) + this.Info.EmailAddress.slice(index);
+                            }
+                        }
+                        return this.Info.EmailAddress;
+                    },
+                    mobile() {
+                        if (this.hiddenMobile) {
+                            if (this.Info.Mobile && this.Info.Mobile.length > 0) {
+                                return this.Info.Mobile.slice(0, 4) + '○○○' + this.Info.Mobile.slice(7);
+                            }
+                        }
+                        return this.Info.Mobile;
+                    },
+                    emailValid() {
+                        const re = /^(([^<>()[\]\\.,;:\s@@"]+(\.[^<>()[\]\\.,;:\s@@"]+)*)|(".+"))@@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                        return re.test(String(this.Info.EmailAddress).toLowerCase());
+                    }
+                },
+                methods: {
+                    changeName(e) {
+                        this.Info.UserName = e.target.value;
+                    },
+                    changeEmail(e) {
+                        this.Info.EmailAddress = e.target.value;
+                    },
+                    changeMobile(e) {
+                        this.Info.Mobile = e.target.value;
+                    },
+                    handleSubmit(e) {
+                        console.log('handleSubmit')
+                        $.ajax({
+                            url: '/Management/UserInfo',
+                            data: Object.assign({
+                                __RequestVerificationToken: this.token,
+                            }, this.Info),
+                            type: 'POST',
+                            cache: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                console.log(data)
+                                Swal.fire({
+                                    icon: JSON.parse(data) ? "info" : "error",
+                                    title: JSON.parse(data) ? "更新成功" : "更新失敗"
+                                })
+                            }
+                        })
+                    }
+                },
+                mounted() {
+                    this.validator = $('#form').validate({
+                        rules: {
+                            "UserName": "required",
+                            "EmailAddress": "required",
+                            "Mobile": "required",
+                        },
+                        messages: {
+                            "UserName": "請輸入您的名字",
+                            "EmailAddress": "required",
+                            "Mobile": "請輸入您的手機",
+                        },
+                        submitHandler: function (form) {
+                            form.submit();
+                        }
+                    });
+                }
+            });
+        });
+
+
+    </script>
+}

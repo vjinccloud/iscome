@@ -1,0 +1,92 @@
+﻿@model IEnumerable<ICCModule.Entity.Tables.Platform.doctorSchedule>
+@{
+    ViewBag.Title = "RecordList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table > thead > tr th {
+        text-align: center;
+    }
+
+    .table > thead > tr th,
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">植醫輔導紀錄</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Home/Index">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">植醫輔導紀錄</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mt-3">
+                            <table class="table rwd-table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>項次</th>
+                                        <th>預約日期</th>
+                                        <th>診斷日期</th>
+                                        <th>作物種類</th>
+                                        <th>作物名稱</th>
+                                        <th>功能</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var count = 1;
+                                        foreach (var ds in Model)
+                                        {
+                                            <tr>
+                                                <td class="text-center">@count</td>
+                                                <td class="text-center">@(ICCModule.Helper.Extention.ToMinDateString(ds.ReserveDatetime))</td>
+                                                <td class="text-center">@(ICCModule.Helper.Extention.ToMinDateString(ds.DateDiagnosis))</td>
+                                                <td class="text-center">@ds.CropType</td>
+                                                <td class="text-center">@ds.CropName</td>
+                                                <td>
+                                                    <div class="form-inline" style="justify-content:center">
+                                                        <button class="btn btn-primary m-2" onclick="location.href='/PlantDoctor/RecordInfo?rid='+@ds.ID">查看紀錄</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            count++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>

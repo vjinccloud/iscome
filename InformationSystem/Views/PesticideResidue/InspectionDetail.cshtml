@@ -1,0 +1,728 @@
+﻿@model InformationSystem.ViewModel.PesticideResidueEditModel
+@{
+    ViewBag.Title = "InspectionDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">農藥殘留檢測資料 - 新增</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <form id="form" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:15%">
+                                            <input type="hidden" value="@Model.prSaveModels.ID" name="ID" />
+                                            <span class="important">計畫別</span>
+                                        </th>
+                                        <td style="width:35%">
+                                            <div class="form-inline">
+                                                <input type="number" class="form-control" style="width:30%" placeholder="年度" name="Year" value="@Model.prSaveModels.Year" required title="此為必填欄位" />
+                                                <select class="form-control" style="margin-left:auto;margin-right:auto;width:30%" name="PlanType" required title="此為必填欄位">
+                                                    <option value="" selected="@(string.IsNullOrEmpty(Model.prSaveModels.PlanType))">請選擇</option>
+                                                    @foreach (var item in Model.PlanType.OrderBy(x => x.Sort))
+                                                    {
+                                                        <option value="@item.Code" selected="@(Model.prSaveModels.PlanType == item.Code)">@item.Name</option>
+                                                    }
+                                                </select>
+                                                <input type="text" class="form-control" style="width:30%" name="PlanComment" value="@Model.prSaveModels.PlanComment" />
+                                            </div>
+                                        </td>
+                                        <th style="width:10%">
+                                            <span class="important">採樣來源</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select class="form-control" style="margin-left:auto;margin-right:auto" name="SampleSource" required title="此為必填欄位">
+                                                <option value="" selected="@(string.IsNullOrEmpty(Model.prSaveModels.SampleSource))">請選擇</option>
+                                                @foreach (var item in Model.SampleSource.OrderBy(x => x.Sort))
+                                                {
+                                                    <option value="@item.Code" selected="@(Model.prSaveModels.SampleSource == item.Code)">@item.Name</option>
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">檢體編號</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="SampleNum" value="@Model.prSaveModels.SampleNum" required title="此為必填欄位" />
+                                        </td>
+                                        <th>
+                                            <span>採樣地點</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="SampleLocation" value="@Model.prSaveModels.SampleLocation" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">採樣日期</span>
+                                        </th>
+                                        <td>
+                                            <input type="date" class="form-control" name="SampleDate" value="@Model.prSaveModels.SampleDate.ToString("yyyy-MM-dd")" required title="此為必填欄位" />
+                                        </td>
+                                        <th>
+                                            <span class="important">提供單位</span>
+                                        </th>
+                                        <td>
+                                            <select class="form-control" name="ProvideUnit" required title="此為必填欄位">
+                                                <option value="" selected="@(string.IsNullOrEmpty(Model.prSaveModels.ProvideUnit))">請選擇</option>
+                                                @foreach (var item in Model.ProvideUnit.OrderBy(x => x.Sort))
+                                                {
+                                                    <option value="@item.Code" selected="@(Model.prSaveModels.ProvideUnit == item.Code)">@item.Name</option>
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>分析日期</span>
+                                        </th>
+                                        <td>
+                                            <input type="date" class="form-control" name="AnalyzeDate" value="@(Model.prSaveModels.AnalyzeDate.HasValue ? Model.prSaveModels.AnalyzeDate.Value.ToString("yyyy-MM-dd") :"")" />
+                                        </td>
+                                        <th>
+                                            <span>會同單位</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="JointUnit" value="@Model.prSaveModels.JointUnit" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>採樣編號</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="SampleID" value="@Model.prSaveModels.SampleID" />
+                                        </td>
+                                        <th>
+                                            <span>快速採樣編號</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="FastSampleID" value="@Model.prSaveModels.FastSampleID" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">行政區</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <select class="form-control" style="margin-right:auto;width:49%" name="City">
+                                                    <option>高雄市</option>
+                                                </select>
+                                                <select class="form-control" style="margin-left:auto;width:49%" name="District" required title="此為必填欄位">
+                                                    <option value="" selected="@(string.IsNullOrEmpty(Model.prSaveModels.District))">請選擇</option>
+                                                    @foreach (var item in Model.Districts)
+                                                    {
+                                                        <option value="@item" selected="@(Model.prSaveModels.District == item)">@item</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <span>檢驗結果</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control" name="SampleResult" value="false" @(!Model.prSaveModels.SampleResult ? "checked" : "") onchange="ShowSampleContext();" id="notShowContext" />未檢出</label>
+                                                <label class="mr-2"><input type="radio" class="form-control" name="SampleResult" value="true" @(Model.prSaveModels.SampleResult ? "checked" : "") onchange="ShowSampleContext();" id="doShowContext" />檢出</label>
+                                                @*<input id="contextCount" type="text" class="form-control mr-2" value="" disabled="disabled" style="@(Model.prSaveModels.SampleResult ? "display:none;" : "")" />*@
+                                                <button id="btnContextNew" type="button" class="btn btn-secondary" style="@(Model.prSaveModels.SampleResult ? "display:none;" : "")" onclick="CloneRows();">新增</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">樣品名稱</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="SampleName" value="@Model.prSaveModels.SampleName" required title="此為必填欄位" />
+                                        </td>
+                                        <td id="sampleContextList" colspan="2" rowspan="6">
+                                            <div class="table-responsive" style="overflow-x:auto">
+                                                <table class="table mb-0">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th>農藥名稱</th>
+                                                            <th>農藥英文名稱</th>
+                                                            <th>殘留量</th>
+                                                            <th>容許量</th>
+                                                            <th>
+                                                                <div class="form-inline">
+                                                                    <span>使用方法</span>
+                                                                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#Description">說明</button>
+                                                                </div>
+                                                            </th>
+                                                            <th>動作</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="SampleContextBody">
+                                                        @foreach (var item in Model.prSaveModels.SampleContext)
+                                                        {
+                                                            <tr class="contextRow">
+                                                                <td><input id="scName" type="text" class="form-control" value="@item.Name" /></td>
+                                                                <td><input id="scEnName" type="text" class="form-control" value="@item.EnName" /></td>
+                                                                <td><input id="scRemainQty" type="text" class="form-control" value="@item.RemainQty" number:true required /></td>
+                                                                <td><input id="scAllowQty" type="text" class="form-control" value="@item.AllowQty" number:true required /></td>
+                                                                <td>
+                                                                    <select id="scUseWay" class="form-control">
+                                                                        <option selected="@(string.IsNullOrEmpty(item.UseWay))" value="">請選擇</option>
+                                                                        <option selected="@(item.UseWay =="核准使用")" value="核准使用">核准使用</option>
+                                                                        <option selected="@(item.UseWay =="不符合容許量")" value="不符合容許量">不符合容許量</option>
+                                                                        <option selected="@(item.UseWay =="☆未核准使用")" value="☆未核准使用">☆未核准使用</option>
+                                                                        <option selected="@(item.UseWay =="◎已公告使用方法未公告容許量")" value="◎已公告使用方法未公告容許量">◎已公告使用方法未公告容許量</option>
+                                                                        <option selected="@(item.UseWay =="---未公告")" value="---未公告">---未公告</option>
+                                                                        <option selected="@(item.UseWay =="★未登記產銷")" value="★未登記產銷">★未登記產銷</option>
+                                                                        <option selected="@(item.UseWay =="□公告禁用")" value="□公告禁用">□公告禁用</option>
+                                                                        <option selected="@(item.UseWay =="■無許可證藥劑")" value="■無許可證藥劑">■無許可證藥劑</option>
+                                                                    </select>
+                                                                </td>
+                                                                <td>
+                                                                    <a class="btn btn-secondary delContext" style="word-break:keep-all">刪除</a>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                        <tr id="cloneFlag" style="display:none;"></tr>
+                                                        <tr style="display:none;" class="contextCloneRow">
+                                                            <td><input id="scName" type="text" class="form-control" /></td>
+                                                            <td><input id="scRemainQty" type="text" class="form-control" number:true /></td>
+                                                            <td><input id="scAllowQty" type="text" class="form-control" number:true /></td>
+                                                            <td>
+                                                                <select id="scUseWay" class="form-control">
+                                                                    <option value="請選擇">請選擇</option>
+                                                                    <option value="核准使用">核准使用</option>
+                                                                    <option value="不符合容許量">不符合容許量</option>
+                                                                    <option value="☆未核准使用">☆未核准使用</option>
+                                                                    <option value="◎已公告使用方法未公告容許量">◎已公告使用方法未公告容許量</option>
+                                                                    <option value="---未公告">---未公告</option>
+                                                                    <option value="★未登記產銷">★未登記產銷</option>
+                                                                    <option value="□公告禁用">□公告禁用</option>
+                                                                    <option value="■無許可證藥劑">■無許可證藥劑</option>
+                                                                </select>
+                                                            </td>
+                                                            <td>
+                                                                <a class="btn btn-secondary delContext" style="word-break:keep-all">刪除</a>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">作物類別</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <select class="form-control" style="margin-right:auto;width:49%" name="CropType" required title="此為必填欄位" onchange="ChangeCropType($(this))">
+                                                    <option value="" selected="@(string.IsNullOrEmpty(Model.prSaveModels.CropType))">請選擇</option>
+                                                    @foreach (var item in Model.PlantCategory)
+                                                    {
+                                                        <option value="@item.ID" selected="@(Model.prSaveModels.CropType == item.ID.ToString())">@item.Name</option>
+                                                    }
+                                                </select>
+                                                <select id="iptCrops" class="form-control" style="width:49%" name="CropName" required title="此為必填欄位">
+                                                    <option value="" selected="@(!Model.PlantCrop.Where(x => x.TypeID.ToString() == Model.prSaveModels.CropType).Any(x => x.ID.ToString() == Model.prSaveModels.CropName))">請選擇</option>
+                                                    @foreach (var item in Model.PlantCrop.Where(x => x.TypeID.ToString() == Model.prSaveModels.CropType))
+                                                    {
+                                                        <option value="@item.ID" selected="@(Model.prSaveModels.CropName == item.ID.ToString())">@item.Name</option>
+                                                    }
+                                                </select>
+                                                @*<input type="text" class="form-control" style="margin-left:auto;width:49%" name="CropName" value="@Model.prSaveModels.CropName" />*@
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">生產者/業者名稱</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="ProviderName" value="@Model.prSaveModels.ProviderName" required title="此為必填欄位" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>供應代號</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="ProviderCode" value="@Model.prSaveModels.ProviderCode" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>供應名稱</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="ProviderUnit" value="@Model.prSaveModels.ProviderUnit" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>生產者/業者地址</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <select class="form-control" style="margin-right:auto;width:49%" name="ProviderCity">
+                                                    <option>高雄市</option>
+                                                </select>
+                                                <select class="form-control" style="margin-left:auto;width:49%" name="ProviderDistrict">
+                                                    <option value="" selected="@(string.IsNullOrEmpty(Model.prSaveModels.ProviderDistrict))">請選擇</option>
+                                                    @foreach (var item in Model.Districts)
+                                                    {
+                                                        <option value="@item" selected="@(Model.prSaveModels.ProviderDistrict == item)">@item</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <input type="text" class="form-control mt-2" name="ProviderAddress" value="@Model.prSaveModels.ProviderAddress" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>連絡電話</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="ProviderPhone" value="@Model.prSaveModels.ProviderPhone" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="table-responsive mt-2 card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:15%">
+                                            <span class="important">結果判定</span>
+                                        </th>
+                                        <td style="width:35%">
+                                            <select class="form-control" name="Result" required title="此為必填欄位">
+                                                <option selected="@(!Model.prSaveModels.Result.HasValue)" value="">請選擇</option>
+                                                <option selected="@(Model.prSaveModels.Result == true)" value="true">合格</option>
+                                                <option selected="@(Model.prSaveModels.Result == false)" value="false">不合格</option>
+                                            </select>
+                                        </td>
+                                        <th style="width:10%">
+                                            <span>處理情形</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <select class="form-control" style="margin-right:auto;width:49%" name="HandingSituation" id="idHandingSituation" onchange="ShowClosingSituation();">
+                                                    <option value="0" selected="@(Model.prSaveModels.HandingSituation == 0)">請選擇</option>
+                                                    <option value="1" selected="@(Model.prSaveModels.HandingSituation == 1)">查處中</option>
+                                                    <option value="2" selected="@(Model.prSaveModels.HandingSituation == 2)">確認中</option>
+                                                    <option value="3" selected="@(Model.prSaveModels.HandingSituation == 3)">結案</option>
+                                                </select>
+                                                <select class="form-control" style="margin-left:auto;width:49%" name="ClosingSituation" id="idClosingSituation">
+                                                    <option value="" selected="@(!Model.prSaveModels.ClosingSituation.HasValue)">請選擇</option>
+                                                    <option value="1" selected="@(Model.prSaveModels.ClosingSituation == 1)">移送外縣市</option>
+                                                    <option value="2" selected="@(Model.prSaveModels.ClosingSituation == 2)">裁罰</option>
+                                                    <option value="3" selected="@(Model.prSaveModels.ClosingSituation == 3)">鄰田汙染免罰</option>
+                                                    <option value="4" selected="@(Model.prSaveModels.ClosingSituation == 4)">不予裁罰</option>
+                                                    <option value="5" selected="@(Model.prSaveModels.ClosingSituation == 5)">移送衛生局</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>罰款總金額</span>
+                                        </th>
+                                        <td>
+                                            <input type="number" class="form-control" id="taPenalty" name="Penalty" value="@Model.prSaveModels.Penalty" />
+                                        </td>
+                                        <th>
+                                            <span>是否分期</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" id="noStaging" onchange="ShowStagingData();" name="Staging" @(Model.prSaveModels.Staging == false ? "checked" : "") value="false" />無分期</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" id="doStaging" onchange="ShowStagingData();" name="Staging" @(Model.prSaveModels.Staging == true ? "checked" : "") value="true" />有分期</label>
+                                                <button id="btnStagingNew" type="button" class="btn btn-secondary" onclick="CloneStagingRows();">新增</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="doStagingData">
+                                        <td colspan="4">
+                                            <div class="table-responsive" style="overflow-x:auto">
+                                                <input type="hidden" id="idStagingTotalCount" value="@Model.prSaveModels.StagingDatas.Count" />
+                                                <table class="table mb-0">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th>期數</th>
+                                                            <th>繳費金額</th>
+                                                            <th>繳費期限</th>
+                                                            <th>是否完成繳費</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="StagingDatasBody">
+                                                        @foreach (var item in Model.prSaveModels.StagingDatas)
+                                                        {
+                                                            <tr class="contextRow">
+                                                                <td><input id="sdStagingCount" type="text" class="form-control" readonly='readonly' value="@item.StagingCount" /></td>
+                                                                <td><input id="sdPayAmt" type="number" class="form-control" value="@item.PayAmt" /></td>
+                                                                <td><input id="sdPayLimitDate" type="date" class="form-control" value="@(item.PayLimitDate.HasValue ? item.PayLimitDate.Value.ToString("yyyy-MM-dd") :"")" /></td>
+                                                                <td class="form-inline">
+                                                                    <select class="form-control" id="sdIsPay" name="StagingDatas[].IsPay">
+                                                                        <option value="false" selected="@(item.IsPay == false)">否</option>
+                                                                        <option value="true" selected="@(item.IsPay == true)">是</option>
+                                                                    </select>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                        <tr id="cloneStagingFlag" style="display:none;"></tr>
+                                                        <tr style="display:none;" class="originStagingRow">
+                                                            <td><input id="sdStagingCount" type="text" class="form-control" /></td>
+                                                            <td><input id="sdPayAmt" type="number" class="form-control" /></td>
+                                                            <td><input id="sdPayLimitDate" type="date" class="form-control" /></td>
+                                                            <td class="form-inline">
+                                                                <select class="form-control" id="sdIsPay">
+                                                                    <option value="false" selected="selected">否</option>
+                                                                    <option value="true">是</option>
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="noStagingData">
+                                        <th>
+                                            <span>繳費期限</span>
+                                        </th>
+                                        <td>
+                                            <input type="date" class="form-control" name="PaymentDeadline" value="@(Model.prSaveModels.PaymentDeadline.HasValue ? Model.prSaveModels.PaymentDeadline.Value.ToString("yyyy-MM-dd"):"")" />
+                                        </td>
+                                        <th>
+                                            <span>是否完成繳費</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="PaymentStatus" @(Model.prSaveModels.PaymentStatus == true ? "checked" : "") value="true" />完成繳費</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="PaymentStatus" @(Model.prSaveModels.PaymentStatus == false ? "checked" : "") value="false" />未繳費，強制執行移送日期：</label>
+                                                <input type="date" class="form-control" style="flex:auto" name="TransferDate" value="@(Model.prSaveModels.TransferDate.HasValue ? Model.prSaveModels.TransferDate.Value.ToString("yyyy-MM-dd"):"")" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>結案發文日期</span>
+                                        </th>
+                                        <td>
+                                            <input type="date" class="form-control" name="ClosingDate" value="@(Model.prSaveModels.ClosingDate.HasValue ? Model.prSaveModels.ClosingDate.Value.ToString("yyyy-MM-dd") :"")" />
+                                        </td>
+                                        <th>
+                                            <span>結案發文文號</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="ClosingNumber" value="@Model.prSaveModels.ClosingNumber" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th><span>結案說明：</span></th>
+                                        <td>
+                                            <textarea class="form-control" rows="5" name="ClosingInstructions">@Model.prSaveModels.ClosingInstructions</textarea>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="table-responsive mt-2 card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:15%">
+                                            <span>轉單植醫輔導：</span>
+                                        </th>
+                                        <td style="width:35%">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="IsTransfer" @(Model.prSaveModels.IsTransfer == false ? "checked" : "") value="false" />未轉單</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="IsTransfer" @(Model.prSaveModels.IsTransfer == true ? "checked" : "") value="true" />轉單，日期：</label>
+                                                <input type="date" class="form-control" name="TransferCounselingDate" value="@(Model.prSaveModels.TransferCounselingDate.HasValue ? Model.prSaveModels.TransferCounselingDate.Value.ToString("yyyy-MM-dd") :"")" />
+                                            </div>
+                                        </td>
+                                        <th style="width:10%"></th>
+                                        <th style="width:40%"></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <div class="form-inline">
+                                    <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                                    <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--編輯Modal -->
+<div class="modal fade" id="Description" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">農藥使用方法與合格結果判定</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>選項</th>
+                            <th>殘留量</th>
+                            <th>容許量</th>
+                            <th>結果</th>
+                            <th>統計欄位</th>
+                        </tr>
+                        <tr>
+                            <td>未檢出（ND）</td>
+                            <td>沒有值，顯示（-）</td>
+                            <td>沒有值，顯示（-）</td>
+                            <td>合格</td>
+                            <td>合格</td>
+                        </tr>
+                        <tr>
+                            <td>核准使用且符合容許量</td>
+                            <td>O</td>
+                            <td>O</td>
+                            <td>合格</td>
+                            <td>合格</td>
+                        </tr>
+                        <tr>
+                            <td>☆未核准使用</td>
+                            <td>O小於容許量</td>
+                            <td>O</td>
+                            <td>合格</td>
+                            <td>合格</td>
+                        </tr>
+                        <tr>
+                            <td>☆未核准使用，但有容許量</td>
+                            <td>O大於容許量<br />殘留量粗體底線</td>
+                            <td>O</td>
+                            <td>不合格</td>
+                            <td>未核准</td>
+                        </tr>
+                        <tr>
+                            <td>☆未核准使用，但沒有容許量</td>
+                            <td>O大於容許量<br />殘留量粗體底線</td>
+                            <td>沒有值，顯示（-）</td>
+                            <td>不合格</td>
+                            <td>未核准</td>
+                        </tr>
+                        <tr>
+                            <td>不符合容許量：核准使用但超出容許量</td>
+                            <td>O大於容許量<br />殘留量粗體底線</td>
+                            <td>O</td>
+                            <td>不合格</td>
+                            <td>超量核准</td>
+                        </tr>
+                        <tr>
+                            <td>◎已公告使用方法未公告容許量</td>
+                            <td>O</td>
+                            <td>沒有值，顯示（-）</td>
+                            <td>不予判定</td>
+                            <td>合格</td>
+                        </tr>
+                        <tr>
+                            <td>□公告禁用</td>
+                            <td>O只要有值<br />殘留量粗體底線</td>
+                            <td>沒有值，顯示（-）</td>
+                            <td>不合格</td>
+                            <td>禁用</td>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        $(document).ready(function () {
+            ShowSampleContext();
+            ShowClosingSituation();
+            ShowStagingData();
+
+            $('.delContext').click(function () {
+                $(this).parent().parent().remove();
+            });
+        });
+        function ChangeCropType(_selector) {
+            var thisSelect = _selector;
+            var changeSelector = $('#iptCrops');
+            
+            var newOption = [];
+            newOption.push(new Option("請選擇", "", false))
+           
+            $.ajax({
+                url: "/PlantManager/GetCropDatas",
+                data: {
+                    id: _selector.val()
+                },
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    for (let i of data) {
+                        if (i.TypeID == _selector.val()) newOption.push(new Option(i.Name, i.ID, false));
+                    }
+                    changeSelector.empty();
+                    //抓取目標下拉選單
+                    var s = changeSelector[0];
+                    //將剛才產生的選項陣列 塞入目標下拉選單中
+                    newOption.forEach(function (element, key) {
+                        s[s.options.length] = element;
+                    });
+                }
+            });
+        }
+        function ShowSampleContext() {
+            if ($('#notShowContext').prop("checked")) {
+                $('#contextCount').hide();
+                $('#btnContextNew').hide();
+                $('#sampleContextList').hide();
+            }
+            else {
+                $('#contextCount').show();
+                $('#btnContextNew').show();
+                $('#sampleContextList').show();
+            }
+        }
+        function ShowStagingData() {
+            $('#doStagingData').hide();
+            $('#btnStagingNew').hide();
+            if ($('#noStaging').prop("checked")) {
+                $('#doStagingData').hide();
+                $('#btnStagingNew').hide();
+            }
+            if ($('#doStaging').prop("checked")) {
+                $('#doStagingData').show();
+                $('#btnStagingNew').show();
+            }
+        }
+        function CloneStagingRows() {
+            var thisBr = $('.originStagingRow');
+            var nowCount = parseInt($('#idStagingTotalCount').val()) + 1;
+            thisBr.find('#sdStagingCount').val(nowCount);
+            $('#idStagingTotalCount').val(nowCount);
+            $('#sdStagingCount').prop('readonly', true);
+
+
+            thisBr.clone().insertBefore($('#cloneStagingFlag')).removeClass('originStagingRow').addClass('contextRow').show();
+            //$('.delContext').click(function () {
+            //    $(this).parent().parent().remove();
+            //});
+        }
+        function CloneRows() {
+            $('.contextCloneRow').clone().insertBefore($('#cloneFlag')).removeClass('contextCloneRow').addClass('contextRow').show();
+            $('.delContext').click(function () {
+                $(this).parent().parent().remove();
+            });
+        }
+        function ShowClosingSituation() {
+            if ($('#idHandingSituation').val() == "3") $('#idClosingSituation').show();
+            else $('#idClosingSituation').hide();
+        }
+        function handleSubmit(e, action) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                var scCount = 0;
+                $('#SampleContextBody').find('.contextRow').each(function () {
+                    $(this).find('#scName').attr('name', 'SampleContext[' + scCount + '].Name');
+                    $(this).find('#scEnName').attr('name', 'SampleContext[' + scCount + '].EnName');
+                    $(this).find('#scRemainQty').attr('name', 'SampleContext[' + scCount + '].RemainQty');
+                    $(this).find('#scAllowQty').attr('name', 'SampleContext[' + scCount + '].AllowQty');
+                    $(this).find('#scUseWay').attr('name', 'SampleContext[' + scCount + '].UseWay');
+                    scCount++;
+                });
+                var sdCount = 0;
+                var total = $('#taPenalty').val();
+                if (!total) {
+                    total = 0;
+                }
+                $('#StagingDatasBody').find('.contextRow').each(function () {
+                    $(this).find('#sdStagingCount').attr('name', 'StagingDatas[' + sdCount + '].StagingCount');
+                    $(this).find('#sdPayAmt').attr('name', 'StagingDatas[' + sdCount + '].PayAmt');
+                    $(this).find('#sdPayAmt').each(function () {
+                        var thisSdPay = $(this).val();
+                        if (thisSdPay) {
+                            total =  total - thisSdPay;
+                        }
+                    });
+                    $(this).find('#sdPayLimitDate').attr('name', 'StagingDatas[' + sdCount + '].PayLimitDate');
+                    $(this).find('#sdIsPay').attr('name', 'StagingDatas[' + sdCount + '].IsPay');
+                    sdCount++;
+                });
+                if (total < 0) {
+                    alert('分期總金額不可大於罰款總金額');
+                    return;
+                }
+
+
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+
+        function ValidateFloat(e, pnumber) {
+            if (!/d*$/.test(pnumber)) {
+                $(e).val(/d*/.exec($(e).val()));
+            }
+            return false;
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>

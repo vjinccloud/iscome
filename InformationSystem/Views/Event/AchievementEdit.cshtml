@@ -1,0 +1,131 @@
+﻿
+@{
+    ViewBag.Title = "AchievementEdit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">活動報名管理-編輯成果</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" value="@Model.Data.ID" />
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:150px;">
+                                            <span>場次名稱：</span>
+                                        </th>
+                                        <td style="width:250px">
+                                            <span>@Model.Data.Name</span>
+                                        </td>
+                                        <th style="width:50%;"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>日期：</span>
+                                        </th>
+                                        <td>@Model.Data.ChineseDateStr</td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>時間：</span>
+                                        </th>
+                                        <td>@Model.Data.TimeBetween</td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>名額上限：</span>
+                                        </th>
+                                        <td>@Model.Data.Nums</td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>實際出席人數：</span>
+                                        </th>
+                                        <td>
+                                            <div style="width: 100px;">
+                                                <input name="Attendance" type="number" 
+                                                       class="form-control" 
+                                                       min="0"
+                                                       max="@Model.Data.Nums" 
+                                                       value="@Model.Data.Attendance"
+                                                       required />
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>簽到表掃描：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                @foreach (var item in Model.SignInResultFiles)
+                                                {
+                                                    <div id="of_@item.ID">
+                                                        <input type="hidden" value="@item.ID" id="of_@item.ID" name="EditSignFiles[]" />                                                        
+                                                        <a href="@item.FilePath" target="_blank">@item.FileName</a><a class="btn" onclick="DelFile('of_@item.ID')">x</a>
+                                                    </div>
+                                                }
+                                                <input name="SignInResultFiles" type="file" multiple accept="image/*" />
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>照片：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                @foreach (var item in Model.PicturesFiles)
+                                                {
+                                                    <div id="ofp_@item.ID">
+                                                        <input type="hidden" value="@item.ID" id="of_@item.ID" name="EditPicFiles[]" />
+                                                        <a href="@item.FilePath" target="_blank">@item.FileName</a><a class="btn" onclick="DelFile('ofp_@item.ID')">x</a>
+                                                    </div>
+                                                }
+                                                <input name="PictureFiles" type="file" multiple accept="image/*" />
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script>
+        function DelFile(id) {
+            $('#' + id).html('');
+        }
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}

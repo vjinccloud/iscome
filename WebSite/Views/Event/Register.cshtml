@@ -1,0 +1,467 @@
+﻿@model Website.ViewModel.RegistShowModel
+@using System.Web.Security.AntiXss;
+@{
+    ViewBag.Title = "Register";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    .yellow-table > tbody > tr th {
+        background-color: #ffffcc;
+    }
+</style>
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+
+        .row {
+            margin: 0 !important;
+        }
+
+        .col-4, .col-8 {
+            padding: 8px 15px !important;
+        }
+
+        .bg-head {
+            background-color: #ffffcc;
+        }
+    </style>
+}
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/DiseasePrevention/Preventlist">病蟲害防治</a></li>
+            <li><a href="~/DiseasePrevention/Map">農藥販賣業者地圖</a></li>
+            <li><a href="~/DiseasePrevention/Dashboard">病蟲害即時動態儀表板</a></li>
+            <li><a href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a></li>
+            <li><a href="~/Event/AllEvent">活動資訊</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3 style="display:inline-block">
+                        <span class="line">活動資訊-線上報名</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/DiseasePrevention/Preventlist">植物防疫</a></li>
+                            <li class="breadcrumb-item"><a href="~/Event/AllEvent">活動資訊</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">活動資訊內頁</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="form" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+
+                            <div class="w-100" style="border-bottom:none;border-top:2px grey solid">
+                                @*類型*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">類型</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        <input type="hidden" value="@Model.RegistData.ActId" name="ActId" />
+                                        @Model.PlanData.TypeName
+                                    </div>
+                                </div>
+                                @*課程名稱*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">課程名稱</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        <span>@Model.PlanData.Name</span>
+                                    </div>
+                                </div>
+                                @*活動時間*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">活動時間</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        @(new HtmlString(string.Join("<br/>", Model.PlanData.OpenTimes.Select(x => x.Date.ToString("yyyy-MM-dd (ddd)").Replace("週", "") + x.TimeBetween))))
+                                    </div>
+                                </div>
+                                @*地點*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">地點</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        <span>@Model.PlanData.Address</span>
+                                    </div>
+                                </div>
+                                @*上課時數*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">上課時數</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        <span>@(Model.PlanData.ClassHours.ToString("0.0#"))小時</span>
+                                    </div>
+                                </div>
+                                @*報名期間*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">報名期間</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        <span>@(Model.PlanData.RegistrationStartDate) ~ @(Model.PlanData.RegistrationEndDateStr)</span>
+                                    </div>
+                                </div>
+                                @*承辦人員*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">承辦人員</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        <span>@Model.PlanData.Undertaker</span>
+                                    </div>
+                                </div>
+                                @*連絡電話*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">連絡電話</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        <span>@Model.PlanData.Phone</span>
+                                    </div>
+                                </div>
+                                @*Email*@
+                                <div class="w-100 row border-top p-1">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center">
+                                        <span class="font-weight-bold">Email</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        <span>@Model.PlanData.Email</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-100" style="border-bottom:none;border-top:2px grey solid">
+                                <div class="w-100 py-1 font-weight-bold">
+                                    <p>報名資料，<span class="important">為必填欄位，可至<a href="/Home/Index">首頁</a>登入會員幫您快速帶入資料喔！</span></p>
+                                </div>
+
+                                @*姓名*@
+                                @if (Model.PlanData.Fields.NameCheck)
+                                {
+                                    <div class="w-100 row border-top">
+                                        <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                            <span class="@(Model.PlanData.Fields.NameNeed?"important":"") font-weight-bold">姓名</span>
+                                        </div>
+                                        <div class="col-7 col-md-9">
+                                            <input type="text" name="Name" class="form-control" value="@Model.RegistData.Name" @(Model.PlanData.Fields.NameNeed ? "required Title=姓名為必填欄位" : "") autocomplete="off" />
+                                        </div>
+                                    </div>
+                                }
+                                @*身分證字號*@
+                                @if (Model.PlanData.Fields.IdentifyCheck)
+                                {
+                                    <div class="w-100 row border-top">
+                                        <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                            <span class="@(Model.PlanData.Fields.IdentifyNeed?"important":"") font-weight-bold">身分證字號</span>
+                                        </div>
+                                        <div class="col-7 col-md-9">
+                                            <input type="text" name="IdentifiedID" class="form-control" value="@Model.RegistData.IdentifiedID" @(Model.PlanData.Fields.IdentifyNeed ? "required Title=身分證字號為必填欄位" : "") autocomplete="off" />
+                                        </div>
+                                    </div>
+                                }
+                                @*行動電話*@
+                                @if (Model.PlanData.Fields.PhoneCheck)
+                                {
+                                    <div class="w-100 row border-top">
+                                        <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                            <span class="@(Model.PlanData.Fields.PhoneCheck?"important":"") font-weight-bold">行動電話</span>
+                                        </div>
+                                        <div class="col-7 col-md-9">
+                                            <input type="tel" name="Phone" class="form-control" value="@Model.RegistData.Phone" @(Model.PlanData.Fields.PhoneNeed ? "required Title=行動電話為必填欄位" : "") placeholder="範例 0912345678" autocomplete="off" />
+                                        </div>
+                                    </div>
+                                }
+                                @*所屬縣市*@
+                                <div class="w-100 row border-top">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                        <span class="font-weight-bold">所屬縣市</span>
+                                    </div>
+                                    <div class="col-7 col-md-9 p-2">
+                                        <select class="form-control" name="City">
+                                            <option>高雄市</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                @*農藥管理人員證照號碼*@
+                                @if (Model.PlanData.Fields.PesticideManagementStaffIDCheck)
+                                {
+                                    <div class="w-100 row border-top">
+                                        <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                            <span class="@(Model.PlanData.Fields.PesticideManagementStaffIDNeed?"important":"") font-weight-bold">農藥管理人員證照號碼</span>
+                                        </div>
+                                        <div class="col-7 col-md-9">
+                                            <input type="text" name="PesticideManagementStaffID" class="form-control" value="@Model.RegistData.PesticideManagementStaffID" @(Model.PlanData.Fields.PesticideManagementStaffIDNeed ? "required Title=農藥管理人員證照號碼為必填欄位" : "") autocomplete="off" />
+                                        </div>
+                                    </div>
+                                }
+                                @*證照到期日*@
+                                @if (Model.PlanData.Fields.PesticideManagementStaffExpiryDateCheck)
+                                {
+                                    <div class="w-100 row border-top">
+                                        <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                            <span class="@(Model.PlanData.Fields.PesticideManagementStaffExpiryDateNeed?"important":"") font-weight-bold">證照到期日</span>
+                                        </div>
+                                        <div class="col-7 col-md-9">
+                                            <input type="date" name="PesticideManagementStaffExpiryDate" class="form-control" value="@Model.RegistData.PesticideManagementStaffExpiryDate" @(Model.PlanData.Fields.PesticideManagementStaffExpiryDateNeed ? "required Title=證照到期日為必填欄位" : "") />
+                                        </div>
+                                    </div>
+                                }
+                                @*服務單位*@
+                                @if (Model.PlanData.Fields.ServiceUnitCheck)
+                                {
+                                    <div class="w-100 row border-top">
+                                        <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                            <span class="@(Model.PlanData.Fields.ServiceUnitNeed?"important":"") font-weight-bold">服務單位</span>
+                                        </div>
+                                        <div class="col-7 col-md-9">
+                                            <input type="text" name="ServiceUnit" class="form-control" value="@Model.RegistData.ServiceUnit" @(Model.PlanData.Fields.ServiceUnitNeed ? "required Title=服務單位為必填欄位" : "") autocomplete="off" />
+                                        </div>
+                                    </div>
+                                }
+                                @*便當種類*@
+                                @if (Model.PlanData.Fields.MealsTypeCheck)
+                                {
+                                    <div class="w-100 row border-top">
+                                        <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                            <span class="@(Model.PlanData.Fields.MealsTypeNeed?"important":"") font-weight-bold">便當種類</span>
+                                        </div>
+                                        <div class="col-7 col-md-9">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" name="MealsType" value="true" class="form-control mr-2" @(Model.RegistData.MealsType == true ? "checked" : "") />葷</label>
+                                                <label class="ml-2"><input type="radio" name="MealsType" value="false" class="form-control mr-2" @(Model.RegistData.MealsType == false ? "checked" : "") />素</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @*報名場次*@
+                                <div class="w-100 row border-top">
+                                    <div class="col-5 col-md-3 d-flex align-items-center justify-content-center bg-head">
+                                        <span class="important font-weight-bold">報名場次</span>
+                                    </div>
+                                    <div class="col-7 col-md-9">
+                                        @foreach (var item in Model.PlanData.OpenTimes)
+                                        {
+                                            <div class="form-inline">
+                                                <label><input type="checkbox" class="form-control mr-2" name="PlanOpenTimeID[]" value="@item.ID" />@item.DateStr（@item.TimeBetween）</label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-100 border-top">
+                                <div class="w-100 d-flex align-items-center justify-content-center">
+                                    <input id="chbAgree" type="checkbox" class="w-auto form-control mr-2" onchange="ChangeBtn()" />
+                                    <span class="important">同意書：高雄農業局植物醫師掛號服務<a href="javascript:void（0）;" data-toggle="modal" data-target="#InfoModal">個資蒐集</a></span>
+                                </div>
+                                <div class="w-100 my-2 text-center">
+                                    確認資料正確後，請輸入驗證碼後，按「確認」完成活動報名
+                                </div>
+                                <div class="w-100 my-2 form-inline d-flex align-items-center justify-content-center">
+                                    <div class="w-100 d-flex align-items-center justify-content-center">
+
+                                        <span class="important mr-2 text-nowrap">驗證碼</span>
+                                        @Html.TextBox("ValidateCode", "", new { @class = "form-control underlined", @placeholder = "請輸入圖形驗證碼", @autocomplete = "off" })
+                                    </div>
+                                    <figure class="m-2">
+                                        <img id="verifyimage" src="/Event/GetValidateCodeImage" href="#" onclick="Refresh_ValidateCode()" title="刷新驗證碼">
+                                    </figure>
+                                </div>
+                                <div class="w-100 mt-1 text-center" style="font-size:14px">（驗證碼無區分英文大小寫並請以英文半形輸入）</div>
+                            </div>
+
+                            <div class="w-100 mt-3 d-flex align-items-center justify-content-center">
+                                <button id="submitBtn" type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">確認</button>
+                                <button type="button" class="btn btn-secondary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--個資蒐集Modal -->
+<div class="modal fade" id="InfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="exampleModalLabel">高雄農業局踐行個人資料保護法第8條之告知義務</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span>
+                    高雄市政府農業局植物醫師診斷輔導服務個資蒐集
+                    <br />
+                    一、公務機關名稱：高雄市政府農業局
+                    <br />
+                    二、蒐集之目的：植物醫師診斷輔導服務統計
+                    <br />
+                    三、蒐集個人資料之類別：
+                    <br />
+                    （一）C001識別個人（姓名、電話號碼、行動電話及電子郵件）
+                    <br />
+                    （二）C011 個人描述（性別）
+                    <br />
+                    四、個人資料利用之期間、地區、對象及方式：
+                    <br />
+                    （一）期間：5年
+                    <br />
+                    （二）個資利用機關：高雄市政府農業局
+                    <br />
+                    （三）利用方式：統計資料
+                    <br />
+                    五、當事人依個人資料保護法第3條可行使下列權利：
+                    <br />
+                    查詢或請求閱覽、請求製給複製本、請求補充或更正、請求停止蒐集、處理或利用、請求刪除
+                    <br />
+                    六、不提供之權益影響：
+                    <br />
+                    當事人如不願意提供上述個人資訊，將無法行使上述權利
+                </span>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--會員登入Modal -->
+<div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="border-bottom:none">
+                @*<div class="title d-flex justify-content-between pb-0 align-items-end">
+                        <h3 style="display:inline-block" class="modal-title">
+                            <span class="line">會員登入</span>
+                        </h3>
+                    </div>*@
+                <div class="login" style="flex:auto">
+                    <h3 class="title"><span class="line">會員登入</span><span class="tips">Login</span></h3>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="login">
+                    <div class="form-group">
+                        <span class="text-p">帳號</span>
+                        <input class="form-control form-p">
+                    </div>
+                    <div class="form-group">
+                        <span class="text-p">密碼</span>
+                        <input class="form-control form-p">
+                    </div>
+                    <div class="form-group">
+                        <div class="form-inline" style="justify-content:flex-start">
+                            @Html.TextBox("ValidateCode", "", new { @class = "form-control underlined mr-2", @placeholder = "請輸入圖形驗證碼", @autocomplete = "off", @style = "width:auto;" })
+                            <figure class="m-2">
+                                <img id="verifyimage" src="/Login/GetValidateCodeImage" href="#" onclick="Refresh_ValidateCode2()" title="刷新驗證碼">
+                            </figure>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-warning btn-block">登入</button>
+                        <button type="button" class="btn btn-warning btn-block" data-dismiss="modal">取消</button>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input">
+                            <label class="form-check-label">記住我</label>
+                        </div>
+                        <ul class="login-list">
+                            <li><a href="~/Member/SignUp">註冊會員</a></li>
+                            <li><a href="~/Member/Forgot">忘記密碼？</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        $(document).ready(function () {
+            ChangeBtn();
+        });
+        function Refresh_ValidateCode() {
+            document.getElementById('verifyimage').src = '/Event/GetValidateCodeImage?' + Math.random();
+        }
+        function ChangeBtn() {
+            if ($('#chbAgree').is(":checked")) {
+                $('#submitBtn').prop('disabled', false);
+            } else {
+                $('#submitBtn').prop('disabled', true);
+            }
+        }
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>

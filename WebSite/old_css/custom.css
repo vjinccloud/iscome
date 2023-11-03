@@ -1,0 +1,72 @@
+/* ----- table ----- */
+.table-bordered thead{
+	background-color: #d2e1f1;
+}
+
+.table-bordered thead th{
+	text-align: center;
+}
+
+.table-striped tbody tr:nth-of-type(odd){
+	background-color: transparent;
+}
+
+.table-striped tbody td{
+	white-space:nowrap;
+}
+
+.BG-gray{
+
+	background-color: #f2f5f8;
+}
+
+
+/* ----- add ----- */
+.auth-container .auth-title{
+	padding-top: 5px !important;
+}
+
+#index-BG{
+	background-image: url("../assets/img/index-BG.JPG");
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.sidebar-header .brand{
+	padding-left: 15px !important;
+}
+
+.sidebar-header .brand img{
+	width: 200px;
+}
+
+.title-description{
+	margin-top: 8px !important;
+}
+
+.footer .footer-block{
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
+
+.footer .author > ul li{
+	display: inline-block !important;
+}
+
+.title {
+	font-size: 1.25rem !important;
+	font-weight: 600;
+	margin-bottom: 0; }
+
+	#customize-menu .customize .customize-item label.title {
+		font-size: 14px !important;
+	}
+
+	@media (min-width: 1200px) {
+		.header .header-block-search {
+			font-size: 26px !important;
+			font-weight: bold;
+			padding-left: 50px; } 
+		}
+
+/* ----- change menu mode ----- */

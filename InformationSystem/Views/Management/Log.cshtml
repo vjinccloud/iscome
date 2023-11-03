@@ -1,0 +1,76 @@
+﻿
+@{
+    ViewBag.Title = "Log";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">問答管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    <th style="width:10%">
+                                        <label>日期區間：</label>
+                                    </th>
+                                    <td style="width:40%">
+                                        <div class="form-inline">
+                                            <input type="date" class="form-control mr-2" />
+                                            <span>～</span>
+                                            <input type="date" class="form-control ml-2" />
+                                        </div>
+                                    </td>
+                                    <th style="width:10%"></th>
+                                    <td style="width:40%"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" style="text-align:right">
+                                        <button type="submit" class="btn btn-primary m-2"><i class="fas fa-search mr-2"></i>查詢</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="table-responsive" style="overflow-x:auto">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">紀錄編號</th>
+                                        <th scope="col">時間</th>
+                                        <th scope="col">帳號</th>
+                                        <th scope="col">功能位置</th>
+                                        <th scope="col">動作</th>
+                                        <th scope="col">IP位置</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>111111</td>
+                                        <td>2021/08/10 下午9:13</td>
+                                        <td>aaa</td>
+                                        <td>個人設定</td>
+                                        <td>瀏覽</td>
+                                        <td>172.10.98.48</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

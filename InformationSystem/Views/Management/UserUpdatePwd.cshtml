@@ -1,0 +1,189 @@
+﻿
+@{
+    ViewBag.Title = "UserUpdateLoginPass";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .form-control.error {
+        border-color: red;
+        border-width: 2px;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .form-inline .form-control.error {
+        width: auto;
+    }
+
+    label.error {
+        bottom: -30px;
+        color: red;
+        font-size: 14px;
+        justify-content: flex-start;
+        position: absolute;
+    }
+
+    .form-inline label.error {
+        bottom: -20px;
+    }
+
+    .error-border {
+        border-color: red;
+        border-width: 2px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">個人資料管理-更新密碼</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post">
+                @Html.AntiForgeryToken()
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <span style="text-align:center">
+                                    密碼規則說明：
+                                    <br />
+                                    1.密碼長度8個字元以上、包含英文大小寫、數字，以及特殊字元。
+                                    <br />
+                                    2.必須90天更換密碼，且至少不可以與前3次使用過之密碼相同。
+                                    <br />
+                                    3.帳號登入進行身分驗證失敗達3次後，至少15分鐘內不允許帳號再次登入。
+                                </span>
+                            </div>
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <span class="important">原密碼：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <div class="d-flex flex-column position-relative">
+                                                    <input type="password" name="OldLoginPass" id="OldLoginPass" class="form-control" value="@Model.OldLoginPass" />
+                                                </div>
+                                                <button type="button" class="btn btn-default" onclick="ShowOrHide(event, 'OldLoginPass')">
+                                                    <i class="far fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            
+                                        </td>
+                                        <th style="width:50%"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">新密碼：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <div class="d-flex flex-column position-relative">
+                                                    <input type="password" name="LoginPass" id="LoginPass" class="form-control" value="@Model.LoginPass" />
+                                                </div>
+                                                <button type="button" class="btn btn-default" onclick="ShowOrHide(event, 'LoginPass')">
+                                                    <i class="far fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">再次輸入新密碼：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <div class="d-flex flex-column position-relative">
+                                                    <input type="password" name="ConfirmLoginPass" id="ConfirmLoginPass" class="form-control" value="@Model.ConfirmLoginPass" />
+                                                </div>
+                                                <button type="button" class="btn btn-default" onclick="ShowOrHide(event, 'ConfirmLoginPass')">
+                                                    <i class="far fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/Management/UserInfo'">返回上頁</button>
+                                <button type="submit" class="btn btn-primary m-2">變更密碼</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function ShowOrHide(e, id) {
+            let iElement = e.target;
+            if (e.target.nodeName == "BUTTON") {
+                iElement = $(e.target).children("i");
+            }
+            console.log(e, id, iElement);
+            if (iElement.className.indexOf('fa-eye-slash') > -1) {
+                document.getElementById(id).type = "password";
+                $(iElement).removeClass('fa-eye-slash').addClass('fa-eye');
+            } else {
+                document.getElementById(id).type = "text";
+                $(iElement).removeClass('fa-eye').addClass('fa-eye-slash');
+            }
+        }
+        $(document).ready(function () {
+            $.validator.addMethod("pwcheck", function (value) {
+               return true
+                   && /[\!-\/\:-\@@\[-\`]/.test(value) // consists of only these
+                   && /[A-Z]/.test(value) // has a lowercase letter
+                   && /[a-z]/.test(value) // has a lowercase letter
+                   && /\d/.test(value) // has a digit
+            });
+
+            $('#form').validate({
+                rules: {
+                    "OldLoginPass": "required",
+                    "LoginPass": {
+                        required: true,
+                        pwcheck: true,
+                        minlength: 8,
+                    },
+                    "ConfirmLoginPass": {
+                        required: true,
+                        equalTo: "#LoginPass"
+                    },
+                },
+                messages: {
+                    "OldLoginPass": "請輸入舊密碼",
+                    "LoginPass": {
+                        required: "請輸入新密碼",
+                        pwcheck: "請符合上方密碼規則",
+                        minlength: "密碼長度8個字元以上"
+                    },
+                    "ConfirmLoginPass": {
+                        required: "請再次輸入新密碼",
+                        equalTo: "與新密碼比對不相符"
+                    },
+                },
+                submitHandler: function (form) {
+                    form.submit();
+                }
+            });
+
+            let error = '@(TempData["Error"])';
+            let title = '@(TempData["Title"])';
+            if (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: title
+                })
+            }
+
+        });
+    </script>
+}

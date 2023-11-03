@@ -1,0 +1,88 @@
+﻿
+@{
+    ViewBag.Title = "Introduce";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.0.1/classic/ckeditor.js"></script>
+}
+@section Style {
+    <style>
+        .ck.ck-editor__editable_inline {
+            min-height: 500px;
+        }
+        .ck.ck-editor__main {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">隱私權政策管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" value="@Model.ID" />
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="vertical-align: top !important; width: 100px;">
+                                            <span class="important">內容</span>
+                                        </th>
+                                        <td>
+                                            <textarea name="Context" id="editor" required></textarea>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="m-2">
+                                    <span>更新日期：@Model.UpdatedAtStr<br />更新人員：@Model.LastEditorName</span>
+                                </div>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script src="~/js/ckeditor-upload-adapter.js"></script>
+    <script>
+        function MyCustomUploadAdapterPlugin(editor) {
+            editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                // Configure the URL to the upload script in your back-end here!
+                return new MyUploadAdapter(loader, '/File/UploadImage?catalog=introduce');
+            };
+        }
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                extraPlugins: [MyCustomUploadAdapterPlugin],
+            })
+            .then(editor => {
+                window.editor = editor;
+                window.editor.setData('@(new HtmlString(Model.Context))');
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        function handleSubmit(e) {
+            e.preventDefault();
+
+            console.log($('form').serializeArray())
+            document.getElementById('form').submit();
+        }
+    </script>
+}

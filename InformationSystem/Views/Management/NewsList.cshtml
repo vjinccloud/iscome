@@ -1,0 +1,194 @@
+﻿@model InformationSystem.ViewModel.Management.NewsListViewModel
+@{
+    ViewBag.Title = "NewsList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var disabled = Model.News.Count == 0 ? true : false;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">消息管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="qureyForm" method="post">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>類別查詢：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select name="Code" class="form-control mr-2">
+                                                <option value="">請選擇</option>
+                                                @{
+                                                    foreach (var defCode in Model.Types)
+                                                    {
+                                                        <option value="@defCode.Code" @(Model.NewsFilters.Code == defCode.Code ? "selected":"")>@defCode.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">公告狀態：</th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="mr-2" name="Show" value="true" @(Model.NewsFilters.Show == true ? "Checked":"")/>上架</label>
+                                                <div style="margin:0rem 3rem 0rem 3rem"></div>
+                                                <label class="mr-2"><input type="radio" class="mr-2" name="Show" value="false" @(Model.NewsFilters.Show == false ? "Checked":"")/>下架</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">公告方式：</th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="mr-2" name="PopupShow" value="false" @(Model.NewsFilters.PopupShow == false ? "Checked":"")/>一般公告</label>
+                                                <div style="margin:0rem 3rem 0rem 3rem"></div>
+                                                <label class="mr-2"><input type="radio" class="mr-2" name="PopupShow" value="true" @(Model.NewsFilters.PopupShow == true ? "Checked" : "") />彈窗公告</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <input type="hidden" value="1" name="Page" id="setPage" />
+                                            <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event, 'query')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/Management/NewsInfo'">
+                                    <i class="fas fa-plus-circle mr-2"></i>新增
+                                </button>
+                                <button type="button" class="btn btn-danger m-2" onclick="handleSubmit(event, 'delete')" disabled="@disabled">
+                                    <i class="fas fa-minus-circle mr-2"></i>刪除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <form id="deleteForm" method="post">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col" style="width: 50px;"></th>
+                                            <th scope="col">項次</th>
+                                            <th scope="col">消息類別</th>
+                                            <th scope="col">公告方式</th>
+                                            <th scope="col">公告主旨</th>
+                                            <th scope="col">發布日期</th>
+                                            <th scope="col">狀態</th>
+                                            <th scope="col">功能</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int i = Model.CurrentPage == 1 ? 0 : Model.CurrentPage * Model.PageCounts;
+                                            foreach (var NewModel in Model.News)
+                                            {
+                                                i++;
+                                                <tr>
+                                                    <td>
+                                                        <input type="checkbox" name="DeleteIDs[]" value="@NewModel.ID" />
+                                                    </td>
+                                                    <td>@i</td>
+                                                    <td>@NewModel.TypeName</td>
+                                                    <td>@(NewModel.PopupShow ? "彈窗":"一般")</td>
+                                                    <td>@NewModel.Title</td>
+                                                    <td>@NewModel.StartDateStr</td>
+                                                    <td>@(NewModel.Show ? "上架" : "下架")</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary" onclick="location.href = '/Management/NewsInfo?ID=@NewModel.ID'">編輯</button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a @(Model.Page > 1 ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.Page-1)')" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                            <nav aria-label="...">
+                                <ul class="pagination">
+                                    @{
+                                        int sPage = 1, endPage = Model.TotalPage;
+                                        if (Model.TotalPage > 5)
+                                        {
+                                            if (Model.TotalPage < (Model.Page + 2))
+                                            {
+                                                sPage = Model.TotalPage - 4;
+                                            }
+                                            else if ((Model.Page - 2) <= 0)
+                                            {
+                                                endPage = 5;
+                                            }
+                                            else
+                                            {
+                                                sPage = Model.Page - 2;
+                                                endPage = Model.Page + 2;
+                                            }
+                                        }
+
+                                        for (int p = sPage; p <= endPage; p++)
+                                        {
+
+                                            if (p == Model.Page)
+                                            {
+                                                <li class="page-item active" aria-current="page">
+                                                    <span class="page-link">@p<span class="sr-only"></span></span>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="page-item"><a class="page-link" onclick="SetPage('@(p)')">@p</a></li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </nav>
+                            <a @(Model.Page < Model.TotalPage ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.Page+1)')" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function handleSubmit(e, action) {
+            e.preventDefault();
+            let formData = $('form').serializeArray();
+            console.log(action, formData)
+            if (action == 'delete') {
+                if (formData.findIndex(d => d.name === 'DeleteIDs[]') < 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '請先選擇預刪除項次'
+                    });
+                    return;
+                }
+                document.getElementById('deleteForm').submit();
+            } else {
+                document.getElementById('qureyForm').submit();
+            }
+        }
+        function SetPage(page) {
+            $('#setPage').val(page);
+            document.getElementById('qureyForm').submit();
+        }
+    </script>
+}
+
+

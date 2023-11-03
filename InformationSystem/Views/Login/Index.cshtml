@@ -1,0 +1,172 @@
+﻿@model InformationSystem.Models.Login.Model_Login_Index
+@{
+    Layout = null;
+}
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>
+        作物病蟲害預警系統暨植物醫師診斷系統管理平台
+    </title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Custom fonts for this template-->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+    <!-- Custom styles for this template-->
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link href="~/css/vnstyle.css" rel="stylesheet" />
+    <link href="~/Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+
+    <!-- Sweetalert2 -->
+    <script src="~/Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery-3.6.3.min.js")"></script>
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.min.js"></script>
+
+    <!-- Theme initialization -->
+    <!-- Theme initialization -->
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/fontawesome.css" integrity="sha384-eHoocPgXsiuZh+Yy6+7DsKAerLXyJmu2Hadh4QYyt+8v86geixVYwFqUvMU8X90l" crossorigin="anonymous" />
+</head>
+<body class="bg-card">
+
+    @*刷新驗證碼*@
+    <script>
+        //重新整理驗證碼
+        function Refresh_ValidateCode() {
+            document.getElementById('verifyimage').src = '/Login/GetValidateCodeImage?' + Math.random();
+        }
+        //偵測Enter事件 提交
+        function submitenter(myfield, e) {
+            var keycode;
+            if (window.event) keycode = window.event.keyCode;
+            else if (e) keycode = e.which;
+            else return true;
+            if (keycode == 13) {
+                DoSubmit();
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        //提交
+        function DoSubmit() {
+            //如果有勾選"記住我"
+            if ($('#remember').is(":checked") == true) {
+                // 設定一個 LoginID cookie ，儲存一個月
+                var LoginID = $('#LoginID').val();
+                document.cookie = 'LoginID=' + LoginID + '; max-age=2592000; path=/';
+            }
+
+            document.forms[0].submit();
+        }
+
+        //秀密碼
+        function showpwd() {
+            var id = $('#LoginPass')
+            var btn = $('#font_awesome')
+            if (id[0].type == 'password') {
+                id[0].type = 'text'
+                btn.removeClass('far fa-eye')
+                btn.addClass('far fa-eye-slash')
+            }
+            else {
+                id[0].type = 'password'
+                btn.removeClass('far fa-eye-slash')
+                btn.addClass('far fa-eye')
+            }
+        }
+    </script>
+    <div class="container-fulid">
+        <!-- Outer Row -->
+        <div class="row vh-100 ">
+            <div class="col-lg-9 p-0 h-100vh d-flex justify-content-center auth-bg-rwd auth-bg order-lg-2"></div>
+            <div class="col-lg-3 pr-0 order-lg-1">
+                <div class="auth-page">
+                    <div class="px-4 h-100">
+                        <div class="text-center">
+                            <div class="tag-icon"></div>
+                            <h1 class="h4 text-gray-900 logo-text">高雄市政府農業局</h1>
+                            <p class="op-4 logo-e">Agriculture Bureau of Kaohsiung City Government</p>
+                            <h3 class="title-text">作物病蟲害預警系統<br>暨植物醫師診斷系統管理平台</h3>
+                            <h4 class="login-text">LOGIN</h4>
+                        </div>
+                        <div class="auth-content">
+                            @using (Html.BeginForm())
+                            {
+                                @Html.AntiForgeryToken()
+                                <div class="form-group">
+                                    <label for="username">帳號</label>
+                                    <div class="login-box">
+                                        <i class="far fa-user"></i>
+                                        @Html.TextBoxFor(x => x.LoginID, new { @class = "form-control pl-5", @placeholder = "請輸入帳號" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">密碼</label>
+                                    <div class="login-box">
+                                        <i class="far fa-eye" id="font_awesome" style="cursor:pointer;" onclick="showpwd()"></i>
+                                        @Html.PasswordFor(x => x.LoginPass, new { @class = "form-control pl-5", @placeholder = "請輸入密碼" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <a href="/Login/ForgotPassword" class="small">忘記密碼？</a>
+                                </div>
+                                <div class="form-group">
+                                    <label for="username">圖形驗證碼</label>
+                                    <div class="form-inline">
+                                        <figure class="mr-2 mt-2 mb-2">
+                                            <img id="verifyimage" src="/Login/GetValidateCodeImage" href="#" onclick="Refresh_ValidateCode()" title="刷新驗證碼">
+                                            @*<a class="btn btn-block btn-secondary" href="#" onclick="Refresh_ValidateCode()"
+               style="display:inline;width:10%;font-size:small" alt="刷新驗證碼">
+                刷新驗證碼
+            </a>*@
+                                        </figure>
+                                        @Html.TextBoxFor(x => x.reCAPTCHA, new { @class = "form-control underlined", @placeholder = "請輸入圖形驗證碼", @autocomplete = "off" , @style = "flex:auto;" })
+                                    </div>
+                                </div>
+                                <a class="btn btn-success py-2 mt-3 btn-block" onclick="DoSubmit()">
+                                    馬上登入 <i class="fas fa-sign-in-alt ml-2"></i>
+                                </a>
+
+                            }
+                        </div>
+                        <div class="login-footer">
+                            Copyright©2021 作物病蟲害預警系統暨植物醫師診斷系統管理平台  版權所有
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- 功能執行警示結果 -->
+    @{
+        string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+        TempData["TempMsg"] = null;
+        //取代換行
+        strTempMsg = strTempMsg.Replace("\r\n", " ");
+        strTempMsg = strTempMsg.Replace("\n", " ");
+    }
+    <script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        $(document).ready(function () {
+            if (sMessage.length > 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: sMessage
+                });
+            }
+        });
+    </script>
+</body>
+</html>

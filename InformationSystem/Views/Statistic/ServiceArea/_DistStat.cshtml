@@ -1,0 +1,210 @@
+﻿@*
+    輔導區域統計圖表
+*@
+@model InformationSystem.ViewModel.ServiceAreaStatisticModel
+@{
+    Layout = null;
+}
+
+
+<div class="HiddenDom">
+    <svg id="DistStatMap" width="600" height="600" fill="lightgray" stroke="black">
+    </svg>
+</div>
+<canvas id="DistStatCvs" width="1024" height="576" style="border: 1px black solid"></canvas>
+
+
+
+<script>
+
+    /**
+     *  輔導區域統計圖表產生模組 
+     */
+    class DistStat {
+
+        /**
+        * 樹苗圖示
+        * @@type {Icon} 
+        */
+        static saplingIcon = new Icon(Base64Icon.Sapling, 30, 30, -14, -25);
+
+        /**
+        * d3的GIS參數設定
+        */
+        static projection = d3.geoMercator().center([121, 23]).scale(25000);
+
+        /**
+        * 統計圖的背景顏色
+        * @@type {string} 顏色代碼
+        */
+        static backgroundColor = "azure";
+        
+        static d3Gis = new D3Gis("#DistStatMap", DistStat.projection);
+        static cvs = new CanvasS("#DistStatCvs");
+        
+
+        /**
+         * 繪製圖表 
+         */
+        static Draw() {
+
+            let cvs = DistStat.cvs;
+            let d3Gis = DistStat.d3Gis;
+
+            d3Gis.Clear();
+            cvs.BackgroundColor = DistStat.backgroundColor;
+
+            let getDataPromise = DistStat.ApiGetStatData();
+            let drawMapPromise = DistStat.ApiGetDistrictData().then((geoJson) => {
+
+                //設定地圖標籤
+                //let labelConfig = new LabelConfig(d => d.properties.T_Name);
+                //labelConfig.Fill = 'blue';
+                //labelConfig.FontSize = '0.5em';
+                //d3Gis.DrawGeoJson(geoJson, labelConfig);
+
+                d3Gis.DrawGeoJson(geoJson);
+
+            });
+
+            Promise.all([getDataPromise, drawMapPromise]).then(status => {
+                
+                let statResult = status[0];
+                let year = document.querySelector("#Year").value-1911;
+
+                DistStat.DrawTitle(year);
+                DistStat.DrawStatResult(statResult.TotalCount, statResult.TotalArea, statResult.TotalCrops, statResult.DistCount);
+                DistStat.DrawMapCaption(year);
+
+                let markers = [];
+                statResult.DistPoints.forEach(pt => {
+                    markers.push(new Marker(pt.Lng, pt.Lat, DistStat.saplingIcon));
+                });
+                d3Gis.DrawMarker(markers);
+
+            }).then(() => {
+                //把地圖畫到Canvas
+                cvs.DrawSvg(400, 10, 650, 650, d3Gis.SvgDom);
+            });
+
+        }
+
+        /**
+        * 繪製標題文字
+        * @@param year {number} 年度(民國年)
+        */
+        static DrawTitle(year) {
+            //植物醫師輔導農友實績
+            DistStat.cvs.FillText(60, 90, new CanvasText(`${year}年植物醫師輔導農友實績`, "bold 55px Microsoft JhengHei", "black"));
+        }
+
+        /**
+        * 繪製統計結果
+        * @@param totalCount {number} 輔導農友人次
+        * @@param totalArea {number} 輔導面積
+        * @@param totalCrops {number} 輔導作物數
+        * @@param distCount {number} 輔導區域數
+        */
+        static DrawStatResult(totalCount, totalArea, totalCrops, distCount) {
+
+            let textStyle = "bold 40px Microsoft JhengHei";
+
+            //輔導農友人次
+            let totalCountText = [
+                new CanvasText("輔導農友人次", textStyle, "black"),
+                new CanvasText(`${totalCount}`, textStyle, "crimson"),
+                new CanvasText("人次", textStyle, "black"),
+            ];
+            DistStat.cvs.FillImage(20, 135, 90, 90, "/img/輔導農友人次Icon.png");
+            DistStat.cvs.FillMultiText(120, 200, totalCountText);
+
+            //輔導面積
+            let totalAreaText = [
+                new CanvasText("輔導面積", textStyle, "black"),
+                new CanvasText(`${totalArea}`, textStyle, "crimson"),
+                new CanvasText("公頃", textStyle, "black"),
+            ];
+            DistStat.cvs.FillImage(20, 235, 90, 90, "/img/輔導面積Icon.png");
+            DistStat.cvs.FillMultiText(120, 300, totalAreaText);
+
+            //輔導作物數
+            let totalCropsText = [
+                new CanvasText("輔導作物數", textStyle, "black"),
+                new CanvasText(`${totalCrops}`, textStyle, "crimson"),
+                new CanvasText("種", textStyle, "black"),
+            ];
+            DistStat.cvs.FillImage(20, 335, 90, 90, "/img/輔導作物數Icon.png");
+            DistStat.cvs.FillMultiText(120, 405, totalCropsText);
+
+            //輔導區域
+            let distCountText = [
+                new CanvasText("輔導區域", textStyle, "black"),
+                new CanvasText(`${distCount}`, textStyle, "crimson"),
+                new CanvasText("區", textStyle, "black"),
+            ];
+            DistStat.cvs.FillImage(20, 435, 90, 90, "/img/輔導區域Icon.png");
+            DistStat.cvs.FillMultiText(120, 500, distCountText);
+        }
+
+        /**
+        * 繪製地圖標題
+        * @@param year {number} 年度(民國年)
+        */
+        static DrawMapCaption(year) {
+            DistStat.cvs.FillText(700, 420, new CanvasText(`${year}年植物醫師輔導區域`, "bold 25px Microsoft JhengHei", "green"))
+            DistStat.cvs.FillImage(765, 420, 120, 120, "/img/醫師輔導區域Icon.png");
+        }
+
+        /**
+         * 取得高雄的行政區GeoJson
+         * @@returns {Promise<any>}
+         */
+        static ApiGetDistrictData() {
+            return fetch('/Scripts/Leaflet/district.json')
+                .then(response => response.json());
+        }
+
+
+        /**
+         * 輔導區域統計圖表的統計結果結構
+         * @@typedef DistStatResult
+         * @@type {object}
+         * @@property {string} TotalArea 總面積
+         * @@property {string} TotalCount 次數
+         * @@property {number} TotalCrops 作物數
+         * @@property {number} DistCount 輔導區域數
+         * @@property {object[]} DistPoints 輔導區中心點位
+         * @@property {number} DistPoints.Lat 輔導區中心點緯度
+         * @@property {number} DistPoints.Lng 輔導區中心點經度
+         */
+
+        /**
+         * 取得統計結果
+         * @@return {Promise<DistStatResult>} 統計結果的Promise
+         */
+        static ApiGetStatData() {
+
+            let url = `/StatisticApi/GetDistStat`;
+
+            let headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+
+            let body = {
+                year: document.querySelector("#Year").value,
+                startDate: document.querySelector("#StartDate").value,
+                endDate: document.querySelector("#EndDate").value,
+                district: [document.querySelector("#Dist").value],
+            }
+
+            return fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(body)
+            }).then(response => response.json());
+
+        }
+    }
+
+</script>

@@ -1,0 +1,42 @@
+.header .header-block-nav .profile .name {
+	font-size:20px;
+}
+.sidebar .nav > li > a, .sidebar .nav > li > a i, .sidebar .nav > li > a i.arrow {
+    font-size: 28px;
+}
+.sidebar .nav > li > ul > li a {
+	font-size:24px;
+}
+.title {
+	font-size:20px !important;
+}
+.card .title {
+	font-size:24px !important;
+}
+.table01 > thead > tr > th {
+	font-size:24px;
+}
+.table tr {
+	font-size:20px;
+}
+.btn, label {
+	font-size:18px;
+}
+h4 {
+	font-size:20px;
+}
+.tablebigth h3 {
+	font-size:22px;
+}
+.table01 p {
+	font-size:18px;
+}
+.nav-pills .nav-item {
+	font-size:18px;
+}
+.tab-pane > div.col-xs-5 > div.pull-right a {
+	font-size:16px;
+}
+.tab-right a {
+	font-size:18px;
+}

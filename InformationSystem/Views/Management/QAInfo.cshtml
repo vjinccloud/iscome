@@ -1,0 +1,108 @@
+﻿
+@{
+    ViewBag.Title = "QAInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">問題管理-新增</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" value="@Model.QuestionManagement.ID" />
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:140px; text-align: right; vertical-align: top !important; padding-top: 1.25rem;">
+                                            <span class="important">問題類別：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select name="Code" class="form-control mr-2" required>
+                                                <option value="">請選擇</option>
+                                                @{
+                                                    foreach (var defCode in Model.Types)
+                                                    {
+                                                        var selected = defCode.Code == Model.QuestionManagement.Type;
+                                                        <option value="@defCode.Code" selected="@selected">@defCode.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                        <th style="width:auto;"></th>
+                                    </tr>
+                                    <tr>
+                                        <th style="text-align: right; vertical-align: top !important;">
+                                            <span class="important">問題：</span>
+                                        </th>
+                                        <td>
+                                            <textarea name="Question" class="form-control" rows="6" required>@Model.QuestionManagement.Question</textarea>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th style="text-align: right; vertical-align: top !important;">
+                                            <span class="important">回覆：</span>
+                                        </th>
+                                        <td>
+                                            <textarea name="Answer" class="form-control" rows="6" required>@Model.QuestionManagement.Answer</textarea>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function handleSubmit(e) {
+            e.preventDefault();
+
+            var validate = $("form").valid();
+            if (validate) {
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}

@@ -1,0 +1,341 @@
+﻿@using Newtonsoft.Json;
+@model InformationSystem.ViewModel.SolarTermsEditView
+@{
+    ViewBag.Title = "SolarTermsEdit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+}
+
+<style scoped>
+    .nav {
+        border-bottom: 1px solid #ced4da;
+    }
+
+    .pushCardGroup {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .pushCard {
+        position: relative;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    .pushCard__removeIcon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 1;
+        width: 18px;
+        height: 18px;
+        box-sizing: border-box;
+        border-left: 1px solid #ced4da;
+        border-bottom: 1px solid #ced4da;
+        border-radius: 4px;
+        background-color: #EFEFEF;
+        cursor: pointer;
+    }
+
+        .pushCard__removeIcon::before, .pushCard__removeIcon::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            right: 0;
+            display: block;
+            width: 18px;
+            height: 2px;
+            background-color: black;
+        }
+
+        .pushCard__removeIcon::before {
+            transform: rotate(45deg);
+        }
+
+        .pushCard__removeIcon::after {
+            transform: rotate(135deg);
+        }
+
+    .objectFitImg {
+        width: 100%;
+        object-fit: cover;
+    }
+</style>
+
+<div class="container-fluid" id="SolarTermsEdit">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">帳號資料-編輯</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <input type="hidden" name="Id" value="@Model.Data.Id" />
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="min-width: 120px;">
+                                            <span class="important">節氣：</span>
+                                        </th>
+                                        <td style="width:40%;">
+                                            <select class="form-control" name="SolarTermsCode" id="SolarTermsCode">
+                                                <option value="">請選擇</option>
+                                                @{
+                                                    foreach (var defCode in Model.SolarTermsType)
+                                                    {
+                                                        <option @(defCode.Code == Model.Data.SolarTermsCode ? "selected='selected''" : "") value="@defCode.Code">@defCode.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                        <th style="width:auto;"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">推播時間：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="date" class="form-control" id="PushDate" name="PushDate" value="@(Model.Data.PushDate.HasValue ? Model.Data.PushDate.Value.ToString("yyyy-MM-dd") : "")" min="@DateTime.Today.ToString("yyyy-MM-dd")"/>
+                                                <input type="checkbox" name="IsNeedPush" id="IsNeedPush" @(Model.Data.IsNeedPush ? "" : "checked") value="true" style="margin-left:4px" /><label for="IsNeedPush" class="form-check-label">不進行推播</label>
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">作物名稱：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="CropName" id="CropName" value="@Model.Data.CropName" placeholder="以,分開作物名稱" />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">病蟲害：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="PestDisease" id="PestDisease" value="@Model.Data.PestDisease" placeholder="以,分開病蟲害" />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <span class="important">推播內容：</span>
+                                        </th>
+                                        <td class="pushCardGroup">
+                                            <input type="hidden" name="list[]" v-model="list" />
+                                            <div v-for="(item, idx) in list" :key="idx" class="pushCard p-3 bg-white contextRow">
+                                                <div v-on:click="handleRemoveItem(idx)" class="pushCard__removeIcon"></div>
+                                                @* ------------------------------------------------------------------------------- *@
+                                                <ul class="nav nav-pills mb-3 nav nav-pills nav-justified" id="pills-tab" role="tablist">
+                                                    <li v-on:click="handleChangeTab(item, tabItem)" v-for="tabItem in tabList" :key="item.id" class="nav-item" role="presentation">
+                                                        <a v-bind:class="{'active show': item.tabId === tabItem.id}" class="nav-link">{{tabItem.label}}</a>
+                                                    </li>
+                                                    @*<li class="nav-item" role="presentation">
+                                                            <a class="nav-link active show" id="pills-text-tab" data-toggle="pill" href="#pills-text" role="tab" aria-controls="pills-text" aria-selected="true">文字</a>
+                                                        </li>
+                                                        <li class="nav-item" role="presentation">
+                                                            <a class="nav-link" id="pills-pic-tab" data-toggle="pill" href="#pills-pic" role="tab" aria-controls="pills-pic" aria-selected="false">圖片</a>
+                                                        </li>*@
+                                                </ul>
+                                                @* ------------------------------------------------------------------------------- *@
+                                                <div class="tab-content" id="pills-tabContent">
+                                                    <template v-if="item.tabId === 1">
+                                                        <div class="tab-pane fade active show" id="pills-text" role="tabpanel" aria-labelledby="pills-text-tab">
+                                                            <textarea v-model="item.content" rows="10" class="form-control"></textarea>
+                                                        </div>
+                                                    </template>
+                                                    <template v-else>
+                                                        <div class="tab-pane fade active show" id="pills-pic" role="tabpanel" aria-labelledby="pills-pic-tab">
+                                                            <input v-on:change="handleUploadFile($event, item)" type="file" />
+                                                            <img v-if="item.path" :src="item.path" :alt="item.picId" class="objectFitImg" />
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div style="display:none" v-for="(item, idx) in list" :key="idx">
+                                                <div>
+                                                    <input type="hidden" v-bind:name="'PushContents['+(item.id - 1)+'].id'" v-model="item.id" />
+                                                    <input type="hidden" v-bind:name="'PushContents['+(item.id - 1)+'].tabId'" v-model="item.tabId" />
+                                                    <input type="hidden" v-bind:name="'PushContents['+(item.id - 1)+'].content'" v-model="item.content" />
+                                                    <input type="hidden" v-bind:name="'PushContents['+(item.id - 1)+'].picId'" v-model="item.picId" />
+                                                    <input type="hidden" v-bind:name="'PushContents['+(item.id - 1)+'].path'" v-model="item.path" />
+                                                </div>
+                                            </div>
+                                            
+                                            <button v-on:click="handleAddItem" type="button" v-if="list.length < 5">新增</button>
+                                        </td>
+                                        <th style="width:50%"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>資料主旨：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="DataSubject" value="@Model.Data.DataSubject" @(Model.Data.IsImport ? "readonly" : "") />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>發布日期：</span>
+                                        </th>
+                                        <td>
+                                            <input type="date" class="form-control" name="ReleaseDate" value="@(Model.Data.ReleaseDate.HasValue ? Model.Data.ReleaseDate.Value.ToString("yyyy-MM-dd"):"")" @(Model.Data.IsImport ? "readonly" : "") />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>資料內容：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="DataContents" value="@Model.Data.DataContents" @(Model.Data.IsImport ? "readonly" : "") />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" v-on:click="handleSubmit">送出</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.location = '/LineSubscribe/SolarTermsList'">回上一頁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        const formTemplate = { id: 1, tabId: 1, content: "", picId: "", path: "" }
+
+        $(document).ready(function () {
+            const SolarTermsEdit = new Vue({
+                el: "#SolarTermsEdit",
+                data: {
+                    token: $('input[name="__RequestVerificationToken"]').val(),
+                    tabList: [
+                        { id: 1, label: '文字' },
+                        { id: 2, label: '圖片' },
+                    ],
+
+                    Data: @(new HtmlString(JsonConvert.SerializeObject(Model.Data))),
+                    list: @(new HtmlString(JsonConvert.SerializeObject(Model.Data.PushContents))),
+                },
+                watch: {
+                    'list'() {
+                        this.Data.PushContents = this.list;
+                    }
+                },
+                computed: {
+
+                },
+                methods: {
+                    handleChangeTab(item, tabItem) {
+                        if (item.tabId === tabItem.id) return;
+                        item.tabId = tabItem.id;
+                    },
+                    handleAddItem() {
+                        const getMaxId = this.list.map((i) => i.id);
+
+                        let obj = JSON.parse(JSON.stringify(formTemplate));
+                        obj.id = getMaxId.length > 0 ? Math.max(...getMaxId) + 1 : 1;
+                        this.list.push(obj);
+                    },
+                    handleRemoveItem(idx) {
+                        this.list.splice(idx, 1);
+                        if (!this.list.length) {
+                            this.handleAddItem()
+                        }
+                    },
+                    async handleUploadFile(el, item) {
+                        console.log(el);
+                        var fData = new FormData();
+                        var thisFile = el.target.files[0];
+                        // api
+                        fData.append(thisFile.name, thisFile);
+
+                        const data = await $.ajax({ url: '/LineSubscribe/UploadPic', data: fData, type: 'POST', cache: false, processData: false, contentType: false });
+
+                        if (data.result) {
+                            item.picId = data.Data.FileId;
+                            item.path = data.Data.FilePath
+                        }
+                        else {
+                            Swal.fire({ icon: 'error', title: data.Msg });
+                        }                        
+                    },
+                    handleSubmit(e) {
+                        const self = this;
+                        if (document.getElementById('SolarTermsCode').value == "") { Swal.fire({ icon: 'error', title: '請選擇節氣' }); return; }
+                        if (document.getElementById('PushDate').value == "") { Swal.fire({ icon: 'error', title: '請輸入推播日期' }); return; }
+                        if (document.getElementById('CropName').value == "") { Swal.fire({ icon: 'error', title: '請輸入作物名稱' }); return; }
+                        if (document.getElementById('PestDisease').value == "") { Swal.fire({ icon: 'error', title: '請輸入病蟲害' }); return; }
+                        var emptyArray = true;
+                        self.list.forEach(function (item, index, array) {
+                            if (item.tabId == 1) {
+                                if (item.content) {
+                                    emptyArray = false;
+                                }
+                            }
+                            if (item.tabId == 2) {
+                                if (item.picId) {
+                                    emptyArray = false;
+                                }
+                            }
+                        });
+                        if (emptyArray) { Swal.fire({ icon: 'error', title: '請輸入推播內容' }); return; }
+                        document.getElementById('form').submit();
+                    },
+                },
+                mounted() {
+                    if (!this.list.length) {
+                        this.handleAddItem()
+                    }
+                }
+            });
+        });
+        function CloneRows() {
+            var thisBr = $('.contextCloneRow');
+            var nowCount = parseInt($('#idTotalCount').val()) + 1;
+            thisBr.find('#itemNum').html(nowCount);
+            $('#idTotalCount').val(nowCount);
+
+            thisBr.clone().insertBefore($('#cloneFlag')).removeClass('contextCloneRow').addClass('contextRow').show();
+            //$('.delContext').click(function () {
+            //    $(this).parent().parent().remove();
+            //});
+        }
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                if (document.getElementById('SolarTermsCode').value == "") { Swal.fire({ icon: 'error', title: '請選擇節氣' }); return; }
+                if (document.getElementById('PushDate').value == "") { Swal.fire({ icon: 'error', title: '請輸入推播日期' }); return; }
+                if (document.getElementById('CropName').value == "") { Swal.fire({ icon: 'error', title: '請輸入作物名稱' }); return; }
+                if (document.getElementById('PestDisease').value == "") { Swal.fire({ icon: 'error', title: '請輸入病蟲害' }); return; }
+
+                //if (document.getElementById('District').value == "") { Swal.fire({ icon: 'error', title: '請輸入行政區' }); return; }
+
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+
+        $(document).ready(function () {
+
+        });
+    </script>
+}

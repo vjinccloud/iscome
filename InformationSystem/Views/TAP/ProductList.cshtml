@@ -1,0 +1,247 @@
+﻿@model InformationSystem.ViewModel.TAP.resumeProductQueryModel
+@{
+    ViewBag.Title = "ProductList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .table > thead > tr th,
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">產銷履歷產品資料管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <form id="form" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">關鍵字：</th>
+                                        <td style="width:40%">
+                                            <input type="text" class="form-control" name="KeyWord" value="@Model.KeyWord" />
+                                        </td>
+                                        <th style="width:10%"></th>
+                                        <th style="width:40%"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>標示：</th>
+                                        <td>
+                                            <select class="form-control" name="TagResult">
+                                                <option value="0" @(Model.TagResult == 0 ? "selected='selected'" : "")>全選</option>
+                                                <option value="1" @(Model.TagResult == 1 ? "selected='selected'" : "")>合格</option>
+                                                <option value="2" @(Model.TagResult == 2 ? "selected='selected'" : "")>不合格</option>
+                                                <option value="3" @(Model.TagResult == 3 ? "selected='selected'" : "")>無資料</option>
+                                            </select>
+                                        </td>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>品質：</th>
+                                        <td>
+                                            <select class="form-control" name="QuilityResult">
+                                                <option value="0" @(Model.QuilityResult == 0 ? "selected='selected'" : "")>全選</option>
+                                                <option value="1" @(Model.QuilityResult == 1 ? "selected='selected'" : "")>合格</option>
+                                                <option value="2" @(Model.QuilityResult == 2 ? "selected='selected'" : "")>不合格</option>
+                                                <option value="3" @(Model.QuilityResult == 3 ? "selected='selected'" : "")>無資料</option>
+                                            </select>
+                                        </td>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>稽核紀錄查詢：</th>
+                                        <td colspan="2">
+                                            <div class="form-inline">
+                                                <input type="date" class="form-control mr-2" name="CheckStartDate" value="@(Model.CheckStartDate.HasValue ? Model.CheckStartDate.Value.ToString("yyyy-MM-dd") :"")" />
+                                                <span>～</span>
+                                                <input type="date" class="form-control ml-2 mr-2" name="CheckEndDate" value="@(Model.CheckEndDate.HasValue ? Model.CheckEndDate.Value.ToString("yyyy-MM-dd") :"")" />
+                                                <select class="form-control" style="flex:auto" name="CheckData">
+                                                    <option @(!Model.CheckData.HasValue ? "selected='selected'" : "")>所有資料</option>
+                                                    <option value="true" @(Model.CheckData == true ? "selected='selected'" : "")>有紀錄</option>
+                                                    <option value="false" @(Model.CheckData == false ? "selected='selected'" : "")>無紀錄</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="submit" class="btn btn-primary m-2" onclick="handleSubmit(event,'')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                            <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event,'export')"><i class="fas fa-download mr-2"></i>匯出查驗資料</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="mt-3" style="display:flex;width:50%">
+                                <span class="mr-2">XLS資料匯入</span>
+                                <input type="file" class="form-control" style="flex:10%" name="importFile" accept=".xls, .xlsx" />
+                                <button type="button" class="btn btn-primary ml-2" onclick="handleSubmit(event,'upload')">上傳</button>
+                                <div style="flex:auto"></div>
+                            </div>
+                            <input type="hidden" id="act" name="act" />
+                        </form>
+                        <div style="display:flex">
+                            <button type="button" class="btn btn-primary m-2" onclick="location.href='/TAP/Map'">查看分布地圖</button>
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" id="syncLocation" onclick="SyncVendorLocation()">取業者地址經緯度</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/TAP/ProductInfo'"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="overflow-x:auto">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">項次</th>
+                                        <th scope="col">組織代碼</th>
+                                        <th scope="col">經營業者名稱</th>
+                                        <th scope="col">生產者名稱</th>
+                                        <th scope="col">地址</th>
+                                        <th scope="col">驗證品項</th>
+                                        <th scope="col">驗證機構</th>
+                                        <th scope="col">標示</th>
+                                        <th scope="col">品質</th>
+                                        <th scope="col">最近一次檢查日期</th>
+                                        <th scope="col">功能</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model.resumeProductModels)
+                                        {
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@item.OrganizationCode</td>
+                                                <td>@item.VendorName</td>
+                                                <td>@item.ProducerName</td>
+                                                <td>@item.Address</td>
+                                                <td>@item.VerificationItems</td>
+                                                <td>@item.VerificationAgency</td>
+                                                <td>@(!item.TagResult.HasValue ? "" :((item.TagResult??true) ? "合格":"不合格"))</td>
+                                                <td>@(!item.QuilityResult.HasValue ? "" :((item.TagResult??true) ? "合格":"不合格"))</td>
+                                                <td>@ICCModule.Helper.Extention.ToMinDateString(item.LastCheckDate)</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-danger" onclick="location.href = '/TAP/ProductInfo?id=@item.ID'">編輯</button>
+                                                    <button type="button" class="btn btn-primary" onclick="location.href='/TAP/AuditorList?pid=@item.ID'">檢查紀錄</button>
+                                                </td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a @(Model.Pages <= 1 ? "" : "style=pointer-events:none;") href="/TAP/ProductList?KeyWord=@Model.KeyWord&TagResult=@Model.TagResult&QuilityResult=@Model.QuilityResult&CheckStartDate=@Model.CheckStartDate&CheckEndDate=@Model.CheckEndDate&CheckData=@Model.CheckData&Pages=@(Model.Pages-1)" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                            <nav aria-label="...">
+                                <ul class="pagination">
+                                    @{
+                                        int sPage = 1, endPage = Model.TotalPage;
+                                        if (Model.TotalPage > 5)
+                                        {
+                                            if (Model.TotalPage < (Model.Pages + 2))
+                                            {
+                                                sPage = Model.TotalPage - 4;
+                                            }
+                                            else if ((Model.Pages - 2) <= 0)
+                                            {
+                                                endPage = 5;
+                                            }
+                                            else
+                                            {
+                                                sPage = Model.Pages - 2;
+                                                endPage = Model.Pages + 2;
+                                            }
+                                        }
+
+                                        for (int p = sPage; p <= endPage; p++)
+                                        {
+
+                                            if (p == Model.Pages)
+                                            {
+                                                <li class="page-item active" aria-current="page">
+                                                    <span class="page-link">@p<span class="sr-only"></span></span>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="page-item"><a class="page-link" href="/TAP/ProductList?KeyWord=@Model.KeyWord&TagResult=@Model.TagResult&QuilityResult=@Model.QuilityResult&CheckStartDate=@Model.CheckStartDate&CheckEndDate=@Model.CheckEndDate&CheckData=@Model.CheckData&Pages=@p">@p</a></li>
+                                            }
+                                        }
+                                    }
+                                    @*<li class="page-item active" aria-current="page">
+                                            <span class="page-link">
+                                                1
+                                                <span class="sr-only">(current)</span>
+                                            </span>
+                                        </li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">3</a></li>*@
+                                </ul>
+                            </nav>
+                            <a @(Model.Pages < Model.TotalPage ? "" : "style=pointer-events:none;") href="/TAP/ProductList?KeyWord=@Model.KeyWord&TagResult=@Model.TagResult&QuilityResult=@Model.QuilityResult&CheckStartDate=@Model.CheckStartDate&CheckEndDate=@Model.CheckEndDate&CheckData=@Model.CheckData&Pages=@(Model.Pages+1)" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script{
+    <script>
+        function handleSubmit(e, act) {
+            e.preventDefault();
+
+            $('#act').val(act);
+
+            var validate = $("form").valid();
+            if (validate) {
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+    var sMessage = "@strTempMsg";
+    if (sMessage.length > 0) {
+        setTimeout("alert(sMessage)", 500);
+    }
+
+    function SyncVendorLocation() {
+        $('#syncLocation').attr('disabled', true).addClass('disabled');
+
+        $.ajax({
+            url: '/TAP/SyncLocation',
+            method: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                Swal.fire({
+                    icon: response.result ? 'success' : 'error',
+                    title: response.Msg
+                });
+            },
+            complete: function () {
+                $('#syncLocation').attr('disabled', false).removeClass('disabled');
+            }
+        })
+    }
+</script>
+

@@ -1,0 +1,254 @@
+﻿@model InformationSystem.ViewModel.Management.MemberEditViewModel
+@{
+    ViewBag.Title = "MemberEdit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">帳號資料-編輯</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="min-width: 120px;">
+                                            <span class="important">帳號狀態：</span>
+                                        </th>
+                                        <td style="width:40%;">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="Status" id="Status" value="Y" @(@Model.memberInfo.Status == "Y" ? "checked" : "") />啟用</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="Status" id="Status" value="N" @(@Model.memberInfo.Status == "N" ? "checked" : "") />停用</label>
+                                            </div>
+                                        </td>
+                                        <th style="width:auto;"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">帳號：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="text" class="form-control" name="Account" id="Account" value="@Model.memberInfo.LoginID" @(Model.memberInfo.ID > 0 ? "readonly" : "") />
+                                                @if (!(Model.memberInfo.ID > 0))
+                                                {
+                                                    <button type="button" class="btn btn-primary ml-2" onclick="ChkAccount()">檢查重複</button>
+                                                }
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <span class="important">驗證方式：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="VerifyMethod" id="VerifyMethodSMS" value="SMS" @(@Model.memberInfo.VerifyMethod == "SMS" ? "checked" : "") onclick="ChangeImportant('SMS')" />手機</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="VerifyMethod" id="VerifyMethodEmail" value="Email" @(@Model.memberInfo.VerifyMethod == "Email" ? "checked" : "") onclick="ChangeImportant('Email')" />Email</label>
+                                            </div>
+                                        </td>
+                                        <th style="width:50%"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span id="emailInput" class="@(Model.memberInfo.VerifyMethod == "SMS" ? "":"important")">Email：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="Email" id="Email" value="@Model.memberInfo.Email" />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">姓名：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="Name" id="Name" value="@Model.memberInfo.Name" />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    @*<tr>
+                                        <th>
+                                            <span class="important">單位名稱：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" name="Identify" id="Identify" value="@Model.memberInfo.Identify" />
+
+                                            <select class="form-control" name="Identify" id="Identify" value="@Model.memberInfo.Identify">
+                                                    <option value="">請選擇</option>
+                                                    @{
+                                                        foreach (var defCode in Model.defCodes)
+                                                        {
+                                                            <option @(@defCode.Code == @Model.memberInfo.Identify.ToString() ? "selected='selected''" : "") value="@defCode.Code">@defCode.Name</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                                    </td>
+                                                                    <th></th>
+                                                                    </tr>*@
+                                    <tr>
+                                        <th>
+                                            <span>角色別：</span>
+                                        </th>
+                                        <td>
+                                            <select class="form-control" name="Identify">
+                                                <option value="">請選擇</option>
+                                                @{
+                                                    foreach (var defCode in Model.defCodes)
+                                                    {
+                                                        <option @(defCode.Code == Model.memberInfo.Identify.ToString() ? "selected='selected''" : "") value="@defCode.Code">@defCode.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">行政區：</span>
+                                        </th>
+                                        <td>
+                                            <select class="form-control" name="District" id="District" value="@Model.memberInfo.District">
+                                                <option value="">請選擇</option>
+                                                @{
+                                                    foreach (var District in Model.Districts)
+                                                    {
+                                                        <option @(@District.Name == @Model.memberInfo.District ? "selected='selected''" : "") value="@District.Name">@District.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span id="mobileInput" class="@(Model.memberInfo.VerifyMethod == "SMS" ? "important":"")">行動電話：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="Mobile" id="Mobile" value="@Model.memberInfo.Mobile" />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>帳號來源：</span>
+                                        </th>
+                                        <td>
+                                            會員註冊@((!string.IsNullOrEmpty(Model.memberInfo.FacebookId)? "/Facebook" : "")+ (!string.IsNullOrEmpty(Model.memberInfo.GoogleId) ? "/Google" : ""))
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">編輯帳號</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.location = '/Management/MemberList'">回上一頁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                var StatusVal = "";
+                var obj = document.getElementsByName("Status"); //這個是以標籤的name來取控制元件
+                for (i = 0; i < obj.length;) {
+                    if (obj[i].checked) {
+                        StatusVal = obj[i].value;
+                    }
+                    i++;
+                }
+
+                if (StatusVal == "") { Swal.fire({ icon: 'error', title: '請輸入帳號狀態' }); return; }
+                if (document.getElementById('Account').value == "") { Swal.fire({ icon: 'error', title: '請輸入帳號' }); return; }
+                if (document.getElementById('Email').value == "" && $('#VerifyMethodEmail').attr("checked") == true) { Swal.fire({ icon: 'error', title: '請輸入Email' }); return; }
+                if (document.getElementById('Mobile').value == "" && $('#VerifyMethodSMS').attr("checked") == true) { Swal.fire({ icon: 'error', title: '請輸入手機' }); return; }
+                if (document.getElementById('Name').value == "") { Swal.fire({ icon: 'error', title: '請輸入姓名' }); return; }
+                if (document.getElementById('District').value == "") { Swal.fire({ icon: 'error', title: '請輸入行政區' }); return; }
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+        function ChangeImportant(_method) {
+            if (_method == 'SMS') {
+                $("#emailInput").removeClass("important");
+                $("#mobileInput").addClass("important");
+            }
+            else {
+                $("#emailInput").addClass("important");
+                $("#mobileInput").removeClass("important");
+            }
+        }
+        function ChkAccount() {
+            var value = document.getElementById('Account').value;
+            if (value == "") {
+                return;
+            }
+            $.ajax({
+                type: "Post",
+                url: "/Management/MemberList" + "?ChkAccount=" + value,
+                data: '{}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    if (data != "") {
+                        if (data == "帳號已存在")
+                        {
+                            Swal.fire({
+                                icon: 'error',
+                                title: data
+                            });
+                        }
+                        else
+                        {
+                            Swal.fire({
+                                icon: 'success',
+                                title: data
+                            });
+                        }
+                    }
+                },
+                failure: function (errMsg) {
+
+                }
+            })
+        }
+        //alert(@Model.isRe);
+        if ('@Model.isRe' == 'True')
+            Swal.fire({
+                icon: 'error',
+                title: '帳號已存在'
+            });
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+

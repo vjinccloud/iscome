@@ -1,0 +1,145 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+<div class="container-fluid" id="TicketList">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">Line植物醫師據點</h1><span style="color:red;">上傳圖片大小限制1MB</span>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="row">
+                            @for (int i = 0; i < 10; i++)
+                            {
+                                Random rnd = new Random();
+
+                                string strImg = "";
+                                foreach(ICCModule.Entity.Tables.Platform.FileManagement f in ViewBag.list)
+                                {
+                                    if((i+1).ToString() == f.TableID)
+                                    {
+                                        int random1 = rnd.Next(0, 10000000);
+                                        strImg = "/ErrorLog/" +f.FileName + "?t=" + random1;
+                                    }
+
+                                }
+                                string display = "none";
+                                if(strImg !="")
+                                {
+                                    display = "block";
+                                }
+
+                                <div class="col-3" style="margin-top:10px;">
+                                    <input id="file@(i+1)" name="file@(i+1)" type="file" accept="image/jpeg" />
+                                    <div style="display: @display;position:inherit;">
+                                        <button onclick="RemoveImg(@(i+1))" type="button" style="position:absolute;top:0px;left:0px;">X</button>
+                                        <img id="preview@(i+1)" style="width:100%;" src="@strImg" />
+                                        <input type="hidden" id="img@(i+1)" value="@strImg">
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+                        <div style="text-align:center;padding-top:20px;">
+                           <button class="btn btn-primary m-2" onclick="SaveImg()" type="button">儲存</button>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        for (var i = 0; i < 10; i++) {
+            initUpload('file' + (i + 1) , i + 1);
+        }
+    });
+
+    function initUpload(file_id, index) {
+        //ajax upload
+        $('#' + file_id).change(function () {
+            var formData = new FormData();
+            formData.append('file', $('#' + file_id)[0].files[0]);
+            $('#preview' + index).attr('src', "/img/loading.gif");
+            $('#preview' + index).parent().show();
+            ajaxUpload('/lineimg/upload/'+index, formData, function (res) {
+                console.log(JSON.stringify(res));
+                $('#preview' + index).attr('src', res.file + "?t="+ Date.now());
+                $('#img' + index).val(res.file);
+            }, false);
+        });
+    }
+
+    function RemoveImg(index) {
+        $('#preview' + index).parent().hide();
+        $('#preview' + index).removeAttr('src');
+        $('#img' + index).val("");
+    }
+
+    function SaveImg() {
+        var arr = [];
+        for (var i = 0; i < 10; i++) {
+            arr.push( $('#img' + ( i + 1 )).val() );
+        }
+        $.ajax({
+            url: '/lineimg/saveimg',
+            data: {
+                list: arr,
+            },
+            type: 'POST',
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                //alert(data.msg);
+                alert("儲存成功");
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(JSON.stringify(xhr));
+            },
+        });
+    }
+
+
+    function ajaxUpload(url, data, callback) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            processData: false,  // tell jQuery not to process the data
+            contentType: false,  // tell jQuery not to set contentType
+            success: function (res) {
+                console.log(res);
+                callback(res);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(JSON.stringify(ajaxOptions));
+                console.log(JSON.stringify(xhr));
+                alert('上傳失敗');
+            },
+            complete: function (data) {
+                //loading_close();
+                //$("body").loading('stop');
+            }
+        });
+    }
+
+</script>

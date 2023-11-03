@@ -1,0 +1,185 @@
+﻿@model InformationSystem.ViewModel.Management.BusinessFormInfoViewModel
+@{
+    ViewBag.Title = "FormInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool checkedAll = false;
+    if (Model.BusinessForm.PermissionNames != null)
+    {
+        checkedAll = Model.Types.Count == Model.BusinessForm.PermissionNames.Count;
+    }
+}
+
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error, error-msg {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+
+        input[type=file].error {
+            font-size: inherit;
+            margin-bottom: 8px;
+            width: inherit;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">常用表單下載-@(Model.BusinessForm.ID == 0 ? "新增" : "編輯")</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:15%">
+                                            <span class="important">顯示狀態：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="Show" value="true" checked="@(Model.BusinessForm.Show == true)" required />上架</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="Show" value="false" checked="@(Model.BusinessForm.Show == false)" required />下架</label>
+                                            </div>
+                                        </td>
+                                        <th style="width:50%"></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">檔案顯示名稱：</span>
+                                        </th>
+                                        <td>
+                                            <input name="FileName" type="text" class="form-control" value="@Model.BusinessForm.FileName" required />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">附加檔案：</span>
+                                        </th>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <input type="file" name="File" accept=".doc, .docx, .odt, .ods, .ppt, .pdf, .xls, .xlsx, .jpg, .png, .jpeg, .csv, .gif, .txt" required />
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">顯示權限：</span>
+                                        </th>
+                                        <td>
+                                            <div class="d-flex" style="flex-direction: column;">
+                                                <div class="form-inline">
+                                                    <label class="mr-2">
+                                                        <input id="checkAll" type="checkbox" class="form-control mr-2"
+                                                               value=""
+                                                               checked="@checkedAll"
+                                                               onclick="checkAllPermission(this)" />
+                                                        <span>全選/不全選</span>
+                                                    </label>
+
+                                                    @{
+                                                        bool isChecked;
+                                                        foreach (var defCode in Model.Types)
+                                                        {
+                                                            isChecked = false;
+
+                                                            if (Model.BusinessForm.Codes != null)
+                                                            {
+                                                                isChecked = Model.BusinessForm.Codes.Contains(defCode.RoleCode);
+                                                            }
+
+                                                            <label class="mr-2">
+
+                                                                <input name="PermissionNames[]"
+                                                                       type="checkbox"
+                                                                       class="form-control mr-2"
+                                                                       value="@defCode.RoleCode"
+                                                                       checked="@isChecked"
+                                                                       onclick="changeCheck(this, event)" />
+                                                                <span>@defCode.RoleName</span>
+                                                            </label>
+                                                        }
+                                                    }
+                                                </div>
+                                                <div id="PermissionError" class="d-none error-msg" style="color: red;">
+                                                    This field is required.
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script>
+        function checkAllPermission(element) {
+            let checked = $("#checkAll").prop("checked");
+
+            $("input[name='PermissionNames[]']").each(function () {
+                $(this).prop("checked", checked);
+            });
+
+            if (checked) {
+                $('#PermissionError').addClass('d-none');
+            }
+        }
+
+        function changeCheck(element, e) {
+            console.log(element, e)
+            if ($(element).prop('checked')) {
+                $('#PermissionError').addClass('d-none');
+            } else if ($("#checkAll").prop("checked")) {
+                $("#checkAll").prop("checked", false);
+            }
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+
+            if ($('input[name="PermissionNames[]"]:checked').length == 0) {
+                $('#PermissionError').removeClass('d-none');
+                return;
+            }
+
+            if (validate) {
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}

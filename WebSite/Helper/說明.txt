@@ -1,0 +1,5 @@
+﻿Helper(小幫手)資料夾
+用來放置一些網頁處理常用的小幫手模組
+通常是針對Controllers
+建議命名空間為namespace InformationSystem.Controllers
+這樣方便呼叫

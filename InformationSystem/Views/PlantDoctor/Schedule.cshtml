@@ -1,0 +1,910 @@
+﻿@using Newtonsoft.Json;
+@model InformationSystem.ViewModel.PlantDoctor.ScheduleViewModel
+@{
+    ViewBag.Title = "Schedule";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Style {
+    <link href="~/js/fullcalendar/main.min.css" rel="stylesheet" />
+}
+
+@section HeadScript {
+    <script src="~/js/fullcalendar/main.min.js"></script>
+    <script src="~/js/fullcalendar/locales/zh-tw.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    @*<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>*@
+}
+
+<style>
+    .fc-header-toolbar .fc-toolbar-chunk:first-of-type {
+        display: flex;
+    }
+
+    .fc-addSchedule-button, .fc-defaultNumTime-button, .fc-frontAdd-button, .fc-doctorAdd-button, .fc-returnAdd-button {
+        border: none !important;
+        font-family: 'Arial Negreta', 'Arial Normal', 'Arial';
+        font-weight: 700 !important;
+        font-style: normal;
+        font-size: 20px !important;
+        height: 40px;
+        max-width: 207px;
+        min-width: 120px;
+        padding: 0 !important;
+        text-align: center;
+    }
+
+    .fc-addSchedule-button {
+        background-color: rgba(22, 155, 213, 1) !important;
+    }
+
+    .fc-defaultNumTime-button {
+        background-color: rgba(255, 153, 51, 1) !important;
+        min-width: 180px;
+    }
+
+    .fc-frontAdd-button, .fc-doctorAdd-button, .fc-returnAdd-button {
+        border-radius: 0px !important;
+        color: black !important;
+        cursor: text !important;
+    }
+
+    .fc-frontAdd-button {
+        background-color: rgba(255, 255, 204, 1) !important;
+    }
+
+    .fc-doctorAdd-button {
+        background-color: rgba(153, 204, 153, 1) !important;
+    }
+
+    .fc-returnAdd-button {
+        background-color: rgba(102, 255, 204, 1) !important;
+    }
+
+    .calendar-btn {
+        width: 8vw;
+        text-align: center;
+    }
+
+    .btn-purple {
+        background-color: rgba(153, 51, 255, 1);
+        border-color: rgba(153, 51, 255, 1);
+        color: white;
+    }
+
+    .btn-close {
+        border-color: rgba(121, 121, 121, 1);
+        border-style: solid;
+        border-width: 1px;
+        color: black;
+    }
+
+    .Reservation-Event, .Member-Event, .PlantDoctor-Event, .DrugTest-Event {
+        border: none;
+        font-family: 'Arial Negreta', 'Arial Normal', 'Arial';
+        font-weight: 700;
+        font-style: normal;
+        font-size: 20px;
+    }
+
+    .Reservation-Event {
+        background-color: rgba(255, 204, 102, 1);
+    }
+
+    .Member-Event {
+        background-color: rgba(255, 255, 204, 1);
+    }
+
+    .PlantDoctor-Event {
+        background-color: rgba(153, 204, 153, 1);
+    }
+
+    .DrugTest-Event {
+        background-color: rgba(102, 255, 204, 1);
+    }
+
+    .modalTable > tbody > tr > th {
+        min-width: 100px;
+    }
+
+    .modalTable_tr > td {
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">排班表</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="queryForm" method="post">
+                                @Html.AntiForgeryToken()
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th>
+                                            <label>行政區：</label>
+                                        </th>
+                                        <td>
+                                            <select id="filterDistrict" name="District" class="form-control">
+                                                <option value="">全部</option>
+                                                @foreach (var item in Model.AllDistricts)
+                                                {
+                                                    <option value="@item.Zip" @(item.Zip == Model.District ? "selected=selected" : "")>
+                                                        @item.Name
+                                                    </option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <th>
+                                            <label>植物醫師：</label>
+                                        </th>
+                                        <td>
+                                            <select id="filterDoctorId" name="DoctorId" class="form-control">
+                                                @{
+                                                    var roleCode = SessionHelper.Get("UserRoleCode");
+                                                    if (roleCode != "R08")
+                                                    {
+                                                        <option value="">全部</option>
+                                                    }
+                                                }
+                                                @foreach (var item in Model.AllDoctors)
+                                                {
+                                                    <option value="@item.LoginID" @(item.LoginID == Model.DoctorId ? "selected=selected" : "")>
+                                                        @item.UserName
+                                                    </option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <button type="button" class="btn btn-primary m-2" id="searchbtn" ><i class="fas fa-search mr-2"></i>查詢</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id='calendar'></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="modal" method="post">
+    @Html.AntiForgeryToken()
+    <!--新增排班Modal -->
+    <div class="modal fade" id="Add" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">新增排班</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table no-border modalTable">
+                        <tr>
+                            <th>植物醫師</th>
+                            <td>
+                                <select class="form-control" style="width: 200px;" v-model="DoctorId" @@change="changeDoctor" id="addDoctor">
+                                    @if (Model.RoleCode != "R08")
+                                    {
+                                        <option value="">請選擇</option>
+                                    }
+                                    <option v-for="(s, i) in AllDoctors" v-bind:key="s.LoginID" v-bind:value="s.LoginID">{{s.UserName}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>行政區</th>
+                            <td>
+                                <select class="form-control" style="width: 200px;" v-model="Districts">
+                                    <option v-if="AllDistricts.length === 0" v-bind:value="''">請選擇</option>
+                                    <option v-for="(s, i) in AllDistricts" v-bind:key="s.Zip" v-bind:value="s.Zip">{{s.Name}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>排班日期</th>
+                            <td>
+                                <div class="form-inline">
+                                    <input type="date" class="form-control" v-model="StartDate" />
+                                    <span>～</span>
+                                    <input type="date" class="form-control" v-model="EndDate" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>設定星期</th>
+                            <td>
+                                <div class="form-inline">
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="Mon" v-model="Weeks" />星期一</label>
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="Tue" v-model="Weeks" />星期二</label>
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="Wed" v-model="Weeks" />星期三</label>
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="Thu" v-model="Weeks" />星期四</label>
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="Fri" v-model="Weeks" />星期五</label>
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="Sat" v-model="Weeks" />星期六</label>
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="Sun" v-model="Weeks" />星期日</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>設定時段</th>
+                            <td>
+                                <div class="form-inline">
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="am" v-model="Periods" />上午場</label>
+                                    <label class="mr-2"><input type="checkbox" class="mr-2" value="pm" v-model="Periods" />下午場</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>開放名額</th>
+                            <td>
+                                <div class="d-flex flex-column position-relative">
+                                    <select class="form-control" style="width: 100px;" v-model="OpenNum">
+                                        <option v-for="o in OpenNums" v-bind:key="o" v-bind:value="o">{{o}}</option>
+                                    </select>
+                                    <div class="position-absolute" style="bottom: -30px; color: red;">{{ alertStr }}</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer" style="justify-content:center">
+                    <button type="button" class="btn btn-primary" v-on:click="addScheduleToServer">排班</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="Reset">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--預設名額與時間Modal -->
+    <div class="modal fade" id="Time" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">預約名額與時段</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table no-border">
+                        <tr>
+                            <th>時段</th>
+                            <td>
+                                <select class="form-control" v-model="period">
+                                    <option value="PlantDoctorAm">上午場</option>
+                                    <option value="PlantDoctorPm">下午場</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>名額1</th>
+                            <td>
+                                <select class="form-control" v-model="periods[0]">
+                                    <option value="">請選擇</option>
+                                    <option v-for="(p, i) in list" v-bind:key="'f_' + i" v-bind:value="p">{{p}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>名額2</th>
+                            <td>
+                                <select class="form-control" v-model="periods[1]">
+                                    <option value="">請選擇</option>
+                                    <option v-for="(p, i) in list" v-bind:key="'s_' + i" v-bind:value="p">{{p}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>名額3</th>
+                            <td>
+                                <select class="form-control" v-model="periods[2]">
+                                    <option value="">請選擇</option>
+                                    <option v-for="(p, i) in list" v-bind:key="'t_' + i" v-bind:value="p">{{p}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>名額4</th>
+                            <td>
+                                <select class="form-control" v-model="periods[3]">
+                                    <option value="">請選擇</option>
+                                    <option v-for="(p, i) in list" v-bind:key="'fo_' + i" v-bind:value="p">{{p}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer" style="justify-content:center">
+                    <button type="button" class="btn btn-primary" v-on:click="changeDefaultNumTime">儲存</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="Reset">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--編輯刪除Modal -->
+    <div class="modal fade" id="Edit" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ Title }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table no-border">
+                        <tr v-show="Action == 'Del'">
+                            <td colspan="2">
+                                <div>請再次確認是否刪除本次預約，按下確認後傳送簡訊通知!</div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>植物醫師</th>
+                            <td>
+                                {{ DoctorName }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>行政區域</th>
+                            <td>
+                                {{ DistrictName }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="width: 100px;">排班日期</th>
+                            <td>
+                                {{ ScheduleDate }}
+                            </td>
+                        </tr>
+                        <tr v-show="Action == 'Edit' || Action == 'Del' || Action == 'DelAll'">
+                            <th>設定星期</th>
+                            <td>
+                                {{ WeekdayStr }}
+                            </td>
+                        </tr>
+                        <tr v-show="Action == 'Edit' || Action == 'Del' || Action == 'DelAll'">
+                            <th>設定時段</th>
+                            <td>
+                                {{ PeriodStr }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>掛號資料</th>
+                            <td>
+                                <div v-if="!HasDetail">無預約資料</div>
+                                <button type="button" class="btn" v-on:click="ShowDetail" v-else>查看</button>
+                            </td>
+                        </tr>
+                        <tr v-show="Action == 'Change'">
+                            <th>變更日期</th>
+                            <td>
+                                <input type="date" class="form-control" v-bind:min="tomorrow" v-model="ChangeDate" />
+                            </td>
+                        </tr>
+
+                        <tr v-show="Action == 'Change'">
+                            <th>看診時段</th>
+                            <td>
+                                <div>
+                                    <div class="form-check form-check-inline" v-for="s in AmList" v-bind:key="s">
+                                        <input class="form-check-input" type="radio"
+                                               v-bind:value="s"
+                                               v-model="Time">
+                                        <label class="form-check-label" v-bind:for="s">{{ s }}</label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="form-check form-check-inline" v-for="s in PmList" v-bind:key="s">
+                                        <input class="form-check-input" type="radio"
+                                               v-bind:value="s"
+                                               v-model="Time">
+                                        <label class="form-check-label" v-bind:for="s">{{ s }}</label>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr v-show="Action == 'Del' && HasDetail">
+                            <th style="vertical-align: top !important;">
+                                <div>原因說明</div>
+                                <div>(後台使用)</div>
+                            </th>
+                            <td>
+                                <textarea style="width: 100%;" rows="5" v-model="DelReason"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer" style="justify-content:center">
+                    @if (Model.RoleCode != "R08")
+                    {
+                        <button type="button" class="btn btn-danger" v-on:click="DelAllRecord" v-if="Action == 'Edit'">刪除全區排班</button>
+                    }
+                    <button type="button" class="btn btn-primary" v-on:click="DelRecord" v-if="Action == 'Edit'">刪除預約</button>
+                    <button type="button" class="btn btn-purple" v-on:click="ChangeRecord" v-if="Action == 'Edit' && HasDetail">變更預約</button>
+                    <button type="button" class="btn btn-danger" v-on:click="ConfirmDel" v-if="Action == 'Del'">確定刪除預約</button>
+                    <button type="button" class="btn btn-danger" v-on:click="ConfirmAllDel" v-if="Action == 'DelAll' && !HasDetail">確定刪除全區排班</button>
+                    <button type="button" class="btn btn-purple" v-on:click="ConfirmChange" v-if="Action == 'Change'">確定變更預約</button>
+                    <button type="button" class="btn btn-close" data-dismiss="modal" v-on:click="Reset">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const AddModal = new Vue({
+            el: '#Add',
+            data: {
+                token: $('input[name="__RequestVerificationToken"]').val(),
+                StartDate: '',
+                EndDate: '',
+                DoctorId: '@(Model.RoleCode == "R08" ? (Model.AllDoctors.FirstOrDefault()?.LoginID ??"") :"")',
+                Districts: '@(Model.RoleCode == "R08" ? (Model.AllDistricts.FirstOrDefault()?.Zip ??"") :"")',
+                Weeks: [],
+                Periods: [],
+                OpenNum: 1,
+                OpenNums: 4,
+                alertStr: '',
+                amList: @(new HtmlString(JsonConvert.SerializeObject(Model.AmList))),
+                pmList: @(new HtmlString(JsonConvert.SerializeObject(Model.PmList))),
+                AllDoctors: @(new HtmlString(JsonConvert.SerializeObject(Model.AllDoctors))),
+                AllDistricts: @(new HtmlString(JsonConvert.SerializeObject(Model.RoleCode == "R08" ? Model.AllDistricts : new List<ICCModule.Models.District>()))),
+            },
+            watch: {
+                OpenNum(val, old) {
+                    this.alertStr = '';
+                    let strArr = [];
+                    if (val > this.amList.length) {
+                        strArr.push('上午場');
+                    }
+                    if (val > this.pmList.length) {
+                        strArr.push('下午場');
+                    }
+                    if (strArr.length > 0) {
+                        this.alertStr = '開放名額數大於' + strArr.join(',') + '預設人數,系統將以預設人數進行新增';
+                    }
+                },
+                //DoctorId(val) {
+                //    $.ajax({
+                //        url: '/PlantDoctor/GetDoctorDistrict',
+                //        data: {
+                //            __RequestVerificationToken: this.token,
+                //            DoctorId: this.DoctorId
+                //        },
+                //        type: 'GET',
+                //        cache: false,
+                //        dataType: 'json',
+                //        success: function (data) {
+                //            console.log('asdf', data)
+                //            this.AllDistricts = data || [];
+                //        },
+                //        error: function (jqXHR, exception) {
+                //            if (jqXHR.status == 401) {
+                //                location.assign('/');
+                //            }
+                //        }
+                //    });
+                //}
+            },
+            methods: {
+               async changeDoctor(val) {
+                    if (val) {
+                        const params = {
+                            __RequestVerificationToken: this.token,
+                            DoctorId: this.DoctorId
+                        }
+                        const data = await $.ajax({ url: '/PlantDoctor/GetDoctorDistrict', data: params, type: 'GET', cache: false, dataType: 'json' });
+                        this.AllDistricts = data;
+                    } else {
+                        this.AllDistricts =@(new HtmlString(JsonConvert.SerializeObject(Model.RoleCode == "R08" ? Model.AllDistricts : new List<ICCModule.Models.District>())));
+                    }
+                    console.log(this.AllDistricts);
+                    this.Districts = this.AllDistricts.length > 0 ? this.AllDistricts[0].Zip : '';
+                },
+                addScheduleToServer() {
+                    if (!this.DoctorId) {
+                        return Swal.fire({
+                            icon: 'error',
+                            title: '植物醫師未選擇'
+                        });
+                    }
+                    if (!this.StartDate || !this.EndDate) {
+                        return Swal.fire({
+                            icon: 'error',
+                            title: '排班日期未選擇'
+                        });
+                    }
+                    if (this.Weeks.length == 0) {
+                        return Swal.fire({
+                            icon: 'error',
+                            title: '設定星期未選擇'
+                        });
+                    }
+                    if (this.Periods.length == 0) {
+                        return Swal.fire({
+                            icon: 'error',
+                            title: '設定時段未選擇'
+                        });
+                    }
+                    const self = this;
+                    $.ajax({
+                        url: '/PlantDoctor/AddScheduleNumTime',
+                        data: {
+                            __RequestVerificationToken: this.token,
+                            DoctorId: self.DoctorId,
+                            Districts: self.Districts,
+                            StartDate: self.StartDate,
+                            EndDate: self.EndDate,
+                            Weeks: self.Weeks,
+                            Periods: self.Periods,
+                            OpenNum: self.OpenNum
+                        },
+                        type: 'POST',
+                        cache: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            Swal.fire({
+                                icon: data.result ? "info" : "error",
+                                title: data.result ? "新增成功" : "新增失敗"
+                            }).then(res => {
+                                if (res.isConfirmed && data.result) {
+                                    location.reload();
+                                }
+                            })
+                        },
+                        error: function (jqXHR, exception) {
+                            if (jqXHR.status == 401) {
+                                location.assign('/');
+                            }
+                        }
+                    });
+                },
+                Reset() {
+                    this.StartDate = '';
+                    this.EndDate = '';
+                    this.Weeks = [];
+                    this.Periods = [];
+                    this.OpenNum = 1;
+                }
+            }
+        });
+
+        const TimeModal = new Vue({
+            el: '#Time',
+            data: {
+                token: $('input[name="__RequestVerificationToken"]').val(),
+                period: 'PlantDoctorAm',
+                periods: ['', '', '', ''],
+                amList: @(new HtmlString(JsonConvert.SerializeObject(Model.AmList))),
+                pmList: @(new HtmlString(JsonConvert.SerializeObject(Model.PmList))),
+                amPeriod: ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30'],
+                pmPeriod: ['13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'],
+                list: [],
+            },
+            watch: {
+                period(val, old) {
+                    this.list = val === 'PlantDoctorAm' ? this.amPeriod : this.pmPeriod;
+                    let defList = val === 'PlantDoctorAm' ? this.amList : this.pmList;
+                    this.periods = this.periods.map((p, i) => {
+                        return defList[i] ? defList[i] : '';
+                    });
+                }
+            },
+            methods: {
+                changeDefaultNumTime() {
+                    const self = this;
+                    $.ajax({
+                        url: '/PlantDoctor/UpdateScheduleNumTime',
+                        data: {
+                            __RequestVerificationToken: this.token,
+                            Period: self.period,
+                            Times: self.periods
+                        },
+                        type: 'POST',
+                        cache: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            Swal.fire({
+                                icon: data.result ? "info" : "error",
+                                title: data.result ? "更新成功" : "更新失敗"
+                            }).then(res => {
+                                if (res.isConfirmed && data.result) {
+                                    location.reload();
+                                }
+                            })
+
+                        }
+                    });
+                },
+                Reset() {
+                    this.period = 'PlantDoctorAm';
+                    this.periods = this.periods.map((p, i) => {
+                        return this.amList[i] ? this.amList[i] : '';
+                    });
+                    this.list = this.amPeriod;
+                }
+            },
+            mounted() {
+                this.Reset();
+            }
+        });
+
+        const EditModal = new Vue({
+            el: '#Edit',
+            data: {
+                token: $('input[name="__RequestVerificationToken"]').val(),
+                Action: 'Edit',
+                Title: '編輯排班',
+                ScheduleDate: '',
+                WeekdayStr: '',
+                PeriodStr: '',
+                tomorrow: moment().add('days', 1).format('YYYY-MM-DD'),
+                ScheduleData: null,
+                HasDetail: false,
+                DoctorScheduleID: null,
+                ChangeDate: '',
+                DistrictName: '',
+                DoctorName: '',
+                AmList: @(new HtmlString(JsonConvert.SerializeObject(Model.AmList))),
+                PmList: @(new HtmlString(JsonConvert.SerializeObject(Model.PmList))),
+                Time: '',
+                DelReason: '',
+                Weekday: [
+                    '星期日',
+                    '星期一',
+                    '星期二',
+                    '星期三',
+                    '星期四',
+                    '星期五',
+                    '星期六',
+                ]
+            },
+            methods: {
+                SetDetail(ScheduleData) {
+                    console.log(ScheduleData, moment(ScheduleData.DateStr).day());
+                    this.Action = 'Edit';
+                    this.Title = '編輯排班';
+                    this.ScheduleDate = ScheduleData.DateStr;
+                    this.WeekdayStr = this.Weekday[moment(ScheduleData.DateStr).day()];
+                    this.PeriodStr = ScheduleData.Time;
+                    this.ScheduleData = ScheduleData;
+                    this.HasDetail = !!ScheduleData.doctorSchedule;
+                    this.DoctorScheduleID = ScheduleData.DoctorScheduleID;
+                    this.DoctorName = ScheduleData.DoctorName;
+                    this.DistrictName = ScheduleData.DistrictName;
+                },
+                ShowDetail() {
+                    if (!this.DoctorScheduleID) {
+                        return false;
+                    }
+                    window.open(`/PlantDoctor/TicketInfo?ID=${this.DoctorScheduleID}`, '_blank').focus();
+                },
+                DelRecord() {
+                    this.Action = 'Del';
+                    this.Title = '刪除排班';
+                },
+                DelAllRecord() {
+                    this.Action = 'DelAll';
+                    this.Title = '刪除全區排班';
+                },
+                ChangeRecord() {
+                    this.Action = 'Change';
+                    this.Title = '變更預約';
+                },
+                ConfirmDel() {
+                    if (confirm("是否確認刪除預約?")) {
+                        const self = this;
+                        $.ajax({
+                            url: '/PlantDoctor/DeleteSchedule',
+                            data: {
+                                __RequestVerificationToken: self.token,
+                                ID: self.ScheduleData.ID,
+                                DelReason: self.DelReason
+                            },
+                            type: 'POST',
+                            cache: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                Swal.fire({
+                                    icon: data.result ? "info" : "error",
+                                    title: data.Msg
+                                }).then(res => {
+                                    location.reload();
+                                })
+                            }
+                        });
+                    }
+                },
+                ConfirmAllDel() {
+                    var _confirm = confirm("是否確認刪除全行政區 " + this.ScheduleDate + "(" + this.WeekdayStr + ") " + this.PeriodStr + " 之排班?\r\n(僅會刪除未預約之排班資料)");
+                    if (_confirm) {
+                        const self = this;
+                        $.ajax({
+                            url: '/PlantDoctor/DeleteAllSchedule',
+                            data: {
+                                __RequestVerificationToken: self.token,
+                                Time: self.ScheduleData.Time,
+                                DelDate: self.ScheduleDate,
+                                Period: self.ScheduleData.Period,
+                            },
+                            type: 'POST',
+                            cache: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                Swal.fire({
+                                    icon: data.result ? "info" : "error",
+                                    title: data.Msg
+                                }).then(res => {
+                                    location.reload();
+                                })
+                            }
+                        });
+                    }
+                },
+                ConfirmChange() {
+                    const self = this;
+                    $.ajax({
+                        url: '/PlantDoctor/ChangeSchedule',
+                        data: {
+                            __RequestVerificationToken: self.token,
+                            ID: self.ScheduleData.ID,
+                            ChangeDate: self.ChangeDate,
+                            Time: self.Time
+                        },
+                        type: 'POST',
+                        cache: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            Swal.fire({
+                                icon: data.result ? "info" : "error",
+                                title: data.Msg
+                            }).then(res => {
+                                location.reload();
+                            })
+                        }
+                    });
+                },
+                Reset() {
+                    this.Action = 'Edit';
+                    this.Title = '編輯排班';
+                    this.ScheduleDate = '';
+                    this.WeekdayStr = '';
+                    this.Period = '';
+                    this.HasDetail = false;
+                    this.DoctorScheduleID = null;
+                    this.ChangeDate = '';
+                    this.Time = '',
+                    this.DelReason = '';
+                },
+                querySubmit(e) {
+                    e.preventDefault();
+                    document.getElementById('queryForm').submit();
+                    //getEvents();
+                }
+            },
+            mounted() {
+                this.Reset();
+            }
+        })
+
+        var calendarEl = document.getElementById('calendar');
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            customButtons: {
+                addSchedule: {
+                    text: '新增排班',
+                    click: function () {
+                        AddModal.Reset();
+                        $('#Add').modal('toggle');
+                    }
+                },
+                defaultNumTime: {
+                    text: '預設名額與時間',
+                    click: function () {
+                        TimeModal.Reset();
+                        $('#Time').modal('toggle');
+                    }
+                },
+                frontAdd: {
+                    text: '前台新增',
+                    click: function () {
+                        return false;
+                    }
+                },
+                doctorAdd: {
+                    text: '植醫新增',
+                    click: function () {
+                        return false;
+                    }
+                },
+                returnAdd: {
+                    text: '藥檢轉單',
+                    click: function () {
+                        return false;
+                    }
+                }
+            },
+            headerToolbar: {
+                left: 'title addSchedule defaultNumTime frontAdd doctorAdd returnAdd',
+                center: '',
+                right: 'today prev,next'
+            },
+            initialDate: moment().format('YYYY-MM-DD'),
+            locale: 'zh-tw',
+            navLinks: false, // can click day/week names to navigate views
+            editable: true,
+            dayMaxEvents: true, // allow "more" link when too many events
+            events: @(new HtmlString(JsonConvert.SerializeObject(Model.Events))),
+            eventClick: function (info) {
+                console.log(info);
+                EditModal.SetDetail(info.event.extendedProps);
+                $('#Edit').modal('show');
+            }
+        });
+
+        calendar.render();
+
+        
+        var getEvents = function () {
+            $.ajax({
+                url: '/PlantDoctor/GetSchedule',
+                data: {
+                    YearMonth: moment(calendar.getDate()).format('YYYY-MM-DD'),
+                    District: $('#filterDistrict').val(),
+                    DoctorId: $('#filterDoctorId').val(),
+                },
+                type: 'GET',
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    var eventSources = calendar.getEventSources();
+                    var len = eventSources.length;
+                    for (var i = 0; i < len; i++) {
+                        eventSources[i].remove();
+                    }
+                    //var a = calendar.getEventSources().remove();
+                    calendar.addEventSource(data);
+                }
+            });
+        }
+
+        $("#searchbtn").click(function () {
+            getEvents();
+        });
+        $(".fc-prev-button").click(function () {
+            getEvents();
+        });
+        $(".fc-next-button").click(function () {
+            getEvents();
+        });
+    });
+
+    $('[type="date"]').datepicker({
+        format: "yyyy-mm-dd",
+        autoclose: true,
+        startDate: "today",
+        clearBtn: true,
+        calendarWeeks: true,
+        todayHighlight: true,
+        language: 'zh-TW'
+    });
+
+
+</script>

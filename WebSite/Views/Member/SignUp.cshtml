@@ -1,0 +1,832 @@
+﻿@using Newtonsoft.Json;
+@model Website.ViewModel.Member.SignUpViewModel
+@{
+    ViewBag.Title = "SignUp";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    @*<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>*@
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    table > tbody > tr th {
+        text-align: right !important;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .form-control.error {
+        border-color: red;
+        border-width: 2px;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .form-inline .form-control.error {
+        width: auto;
+    }
+
+    label.error {
+        bottom: -30px;
+        color: red;
+        font-size: 14px;
+        position: absolute;
+    }
+
+    .form-inline label.error {
+        bottom: -20px;
+    }
+
+    .error-border {
+        border-color: red;
+        border-width: 2px;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+
+    /* form css */
+    .card-body > .row {
+        margin: 0;
+    }
+
+    .formList {
+        position: relative;
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        transition: all .3s;
+        border-bottom: 1px solid rgba(0,0,0,.125)
+    }
+
+        .formList > div > span {
+            font-weight: bold;
+            min-width: 150px;
+            text-align: right;
+        }
+
+        .formList:hover {
+            background: rgba(0,0,0,.075);
+        }
+
+    .col-6, .col-12 {
+        padding: 0;
+    }
+    label.error {
+        color: red;
+        font-size: 14px;
+    }
+
+    .error-border {
+        border-color: red;
+        border-width: 2px;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section id="SignUp" class="content bg-img" v-cloak>
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">會員註冊（<span class="important">為必填</span>）</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Member/SignUp">會員專區</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">註冊會員</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        @*<div class="row">*@
+                        <form id="form" class="row" method="post">
+                            @Html.AntiForgeryToken()
+
+                            @*帳號驗證方式*@
+                            <div class="formList">
+                                <div class="col-12 d-flex align-items-center">
+                                    <span class="important">帳號驗證方式：</span>
+                                    <div class="d-flex flex-column position-relative">
+                                        <div class="form-inline">
+                                            <div class="d-flex align-items-center">
+                                                <input type="radio" name="Info.VerifyMethod" id="Message" class="m-2" value="SMS" v-model="Info.VerifyMethod" required />
+                                                <label for="Message" class="mr-2">傳送簡訊</label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <input type="radio" name="Info.VerifyMethod" id="Mail" class="m-2" value="Email" v-model="Info.VerifyMethod" />
+                                                <label for="Mail">寄送Email</label>
+                                            </div>
+                                            <input type="hidden" id="hidGoogleId" name="Info.GoogleId" />
+                                            <input type="hidden" id="hidFacebookId" name="Info.FacebookId" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="formList row">
+                                @*姓名*@
+                                <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span class="important">姓名：</span>
+                                    <div class="d-flex flex-column position-relative">
+                                        <input type="text" id="UserName" name="Info.Name" class="form-control" v-model="Info.Name" required autocomplete="off">
+                                    </div>
+                                </div>
+                                @*使用者帳號*@
+                                <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span class="important">使用者帳號：</span>
+                                    <div class="input-group">
+                                        <div class="d-flex flex-column mr-2 position-relative" style="flex: 1 1 auto; min-width: 100px; width: 1%;">
+                                            <input type="text" id="UserAccount" name="Info.LoginID" class="form-control" required v-model="Info.LoginID" autocomplete="off">
+                                        </div>
+                                        <div class="input-group-append" style="height: 38px;">
+                                            <button class="btn btn-primary" v-on:click.prevent="checkAccount">檢查</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="formList row">
+                                @*Email*@
+                                <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span v-bind:class="Info.VerifyMethod == 'Email' ? 'important' : ''">Email：</span>
+                                    <div class="d-flex flex-column position-relative">
+                                        <input type="email" id="UserMail" name="Info.Email" autocomplete="off" class="form-control" v-bind:required="VerifyMethod == 'Email'" v-model="Info.Email">
+                                    </div>
+                                </div>
+                                @*行動電話*@
+                                <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span class="important">行動電話：</span>
+                                    <div class="d-flex flex-column position-relative">
+                                        <input type="tel" id="UserPhone" name="Info.Mobile" autocomplete="off"
+                                               class="form-control" placeholder="例：0911111111"
+                                               minlength="10" maxlength="10" pattern="[0-9]{10}" required v-model="Info.Mobile">
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* 驗證碼*@
+                            <div class="formList row">
+                                <div class="col-12 d-flex align-items-center flex-column flex-md-row">
+                                    <span for="username" class="important text-center text-lg-right">驗證碼：</span>
+                                    <div class="w-100 d-flex align-items-center justify-content-between flex-column flex-md-row">
+                                        <input type="text" id="ValidateCode" name="VerifyCode" class="form-control underlined mr-2" placeholder="請輸入驗證碼" autocomplete="off" style="flex: auto;" v-model="VerifyCode" />
+                                        <button class="btn btn-warning text-nowrap mt-2 mt-md-0" style="color:white !important;" v-on:click.prevent="refreshValidateCode">取得驗證碼</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="formList row">
+                                <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span class="important">密碼：</span>
+                                    <div class="d-flex flex-column position-relative">
+                                        <input type="password" id="UserPwd" name="Pwd" autocomplete="off" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span class="important">確認密碼：</span>
+                                    <div class="d-flex flex-column position-relative">
+                                        <input type="password" name="CheckPwd" autocomplete="off" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="formList row">
+                                @*所在區域*@
+                                <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span class="important">所在區域：</span>
+                                    <div class="form-inline">
+                                        <select name="Info.City" class="form-control mr-2" style="flex:40%" v-model="Info.City">
+                                            <option value="高雄市">高雄市</option>
+                                        </select>
+                                        <select name="Info.District" class="form-control ml-2" style="flex:40%" v-model="Info.District">
+                                            <option value="">請選擇</option>
+                                            <option v-for="(d, i) in districts" v-bind:key="i" v-bind:value="d.Name">
+                                                {{ d.Name }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                @*性別*@
+                                <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span>性別：</span>
+                                    <select class="form-control" name="Info.Sexy" v-model="Info.Sexy">
+                                        <option value="">請選擇</option>
+                                        <option value="M">男</option>
+                                        <option value="F">女</option>
+                                        @*<option value="O">第三性</option>*@
+                                    </select>
+                                </div>
+                            </div>
+
+
+
+                            <div class="formList row">
+                            <div class="col-12 col-lg-6 d-flex align-items-center">
+                                <span>申請身分別：</span>
+                                <select class="form-control" name="Info.Identify" v-model="Info.Identify">
+                                    @{
+                                        foreach (var defCode in Model.Types)
+                                        {
+                                            <option value="@defCode.Code">@defCode.Name</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-6 d-flex align-items-center">
+                                    <span>出生年次：</span>
+                                    @{
+                                        var currentYear = DateTime.Now.Year - 1911;
+                                    }
+                                    <input type="number" class="form-control" name="Info.NewYear" placeholder="民國年" min="30" max="@currentYear" v-model="Info.Year" />
+                                </div>
+                            </div>
+                            @* 使用者條款/隱私權政策 *@
+                            <div class="col-12 d-flex align-items-center justify-content-center py-3 border-bottom">
+                                <span>
+                                    註冊本網站會員即表示您同意本站的
+                                    <a href="~/Member/UserTerms" target="_blank">使用者條款</a>
+                                    與
+                                    <a href="~/Member/PrivacyPolicy" target="_blank">隱私權政策</a>
+                                </span>
+                            </div>
+
+
+                            @* button *@
+                            <div class="col-12 text-center" style="border-bottom:3px grey solid">
+                                <button class="btn btn-orange mr-2 mb-3 mt-3" v-on:click="handleSubmit">註冊會員</button>
+                                <button type="button" class="btn btn-secondary" onclick="location.href='/Home/Index'">返回首頁</button>
+                            </div>
+                        </form>
+
+                        <div class="w-100 d-flex flex-column">
+                            <span class="font-weight-bold py-2">快速註冊</span>
+                            <div class="w-100 d-flex flex-column flex-md-row justify-content-md-around gap-2">
+                                <button id="customBtn" class="btn btn-primary mb-2 mb-md-0"><i class="fab fa-google mr-2"></i>Google 登入</button>
+                                <button id="fbLogin" class="btn btn-primary" onclick="checkLoginState();"><i class="fab fa-facebook-square mr-2"></i>FaceBook 登入</button>
+                                <button id="lineLogin" class="btn btn-primary" onclick="LineAuth();"><i class="fab fa-line mr-2"></i>Line 登入</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* 跳窗 *@
+<section>
+    @* 跳窗按鈕 *@
+    <button type="button" id="showFast" style="display:none" data-toggle="modal" data-target="#modal-media1">顯示跳窗</button>
+    <div class="modal fade " id="modal-media1">
+        <div class="modal-dialog modal-xl">
+            <form id="formFast" class="row" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-content">
+                    @* 跳窗關閉列 *@
+                    <div class="modal-header">
+                        <h3 v-show="false">快速登入</h3>
+                        <span style="color:red;font-weight:200;font-size:20px">請填寫下方資料完成快速註冊</span>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            <span class="sr-only">Close</span>
+                        </button>
+                    </div>
+                    @* 跳窗內容 *@
+                    <div class="modal-body p-t-2">
+                        <div class=" text-left">
+                        </div>
+                        <div class="formList row">
+                            @*姓名*@
+                            <div class="col-12 col-lg-6 d-flex align-items-center">
+                                <span class="important">姓名：</span>
+                                <div class="d-flex flex-column position-relative">
+                                    <input type="text" id="fUserName" name="FastInfo.Name" class="form-control" value="@(Model.FastInfo?.Name ?? "")" required title="請輸入姓名" autocomplete="off">
+                                </div>
+                            </div>
+                            @*所在區域*@
+                            <div class="col-12 col-lg-6 d-flex align-items-center">
+                                <span class="important">所在區域：</span>
+                                <div class="form-inline">
+                                    <select name="FastInfo.City" class="form-control mr-2" v-model="FastInfo.City">
+                                        <option value="高雄市">高雄市</option>
+                                    </select>
+                                    <select name="FastInfo.District" class="form-control ml-2" style="" required>
+                                        <option value="">請選擇</option>
+                                        @foreach (var item in Model.CityDistricts.FirstOrDefault(x => x.Name == "高雄市").Districts)
+                                        {
+                                            <option @((Model.FastInfo?.District ?? "") == item.Name ? "selected='selected'" : "")>@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="formList row">
+                            @*行動電話*@
+                            <div class="col-12 col-lg-6 d-flex align-items-center">
+                                <span class="important">行動電話：</span>
+                                <div class="d-flex flex-column position-relative">
+                                    <input type="tel" id="fUserPhone1" name="FastInfo.Mobile" autocomplete="off"
+                                           class="form-control" placeholder="例：0911111111"
+                                           minlength="10" maxlength="10" pattern="[0-9]{10}" required value="@(Model.FastInfo?.Mobile ?? "")">
+                                </div>
+                                <div class="input-group-append" style="height: 38px;">
+                                    <button class="btn btn-primary" onclick="fastValidateCode();" type="button">取得驗證碼</button>
+                                </div>
+                            </div>
+
+                            @* 驗證碼*@
+                            <div class="col-12 col-lg-6 d-flex align-items-center">
+                                <span class="important">驗證碼：</span>
+                                <div class="d-flex flex-column position-relative">
+                                    <input type="text" id="fValidateCode" name="FastInfo.CheckCode" class="form-control underlined mr-2" placeholder="請輸入驗證碼" required autocomplete="off" style="flex: auto;" value="@(Model.FastInfo?.CheckCode ?? "")" />
+                                </div>
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="formList row">
+                            @*密碼*@
+                            <div class="col-12 col-lg-6 d-flex align-items-center">
+                                <span class="important">密碼：</span>
+                                <div class="d-flex flex-column position-relative">
+                                    <input type="password" id="fPwd" name="FastInfo.Pwd" class="form-control" required autocomplete="off">
+                                </div>
+                            </div>
+                            @*確認密碼*@
+                            <div class="col-12 col-lg-6 d-flex align-items-center">
+                                <span class="important">確認密碼：</span>
+                                <div class="d-flex flex-column position-relative">
+                                    <input type="password" id="fCheckPwd" name="FastInfo.CheckPwd" class="form-control" required autocomplete="off">
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class=" row">
+                            @* 使用者條款/隱私權政策 *@
+                            <div class="col-12 d-flex align-items-center justify-content-center py-3  ">
+                                <span>
+                                    註冊本網站會員即表示您同意本站的
+                                    <a href="~/Member/UserTerms" target="_blank">使用者條款</a>
+                                    與
+                                    <a href="~/Member/PrivacyPolicy" target="_blank">隱私權政策</a>
+                                </span>
+                            </div>
+
+                            @* button *@
+                            <div class="col-12 text-center">
+                                <input type="hidden" id="hidIsFastSign" name="IsFastSign"/>
+                                <input type="hidden" id="fastGoogleId" name="FastInfo.GoogleId" value="@(Model.FastInfo?.GoogleId ?? "")" />
+                                <input type="hidden" id="fastFacebookId" name="FastInfo.FacebookId" value="@(Model.FastInfo?.FacebookId ?? "")" />
+                                <input type="hidden" id="fastLineLoginId" name="FastInfo.LineLoginId" value="@(Model.FastInfo?.LineLoginId ?? "")" />
+                                <button class="btn btn-orange mr-2 mb-3 mt-3" v-on:click="handleSubmitFast">註冊會員</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<meta name="google-signin-client_id" content="@(ICCModule.Helper.AppSettingHelper.GetAppSetting("GoogleLoginId"))">
+<script src="https://apis.google.com/js/api:client.js"></script>
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const SignUp = new Vue({
+                el: "#SignUp",
+                data: {
+                    cityList: @(new HtmlString(JsonConvert.SerializeObject(Model.CityDistricts))),
+                    token: $('input[name="__RequestVerificationToken"]').val(),
+                    validator: null,
+                    VerifyMethod: @(new HtmlString(JsonConvert.SerializeObject(Model.VerifyMethod))),
+                    VerifyCode: @(new HtmlString(JsonConvert.SerializeObject(Model.VerifyCode))),
+                    captchaImg: "",
+                    districts: [],
+                    districtsFast: [],
+                    Info: {
+                        Name: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.Name))),
+                        LoginID: '@(Model.Info?.LoginID ?? "")',
+                        Email: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.Email))),
+                        Mobile: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.Mobile))),
+                        City: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? "高雄市" : Model.Info.City))),
+                        District: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? "" : Model.Info.District))),
+                        Sexy: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? "" : Model.Info.Sexy))),
+                        Identify: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? "" : Model.Info.Identify))),
+                        Year: @(new HtmlString(JsonConvert.SerializeObject(Model.Info == null ? null : Model.Info.Year))),
+                        VerifyMethod: @(new HtmlString(JsonConvert.SerializeObject(Model.Info?.VerifyMethod))),
+                        GoogleId : "",
+                        FacebookId : "",
+                        LineLoginId : "",
+                    },
+                    FastInfo: {
+                        Name: @(new HtmlString(JsonConvert.SerializeObject(Model.FastInfo == null ? null : Model.FastInfo.Name))),
+                        LoginID: '@(Model.FastInfo?.LoginID ?? "")',
+                        Mobile: @(new HtmlString(JsonConvert.SerializeObject(Model.FastInfo == null ? null : Model.FastInfo.Mobile))),
+                        City: @(new HtmlString(JsonConvert.SerializeObject(Model.FastInfo == null ? "高雄市" : Model.FastInfo.City))),
+                        District: @(new HtmlString(JsonConvert.SerializeObject(Model.FastInfo == null ? "" : Model.FastInfo.District))),
+                        Pwd: "",
+                        CheckPwd: "",
+                        CheckCode: @(new HtmlString(JsonConvert.SerializeObject(Model.FastInfo?.CheckCode))),
+                        GoogleId : @(new HtmlString(JsonConvert.SerializeObject(Model.FastInfo?.GoogleId))),
+                        FacebookId : @(new HtmlString(JsonConvert.SerializeObject(Model.FastInfo?.FacebookId))),
+                        LineLoginId : @(new HtmlString(JsonConvert.SerializeObject(Model.FastInfo?.LineLoginId))),
+                    },
+                    Pwd: "",
+                    CheckPwd: "",
+                    Registered: @(new HtmlString(JsonConvert.SerializeObject(ViewData["Registered"]))),
+                    IsErr: @(new HtmlString(JsonConvert.SerializeObject(Model.IsErr ?? false))),
+                    ErrMsg: @(new HtmlString(JsonConvert.SerializeObject(Model.ErrMsg))),
+                    IsFastSign: @(new HtmlString(JsonConvert.SerializeObject(Model.IsFastSign ?? false))),
+                    test: "123"
+                },
+                watch: {
+                    'Info.VerifyMethod'(newVal) {
+                        if (this.validator) {
+                            this.validator.resetForm();
+                        }
+                    },
+                    VerifyMethod(val, oldVal) {
+                        if (this.validator) {
+                            this.validator.resetForm();
+                        }
+                    },
+                    city: {
+                        handler: function (val, oldVal) {
+                            this.districts = this.cityList.find(c => c.Name === val).Districts || [];
+                        },
+                        immediate: true
+                    },
+                    cityFast: {
+                        handler: function (val, oldVal) {
+                            this.districtsFast = this.cityList.find(c => c.Name === val).Districts || [];
+                        },
+                        immediate: true
+                    }
+                },
+                computed: {
+                    city() {
+                        return this.Info.City;
+                    },
+                    cityFast() {
+                        return this.FastInfo.City;
+                    }
+                },
+                methods: {
+                    checkAccount() {
+                        if (!this.Info.LoginID) {
+                            return;
+                        }
+                        $.ajax({
+                            url: '/Member/CheckAccountAvailable',
+                            data: {
+                                __RequestVerificationToken: this.token,
+                                Account: this.Info.LoginID
+                            },
+                            type: 'POST',
+                            cache: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                Swal.fire({
+                                    icon: JSON.parse(data) ? "info" : "error",
+                                    title: JSON.parse(data) ? "此帳號可用" : "此帳號已存在"
+                                })
+                            }
+                        })
+                    },
+                    refreshValidateCode() {
+                        var vAccount = "";
+                        if (this.Info.VerifyMethod == 'SMS') vAccount = $('#UserPhone').val();
+                        else vAccount = $('#UserMail').val();
+                        if (vAccount) {
+                            $.ajax({
+                                url: '/Member/SendCheckCode',
+                                data: {
+                                    __RequestVerificationToken: this.token,
+                                    VerifyType: this.Info.VerifyMethod,
+                                    VerifyAccount: vAccount
+                            },
+                                type: 'POST',
+                                cache: false,
+                                dataType: 'json',
+                                success: function (data) {
+                                    Swal.fire({
+                                        icon: JSON.parse(data) ? "info" : "error",
+                                        title: JSON.parse(data) ? "驗證碼已發送" : "此驗證方式已被綁定"
+                                    })
+                                }
+                            });
+                        }
+                    },
+                    handleSubmit(e) {
+                        const self = this;
+                        this.validator = $('#form').validate({
+                            rules: {
+                                "Info.VerifyMethod": "required",
+                                "Info.Name": "required",
+                                "Info.LoginID": {
+                                    required: true,
+                                    remote: {
+                                        url: '/Member/CheckAccountAvailable',
+                                        data: {
+                                            __RequestVerificationToken: function () {
+                                                return self.token;
+                                            },
+                                            Account: function () {
+                                                return self.Info.LoginID;
+                                            }
+                                        },
+                                        type: 'POST',
+                                        cache: false,
+                                        dataType: 'json',
+                                    },
+                                },
+                                "Info.Mobile": "required",
+                                "Info.District": "required",
+                                "Info.Email": {
+                                    required: {
+                                        depends: function (element) {
+                                            return self.VerifyMethod == "MAIL";
+                                        }
+                                    },
+                                    email: true,
+                                },
+                                "Pwd": "required",
+                                "CheckPwd": {
+                                    required: true,
+                                    equalTo: "#UserPwd"
+                                },
+                                "VerifyCode": "required"
+                            },
+                            messages: {
+                                "Info.VerifyMethod": "請選擇驗證方式",
+                                "Info.Name": "請輸入您的名字",
+                                "Info.LoginID": {
+                                    required: "請輸入帳號",
+                                    remote: "帳號已存在"
+                                },
+                                "Info.Mobile": "請輸入行動電話",
+                                "Info.District": "請選擇所在區域",
+                                "Info.Email": {
+                                    required: "請輸入電子信箱",
+                                    email: "請輸入一個正確的電子信箱"
+                                },
+                                "Pwd": "請輸入密碼",
+                                "CheckPwd": {
+                                    required: "請輸入二次密碼",
+                                    equalTo: "請輸入與第一次密碼相同之密碼"
+                                },
+                                "VerifyCode": "請輸入驗證碼",
+                            },
+                            submitHandler: function (form) {
+                                this.IsFastSign = false;
+                                form.submit();
+                            }
+                        });
+                    },
+                    handleSubmitFast(e) {
+                        const self = this;
+                        this.validator = $('#formFast').validate({
+                            rules: {
+                                "FastInfo.Name": "required",
+                                "FastInfo.Mobile": "required",
+                                "FastInfo.District": "required",
+                                "FastInfo.Pwd": "required",
+                                "FastInfo.CheckPwd": {
+                                    required: true,
+                                    equalTo: "#UserPwd"
+                                },
+                                "FastInfo.CheckCode": "required"
+                            },
+                            messages: {
+                                "FastInfo.Name": "請輸入您的名字",
+                                "FastInfo.Mobile": "請輸入行動電話",
+                                "FastInfo.District": "請選擇所在區域",
+                                "FastInfo.Pwd": "請輸入密碼",
+                                "FastInfo.CheckPwd": {
+                                    required: "請輸入二次密碼",
+                                    equalTo: "請輸入與第一次密碼相同之密碼"
+                                },
+                                "FastInfo.CheckCode": "請輸入驗證碼",
+                            },
+                            submitHandler: function (form) {
+                                this.IsFastSign = true;
+                                form.submit();
+                            }
+                        });
+                    }
+                },
+                mounted() {
+                    if (this.IsErr) {
+                        Swal.fire({
+                            icon: "error",
+                            title: this.ErrMsg,
+                        });
+                    }
+                }
+            });
+        });
+        function fastValidateCode() {
+            var vAccount = $('#fUserPhone1').val();
+            if (vAccount) {
+                $.ajax({
+                    url: '/Member/SendCheckCode',
+                    data: {
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(),
+                        VerifyType: 'SMS',
+                        VerifyAccount: vAccount
+                    },
+                    type: 'POST',
+                    cache: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        Swal.fire({
+                            icon: JSON.parse(data) ? "info" : "error",
+                            title: JSON.parse(data) ? "驗證碼已發送" : "此驗證方式已被綁定"
+                        })
+                    }
+                });
+            }
+        }
+        //google登入
+        var googleUser = {};
+        var startApp = function () {
+            gapi.load('auth2', function () {
+                // Retrieve the singleton for the GoogleAuth library and set up the client.
+                auth2 = gapi.auth2.init({
+                    client_id: '@(ICCModule.Helper.AppSettingHelper.GetAppSetting("GoogleLoginId"))',
+                    cookiepolicy: 'single_host_origin',
+                    // Request scopes in addition to 'profile' and 'email'
+                    //scope: 'additional_scope'
+                });
+                attachSignin(document.getElementById('customBtn'));
+            });
+        };
+
+        function attachSignin(element) {
+            //console.log(element.id);
+            auth2.attachClickHandler(element, {},
+                function (googleUser) {
+                    var profile = googleUser.getBasicProfile();
+                    //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+                    //console.log('Name: ' + profile.getName());
+                    //console.log('Image URL: ' + profile.getImageUrl());
+                    //console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+                    $('#showFast').click();
+                    $('#fastGoogleId').val(profile.getId());
+                    $('#hidIsFastSign').val('true');
+                    //$('#UserMail').val(profile.getEmail());
+                    //$('#UserMail').prop('readonly', true);
+                    //$('#customBtn').prop('disabled', true);
+                    //$('#Mail').click();
+                }, function (error) {
+                    //alert(JSON.stringify(error, undefined, 2));
+                });
+        }
+
+        //FB登入
+        function statusChangeCallback(response) {
+            console.log('statusChangeCallback');
+            console.log(response);
+            if (response.status === 'connected') {
+                //location.href = "fbLogin.aspx?fbid=" + response.authResponse.userID;
+                console.log(response.authResponse.userID);
+
+                $('#fastFacebookId').val(response.authResponse.userID);
+                $('#hidIsFastSign').val('true');
+                $('#showFast').click();
+                //FB.api("/me", "GET", { fields: 'last_name,first_name,name,email' }, function (user) {
+                //    //user物件的欄位：https://developers.facebook.com/docs/graph-api/reference/user
+                //    if (user.error) {
+                //        console.log(user);
+                //    } else {
+                //        if (!user.email) {
+                //            $('#UserMail').val(user.email);
+                //            $('#UserMail').prop('readonly', true);
+                //            $('#fbLogin').prop('disabled', true);
+                //            $('#Mail').click();
+                //        }
+                //    }
+                //});
+            }
+            else {
+                FB.login(function (response) {
+                    if (response.status === 'connected') {
+                        //location.href = "fbLogin.aspx?fbid=" + response.authResponse.userID;
+                        console.log(response.authResponse.userID);
+
+                        $('#fastFacebookId').val(response.authResponse.userID);
+                        $('#hidIsFastSign').val('true');
+                        $('#showFast').click();
+                        //FB.api("/me", "GET", { fields: 'last_name,first_name,name,email' }, function (user) {
+                        //    //user物件的欄位：https://developers.facebook.com/docs/graph-api/reference/user
+                        //    if (user.error) {
+                        //        console.log(user);
+                        //    } else {
+                        //        if (!user.email) {
+                        //            $('#UserMail').val(user.email);
+                        //            $('#UserMail').prop('readonly', true);
+                        //            $('#fbLogin').prop('disabled', true);
+                        //            $('#Mail').click();
+                        //        }
+                        //    }
+                        //});
+                    }
+                });
+            }
+        }
+
+        function checkLoginState() {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
+        }
+
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '@(ICCModule.Helper.AppSettingHelper.GetAppSetting("FbAppId"))',
+                cookie: true,
+                xfbml: true,
+                version: 'v7.0'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = 'https://connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v3.2';
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        function LineAuth() {
+            var URL = 'https://access.line.me/oauth2/v2.1/authorize?';
+            URL += 'response_type=code';
+            URL += '&client_id=@(ICCModule.Helper.AppSettingHelper.GetAppSetting("ChannelId"))';
+            URL += '&redirect_uri=@(Request.Url.Scheme)://@(Request.Url.Authority)/LineRegist/LineCallBack';
+            URL += '&state=frfws';
+            URL += '&scope=openid%20profile';
+            window.location.href = URL;
+        }
+
+        function QueryString(name) {
+            var AllVars = window.location.search.substring(1);
+            var Vars = AllVars.split("&");
+            for (i = 0; i < Vars.length; i++) {
+                var Var = Vars[i].split("=");
+                if (Var[0] == name) return Var[1];
+            }
+            return "";
+        }
+
+        $(document).ready(function () {
+            var lineId = QueryString("loginKey");
+            if (lineId) {
+                $('#fastLineLoginId').val(lineId);
+                $('#hidIsFastSign').val('true');
+                $('#showFast').click();
+            }
+        });
+    </script>
+    <script>startApp();</script>
+    @if (!string.IsNullOrEmpty(Model.FastInfo?.GoogleId) || !string.IsNullOrEmpty(Model.FastInfo?.GoogleId) || !string.IsNullOrEmpty(Model.FastInfo?.GoogleId))
+    {
+        <script>
+            $(document).ready(function () {
+                $('#showFast').click();
+            });
+        </script>
+    }
+}

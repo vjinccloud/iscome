@@ -1,0 +1,151 @@
+﻿@model ICCModule.Entity.Tables.Platform.activityPlan
+@using System.Web.Security.AntiXss;
+@{
+    ViewBag.Title = "Info";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .divcss5 img {
+        max-width: 100%;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/DiseasePrevention/Preventlist">病蟲害防治</a></li>
+            <li><a href="~/DiseasePrevention/Map">農藥販賣業者地圖</a></li>
+            <li><a href="~/DiseasePrevention/Dashboard">病蟲害即時動態儀表板</a></li>
+            <li><a href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a></li>
+            <li><a href="~/Event/AllEvent">活動資訊</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3 style="display:inline-block">
+                        <span class="line">活動資訊</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/DiseasePrevention/Preventlist">植物防疫</a></li>
+                            <li class="breadcrumb-item"><a href="~/Event/AllEvent">活動資訊</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">活動資訊內頁</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>類型</th>
+                                    <td>@Model.TypeName</td>
+                                </tr>
+                                <tr>
+                                    <th>課程名稱</th>
+                                    <td>@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <th>活動時間</th>
+                                    <td style="white-space: normal; word-break: break-all">
+                                        @(new HtmlString(string.Join("<br/>", Model.OpenTimes.Select(x => x.Date.ToString("yyyy-MM-dd (ddd)").Replace("週", "") + x.TimeBetween))))
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>地點</th>
+                                    <td>
+                                        @Model.Address
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>上課時數</th>
+                                    <td>@(Model.ClassHours.ToString("0.0#"))小時</td>
+                                </tr>
+                                @if (Model.Open)
+                                {
+                                    <tr>
+                                        <th>報名期間</th>
+                                        <td>@(Model.RegistrationStartDate) ~ @(Model.RegistrationEndDateStr)</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <th>承辦人員</th>
+                                    <td>@Model.Undertaker</td>
+                                </tr>
+                                <tr>
+                                    <th>連絡電話</th>
+                                    <td>@Model.Phone</td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td>@Model.Email</td>
+                                </tr>
+                                <tr>
+                                    <th>附件</th>
+                                    <td>
+                                        @foreach (var item in ICCModule.EntityService.Service.Service_FileManagement.GetList("activity_Plans", Model.ID.ToString()))
+                                        {
+                                            <a href="@item.FilePath" target="_blank">@item.FileName</a>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th colspan="2" style="text-align:left">活動介紹</th>
+                                </tr>
+                                <tr>
+                                    <th class="divcss5" style="border-bottom: none; border-top: 2px grey solid; text-align: left; white-space: normal; word-break: break-all" colspan="2">
+                                        @(new HtmlString(Model.Context))
+                                    </th>
+                                </tr>
+                                @*<tr>
+                                        <td colspan="2" style="border-top:none">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>10：00 - 10：30</th>
+                                                        <th style="color:blue">報到</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="text-align:center">10：30 - 10：50</td>
+                                                        <td style="color:blue;text-align:center">水稻栽培管理技術</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>*@
+                                <tr>
+                                    <td colspan="2">
+                                        <div class="form-inline" style="justify-content:center">
+                                            <button type="button" class="btn btn-secondary m-2" onclick="window.history.back()">回上一頁</button>
+                                            @if (Model.Open && DateTime.Now.Date >= Model.RegistrationStartDate && (!Model.RegistrationEndDate.HasValue || DateTime.Now.Date <= Model.RegistrationEndDate) && ICCModule.EntityService.Service.Service_activityRegistration.CheckAllRegist(Model.ID))
+                                            {
+                                                <button type="button" class="btn btn-warning m-2" onclick="location.href='/Event/Register?id=@Model.ID'">我要報名</button>
+                                            }
+                                            @if (Model.Open)
+                                            {
+                                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/Member/Manage'">查詢報名資料</button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</section>
+

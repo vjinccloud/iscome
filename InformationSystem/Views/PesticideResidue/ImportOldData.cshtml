@@ -1,0 +1,95 @@
+﻿@model ICCModule.BaseResult
+@{
+    ViewBag.Title = "ImportOldData";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .table > thead > tr th,
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">舊資料匯入</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="form" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>資料匯入範本：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            @*<a href="javascript:void(0)">下載檔案</a>*@
+                                            <a href="~/農藥殘留檢測紀錄範本.xlsx">下載檔案</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>舊資料匯入：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="file" class="form-control" name="importFile" accept=".xls, .xlsx" />
+                                                <button type="button" class="btn btn-secondary ml-2" onclick="handleSubmit(event)">上傳</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2" style="text-align:center">
+                                            @*<span>匯入結果：成功5筆，<span style="color:red">失敗1筆(作物名稱無法對應)</span></span>*@
+                                            <span>@Model.Msg</span>
+                                        </th>
+                                    </tr>
+                                </table>
+                            </form>
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    <td colspan="2" style="text-align:right">
+                                        <button type="submit" class="btn btn-primary m-2" onclick="location.href='/PesticideResidue/Inspection'">回上一頁</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script{
+    <script>
+        function handleSubmit(e, act) {
+            e.preventDefault();
+
+            var validate = $("form").valid();
+
+            console.log($('form').serializeArray())
+            document.getElementById('form').submit();
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+

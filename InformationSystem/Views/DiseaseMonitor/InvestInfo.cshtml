@@ -1,0 +1,210 @@
+﻿@model InformationSystem.ViewModel.InvestInfoShowModel
+@{
+    ViewBag.Title = "InvestInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">疫病蟲害監測管理-@(Model.Years > 1911 ? Model.Years - 1911 : Model.Years)年度-@(Model.ProjectName)編輯頁</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <h4 class="mb-3">@(Model.Type)-@(Model.Distist)</h4>
+                        <div style="display:flex">
+                            <div>
+                                <button type="button" class="btn btn-danger m-2" onclick="location.href='/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years'"><i class="fas fa-plus-circle mr-2"></i>新增紀錄</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            @if (Model.ProjectName == "葉稻熱病")
+                            {
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">月份</th>
+                                            <th scope="col">周</th>
+                                            <th scope="col">0級<br />發生面積(公頃)</th>
+                                            <th scope="col">1級<br />發生面積(公頃)</th>
+                                            <th scope="col">2級<br />發生面積(公頃)</th>
+                                            <th scope="col">3級<br />發生面積(公頃)</th>
+                                            <th scope="col">4級<br />發生面積(公頃)</th>
+                                            <th scope="col">嚴重程度</th>
+                                            <th scope="col">比例</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.SeverityModels.OrderBy(x => x.Month))
+                                        {
+                                            <tr>
+                                                <td>@item.Month</td>
+                                                <td>@item.NowWeek</td>
+                                                <td>@item.Level_0</td>
+                                                <td>@item.Level_1</td>
+                                                <td>@item.Level_2</td>
+                                                <td>@item.Level_3</td>
+                                                <td>@item.Level_4</td>
+                                                <td>@item.Severity</td>
+                                                <td>@item.Scale</td>
+                                                <td>
+                                                    @*<button type="button" class="btn btn-danger m-2" onclick="location.href = '/BackEnd/DiseaseMonitor/PlagueEdit?mpaid='">編輯</button>*@
+                                                    <button type="button" class="btn btn-danger m-2" onclick="location.href = '/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&month=@item.Month'">編輯</button>
+                                                    @if (item.ShowCopy)
+                                                    {
+                                                        <button type="button" class="btn btn-info m-2" onclick="location.href = '/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&copymonth=@item.Month'">複製本月資料</button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else if (Model.ProjectName == "穗稻熱病")
+                            {
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">月份</th>
+                                            <th scope="col">周</th>
+                                            <th scope="col">0級<br />發生面積(公頃)</th>
+                                            <th scope="col">1級<br />發生面積(公頃)</th>
+                                            <th scope="col">2級<br />發生面積(公頃)</th>
+                                            <th scope="col">3級<br />發生面積(公頃)</th>
+                                            <th scope="col">嚴重程度</th>
+                                            <th scope="col">比例</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.SeverityModels.OrderBy(x => x.Month))
+                                        {
+                                            <tr>
+                                                <td>@item.Month</td>
+                                                <td>@item.NowWeek</td>
+                                                <td>@item.Level_0</td>
+                                                <td>@item.Level_1</td>
+                                                <td>@item.Level_2</td>
+                                                <td>@item.Level_3</td>
+                                                <td>@item.Severity</td>
+                                                <td>@item.Scale</td>
+                                                <td>
+                                                    @*<button type="button" class="btn btn-danger m-2" onclick="location.href = '/BackEnd/DiseaseMonitor/PlagueEdit?mpaid='">編輯</button>*@
+                                                    <button type="button" class="btn btn-danger m-2" onclick="location.href = '/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&month=@item.Month'">編輯</button>
+                                                    @if (item.ShowCopy)
+                                                    {
+                                                        <button type="button" class="btn btn-info m-2" onclick="location.href = '/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&copymonth=@item.Month'">複製本月資料</button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else if (Model.ProjectName.Contains("秋行軍蟲"))
+                            {
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">月份</th>
+                                            <th scope="col">受害株數</th>
+                                            <th scope="col">受害率</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.BugTotalModels.OrderBy(x => x.Month))
+                                        {
+                                            <tr>
+                                                <td>@item.Month</td>
+                                                <td>@item.TotalCount</td>
+                                                <td>@(item.VictimRate)%</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary m-2" onclick="location.href='/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&month=@item.Month'">登打紀錄</button>
+                                                    @if (item.ShowCopy)
+                                                    {
+                                                        <button type="button" class="btn btn-info m-2" onclick="location.href = '/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&copymonth=@item.Month'">複製本月資料</button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else if (Model.ProjectName.Contains("琉璃蟻"))
+                            {
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">月份</th>
+                                            <th scope="col">統計蟲數</th>
+                                            <th scope="col">其他蟻種-數量</th>
+                                            <th scope="col">其他蟻種比例</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.BugTotalModels.OrderBy(x => x.Month))
+                                        {
+                                            <tr>
+                                                <td>@item.Month</td>
+                                                <td>@item.TotalCount</td>
+                                                <td>@item.OtherCount</td>
+                                                <td>@(item.VictimRate)%</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary m-2" onclick="location.href='/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&month=@item.Month'">登打紀錄</button>
+                                                    @if (item.ShowCopy)
+                                                    {
+                                                        <button type="button" class="btn btn-info m-2" onclick="location.href = '/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&copymonth=@item.Month'">複製本月資料</button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else
+                            {
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">月份</th>
+                                            <th scope="col">蟲數加總</th>
+                                            <th scope="col">作物</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.BugTotalModels.OrderBy(x => x.Month))
+                                        {
+                                            <tr>
+                                                <td>@item.Month</td>
+                                                <td>@item.TotalCount</td>
+                                                <td>@item.Crops</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary m-2" onclick="location.href='/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&month=@item.Month'">登打紀錄</button>
+                                                    @if (item.ShowCopy)
+                                                    {
+                                                        <button type="button" class="btn btn-info m-2" onclick="location.href = '/DiseaseMonitor/Record?mpaid=@Model.mpaId&year=@Model.Years&copymonth=@item.Month'">複製本月資料</button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+
+                        </div>
+                        <div class="form-inline" style="justify-content:center">
+                            <button type="button" class="btn btn-primary m-2" onclick="location.href = '/DiseaseMonitor/InvestItem?mpid=@Model.mpId'">回上一頁</button>
+                            <button type="button" class="btn btn-secondary m-2" onclick="location.href='/DiseaseMonitor/ProjectList?year=@Model.Years'">回專案列表頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

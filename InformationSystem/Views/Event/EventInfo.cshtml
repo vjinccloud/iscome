@@ -1,0 +1,540 @@
+﻿@using Newtonsoft.Json;
+@{
+    ViewBag.Title = "EventAdd";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdn.ckeditor.com/ckeditor5/30.0.0/classic/ckeditor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    @*<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>*@
+}
+@section Style {
+    <style>
+        .ck.ck-editor__editable_inline {
+            min-height: 500px;
+        }
+
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+
+        .align-center {
+            align-items: center;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+}
+
+<div class="container-fluid" id="EventInfo">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">活動報名管理-@(Model.Plan.ID == 0 ? "新增" : "編輯")</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="card shadow mb-4">
+                    <input type="hidden" value="@Model.Plan.ID" name="Plan.ID" />
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tbody>
+                                        <tr>
+                                            <td style="min-width: 160px; width: 160px;">
+                                                <span class="important font-weight-bold">活動類型：</span>
+                                            </td>
+                                            <td style="width: 35%;">
+                                                <select name="Plan.Type" class="form-control" required>
+                                                    <option value="">請選擇</option>
+                                                    @{
+                                                        foreach (var defCode in Model.Types)
+                                                        {
+                                                            var selected = defCode.Code == Model.Plan.Type;
+                                                            <option value="@defCode.Code" @(defCode.Code == Model.Plan.Type ? "selected" : "")>@defCode.Name</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td style="width: 35%;"></td>
+                                            <td style="width: auto;"></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="important font-weight-bold">顯示狀態：</span>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="form-inline">
+                                                    <label class="mr-2"><input type="radio" class="form-control mr-2" name="Plan.Show" value="true" @(Model.Plan.Show ? "checked" : "") />上架</label>
+                                                    <label class="mr-2"><input type="radio" class="form-control mr-2" name="Plan.Show" value="false" @(!Model.Plan.Show ? "checked" : "") />下架</label>
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="important font-weight-bold">活動日期起訖：</span>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="form-inline">
+                                                    <input name="Plan.StartDateStr" type="date" class="form-control mr-2" style="width:46%"
+                                                           v-bind:min="StartDateMin" v-bind:max="StartDateMax" v-model="StartDate" required />
+                                                    <span>～</span>
+                                                    <input name="Plan.EndDateStr" type="date" class="form-control ml-2"
+                                                           style="width:46%" v-bind:min="EndDateMin" v-model="EndDate" required />
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="important font-weight-bold">活動名稱：</span>
+                                            </td>
+                                            <td colspan="3">
+                                                <input name="Plan.Name" type="text" class="form-control" value="@Model.Plan.Name" required />
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="font-weight-bold">地點：</span>
+                                            </td>
+                                            <td colspan="3">
+                                                <input name="Plan.Address" type="text" class="form-control" value="@Model.Plan.Address" />
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="font-weight-bold">承辦人：</span>
+                                            </td>
+                                            <td>
+                                                <input name="Plan.Undertaker" type="text" class="form-control" value="@Model.Plan.Undertaker" />
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="font-weight-bold">連絡電話：</span>
+                                            </td>
+                                            <td>
+                                                <input name="Plan.Phone" type="text" class="form-control" value="@Model.Plan.Phone" />
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="important font-weight-bold">是否開放報名：</span>
+                                            </td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <label class="mr-2">
+                                                        <input type="radio" class="form-control mr-2" name="Plan.Open" required value="true" checked="@(Model.Plan.Open == true)" v-on:click="needRegistration = true;" />開放報名
+                                                    </label>
+                                                    <label class="mr-2">
+                                                        <input type="radio" class="form-control mr-2" name="Plan.Open" required value="false" checked="@(Model.Plan.Open == false)" v-on:click="needRegistration = false;" />否，無需報名
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+
+                                        <tr v-if="needRegistration">
+                                            <td>
+                                                <span class="font-weight-bold">上課時數：</span>
+                                            </td>
+                                            <td>
+                                                <input name="Plan.ClassHours" type="number" step="0.5" min="0" class="form-control" value="@Model.Plan.ClassHours" />
+                                            </td>
+                                        </tr>
+
+                                        <tr v-if="needRegistration">
+                                            <td>
+                                                <span class="important font-weight-bold">開放報名起訖：</span>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="form-inline">
+                                                    <input name="Plan.RegistrationStartDateStr"
+                                                           type="date"
+                                                           class="form-control mr-2"
+                                                           style="width:46%"
+                                                           v-bind:min="RegistrationStartDateMin"
+                                                           v-bind:max="RegistrationStartDateMax"
+                                                           v-model="RegistrationStartDate" />
+                                                    <span>～</span>
+                                                    <input name="Plan.RegistrationEndDateStr"
+                                                           type="date"
+                                                           class="form-control ml-2"
+                                                           style="width:46%"
+                                                           v-bind:min="RegistrationEndDateMin"
+                                                           v-model="RegistrationEndDate" />
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+
+                                        <tr v-if="needRegistration">
+                                            <td>
+                                                <span class="important font-weight-bold">報名欄位設定：</span>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="form-inline">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.NameCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.NameCheck ? "checked" : "") />姓名，是否必填
+                                                    </label>
+                                                    <select name="PlanField.NameNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.NameNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.NameNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-inline mt-2">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.IdentifyCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.IdentifyCheck ? "checked" : "") />身分證字號，是否必填
+                                                    </label>
+                                                    <select name="PlanField.IdentifyNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.IdentifyNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.IdentifyNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-inline mt-2">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.PhoneCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.PhoneCheck ? "checked" : "") />行動電話，是否必填
+                                                    </label>
+                                                    <select name="PlanField.PhoneNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.PhoneNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.PhoneNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-inline mt-2">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.PesticideManagementStaffIDCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.PesticideManagementStaffIDCheck ? "checked" : "") />農藥管理人員證照號碼，是否必填
+                                                    </label>
+                                                    <select name="PlanField.PesticideManagementStaffIDNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.PesticideManagementStaffIDNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.PesticideManagementStaffIDNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-inline mt-2">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.PesticideManagementStaffExpiryDateCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.PesticideManagementStaffExpiryDateCheck ? "checked" : "") />農藥管理人員證照到期日，是否必填
+                                                    </label>
+                                                    <select name="PlanField.PesticideManagementStaffExpiryDateNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.PesticideManagementStaffExpiryDateNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.PesticideManagementStaffExpiryDateNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-inline mt-2">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.ServiceUnitCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.ServiceUnitCheck ? "checked" : "") />服務單位，是否必填
+                                                    </label>
+                                                    <select name="PlanField.ServiceUnitNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.ServiceUnitNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.ServiceUnitNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-inline mt-2">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.MealsTypeCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.MealsTypeCheck ? "checked" : "") />便當種類，是否必填
+                                                    </label>
+                                                    <select name="PlanField.MealsTypeNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.MealsTypeNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.MealsTypeNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-inline mt-2">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.MealsTypeCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.CropsNameCheck ? "checked" : "") />作物名稱，是否必填
+                                                    </label>
+                                                    <select name="PlanField.MealsTypeNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.CropsNameNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.CropsNameNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-inline mt-2">
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" name="PlanField.MealsTypeCheck" class="form-control mr-2" value="true" @(Model.Plan.Fields.CropsAreaCheck ? "checked" : "") />作物面積，是否必填
+                                                    </label>
+                                                    <select name="PlanField.MealsTypeNeed" class="form-control">
+                                                        <option value="true" @(Model.Plan.Fields.CropsAreaNeed ? "selected" : "")>是</option>
+                                                        <option value="false" @(!Model.Plan.Fields.CropsAreaNeed ? "selected" : "")>否</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+
+                                        <tr v-if="needRegistration">
+                                            <th>報名場次選項：</th>
+                                            <td colspan="3">
+                                                <div style="display:flex;justify-content:flex-start">
+                                                    <button type="button" class="btn btn-secondary" v-on:click="AddOpenTime($event)">新增</button>
+                                                </div>
+                                                <div class="table-responsive mt-2">
+                                                    <table class="table mb-0">
+                                                        <thead class="thead-light">
+                                                            <tr>
+                                                                <th style="word-break: keep-all;">項次</th>
+                                                                <th>場次名稱</th>
+                                                                <th>日期</th>
+                                                                <th style="min-width: 80px;">時間</th>
+                                                                <th>名額上限</th>
+                                                                <th>動作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="open-times-list">
+                                                            <tr v-for="(o, ii) in openTimes" v-bind:key="ii">
+                                                                <td class="text-center">{{ ii+1 }}</td>
+                                                                <td>
+                                                                    <input type="hidden" v-model="o.ID" v-bind:name="`OpenTimes[${ii}].ID`" />
+                                                                    <input v-model="o.Name" v-bind:name="`OpenTimes[${ii}].Name`" type="text" class="form-control" />
+                                                                </td>
+                                                                <td>
+                                                                    <input v-model="o.DateStr" v-bind:name="`OpenTimes[${ii}].DateStr`" type="date" v-bind:min="StartDate" v-bind:max="EndDate" class="form-control" style="width: 180px;" />
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex align-center">
+                                                                        <input v-model="o.TimeBetween" type="text" class="form-control" v-bind:name="`OpenTimes[${ii}].TimeBetween`" />
+
+                                                                        @*<input name="OpenTimes[0].HourStr" type="number" min="6" max="20" class="form-control" style="width: 60px;" />
+                                                                            <span class="pl-2 pr-2">:</span>
+                                                                            <input name="OpenTimes[0].MinuteStr" type="number" min="0" max="50" step="5" class="form-control" style="width: 60px;" />*@
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-inline" style="flex-flow: row;">
+                                                                        <label class="mr-2" style="word-break: keep-all;">
+                                                                            <input v-bind:name="`OpenTimes[${ii}].Nums`" value="0" type="checkbox" class="form-control mr-2" onclick="changeNumLimit(this)" :checked="o.Nums===0" />無人數限制
+                                                                        </label>
+                                                                        <input v-bind:name="`OpenTimes[${ii}].Nums`" v-model="o.Nums" type="number" min="0" class="form-control" style="width: 80px;" />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-secondary" style="word-break: keep-all;" v-on:click="deleteOpenTime(ii)">刪除</button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="important font-weight-bold">內容：</span>
+                                            </td>
+                                            <td colspan="3">
+                                                <textarea name="Plan.Context" id="editor" required>
+                                                    @Model.Plan.Context
+                                                </textarea>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span class="important font-weight-bold">附加檔案：</span>
+                                            </td>
+                                            <td colspan="3">
+                                                @foreach (var item in Model.OldFiles)
+                                                {
+                                                    <div id="of_@item.ID">
+                                                        <input type="hidden" value="@item.ID" id="of_@item.ID" name="EditOldFiles[]" />
+                                                        <a href="@item.FilePath" target="_blank">@item.FileName</a><a class="btn" onclick="DelFile('of_@item.ID')">x</a>
+                                                    </div>
+                                                }
+                                                <div class="form-inline">
+                                                    <input type="file" multiple name="Files" accept=".doc, .docx, .odt, .ods, .ppt, .pdf, .xls, .xlsx, .jpg, .png, .jpeg, .csv, .gif, .txt" />
+                                                    @*<button type="button" class="btn btn-primary ml-2">更多檔案</button>*@
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" v-on:click.prevent="handleSubmit($event)">儲存</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script src="~/js/ckeditor-upload-adapter.js"></script>
+    <script>
+        function MyCustomUploadAdapterPlugin(editor) {
+            editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                // Configure the URL to the upload script in your back-end here!
+                return new MyUploadAdapter(loader, '/File/UploadImage?catalog=ActivityPlan');
+            };
+        }
+        function DelFile(id) {
+            $('#' + id).html('');
+        }
+
+
+        const EventInfo = new Vue({
+            el: "#EventInfo",
+            data: {
+                StartDate: '@((Model.Plan.StartDate != null&& Model.Plan.ID >0) ? Model.Plan.StartDate.ToString("yyyy-MM-dd") : "")',
+                StartDateMin: null,
+                StartDateMax: '@((Model.Plan.EndDate != null && Model.Plan.ID > 0) ? Model.Plan.EndDate.ToString("yyyy-MM-dd") : "")',
+                EndDate: '@((Model.Plan.EndDate != null && Model.Plan.ID >0) ? Model.Plan.EndDate.ToString("yyyy-MM-dd") : "")',
+                EndDateMin: '@((Model.Plan.StartDate != null && Model.Plan.ID > 0) ? Model.Plan.StartDate.ToString("yyyy-MM-dd") : "")',
+
+                RegistrationStartDate: '@(Model.Plan.RegistrationStartDate != null ? Model.Plan.RegistrationStartDate.ToString("yyyy-MM-dd") : "")',
+                //RegistrationStartDateMin: moment().format("YYYY-MM-DD"),
+                RegistrationStartDateMin: '@((Model.Plan.RegistrationStartDate != null && DateTime.Now > Model.Plan.RegistrationStartDate) ? Model.Plan.RegistrationStartDate.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))',
+                RegistrationStartDateMax: null,
+                RegistrationEndDate: '@(Model.Plan.RegistrationEndDate != null ? Model.Plan.RegistrationEndDate.ToString("yyyy-MM-dd") : "")',
+                //RegistrationEndDateMin: moment().format("YYYY-MM-DD"),
+                RegistrationEndDateMin: '@(Model.Plan.RegistrationEndDate != null ? Model.Plan.RegistrationEndDate.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))',
+                needRegistration: @(Model.Plan.Open ? "true":"false"),
+                openTimes: @(new HtmlString(JsonConvert.SerializeObject(Model.OpenTimes))),
+            },
+            watch: {
+                StartDate(val, old) {
+                    this.EndDateMin = moment(val).format("YYYY-MM-DD");
+                },
+                EndDate(val, old) {
+                    this.StartDateMax = moment(val).format("YYYY-MM-DD");
+                },
+                RegistrationStartDate(val, old) {
+                    this.RegistrationEndDateMin = moment(val).format("YYYY-MM-DD");
+                },
+                RegistrationEndDate(val, old) {
+                    this.RegistrationStartDateMax = moment(val).format("YYYY-MM-DD");
+                },
+            },
+            methods: {
+                AddOpenTime(e) {
+                    const obj = {
+                        ID: 0,
+                        Name: "",
+                        DateStr: "",
+                        TimeBetween: "",
+                        Nums: ""
+                    }
+                    this.openTimes.push(obj);
+                    console.log(this.openTimes)
+                },
+                deleteOpenTime(index) {
+                    this.openTimes.splice(index, 1);
+                },
+                handleSubmit(e) {
+                    console.log(this.openTimes);
+                    var validate = $("form").valid();
+                    if (validate) {
+                        console.log($('form').serializeArray())
+                        document.getElementById('form').submit();
+                    }
+                }
+            },
+            mounted() {
+                @*this.StartDateMin = @(Model.Plan.ID) > 0 ? this.StartDate : moment().format("YYYY-MM-DD");*@
+
+                ClassicEditor
+                    .create(document.querySelector('#editor'), {
+                        extraPlugins: [MyCustomUploadAdapterPlugin],
+                    })
+                    .then(editor => {
+                        window.editor = editor;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+            }
+        });
+
+
+        //// 新增一列開放報名資訊
+        //function AddOpenTime(event) {
+        //    let tbodyElement = $("#open-times-list");
+        //    let counts = $(tbodyElement).children().length;
+        //    console.log(tbodyElement, counts)
+
+        //    $(tbodyElement).append(`<tr>
+        //                <td class="text-center">${counts + 1}</td>
+        //                <td>
+        //                    <input name="OpenTimes[${counts}].Name" type="text" class="form-control" />
+        //                </td>
+        //                <td>
+        //                    <input name="OpenTimes[${counts}].DateStr" type="date" class="form-control" style="width: 180px;" />
+        //                </td>
+        //                <td>
+        //                    <div class="d-flex align-center">
+        //                        <input name="OpenTimes[${counts}].HourStr" type="number" min="6" max="20" class="form-control" style="width: 60px;" />
+        //                        <span class="pl-2 pr-2">:</span>
+        //                        <input name="OpenTimes[${counts}].MinuteStr" type="number"  min="0" max="50" step="5" class="form-control" style="width: 60px;" />
+        //                    </div>
+        //                </td>
+        //                <td>
+        //                    <div class="form-inline" style="flex-flow: row;">
+        //                        <label class="mr-2" style="word-break: keep-all;">
+        //                            <input name="OpenTimes[${counts}].Nums" value="0" type="checkbox" class="form-control mr-2" onclick="changeNumLimit(this)" />無人數限制
+        //                        </label>
+        //                        <input name="OpenTimes[${counts}].Nums" type="number" min="0" class="form-control" style="width: 80px;" />
+        //                    </div>
+        //                </td>
+        //                <td>
+        //                    <button type="button" class="btn btn-secondary" style="word-break: keep-all;" onclick="deleteOpenTime(this)">刪除</button>
+        //                </td>
+        //            </tr>`);
+        //}
+
+        //// 刪除開放報名場次
+        //function deleteOpenTime(element) {
+        //    $(element).parent().parent().remove();
+        //}
+
+        //function handleSubmit(e) {
+        //    e.preventDefault();
+        //    var validate = $("form").valid();
+        //    if (validate) {
+        //        console.log($('form').serializeArray())
+        //        document.getElementById('form').submit();
+        //    }
+        //}
+
+        //$(document).ready(function () {
+        //    $('input[name="Open"]').click(function () {
+        //        let checked = $('input[name="Open"]:checked');
+        //        console.log("Open checked");
+
+        //    });
+        //});
+    </script>
+}

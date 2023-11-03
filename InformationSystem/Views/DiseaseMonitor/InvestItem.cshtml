@@ -1,0 +1,91 @@
+﻿@model InformationSystem.ViewModel.MonitorProjectsSaveModel
+@{
+    ViewBag.Title = "InvestItem";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">疫病蟲害監測管理-@(Model.Year > 1911 ? Model.Year - 1911 : Model.Year)年度-@(Model.Name)編輯頁</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    <th>
+                                        <span>專案名稱</span>
+                                    </th>
+                                    <td>
+                                        <span>@Model.Name</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span>調查起訖</span>
+                                    </th>
+                                    <td>@(Model.StartDate.ToString("MM/dd"))~@(Model.EndDate.ToString("MM/dd"))</td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span>調查頻率</span>
+                                    </th>
+                                    <td>@Model.Frequency</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">調查對象類型</th>
+                                        <th scope="col">行政區</th>
+                                        <th scope="col">調查點位數量</th>
+                                        <th scope="col">最近一次更新日期</th>
+                                        <th scope="col">動作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.AreaData)
+                                    {
+                                        <tr>
+                                            <td>@item.Type</td>
+                                            <td>@item.Distist</td>
+                                            <td>@item.Points</td>
+                                            <td>@(ICCModule.Helper.Extention.ToMinDateString(item.UpdateAt))</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <button type="button" class="btn btn-danger m-2" onclick="location.href = '/DiseaseMonitor/InvestInfo?mpaid=@item.ID'">編輯</button>
+                                                    @if (item.ShowDel)
+                                                    {
+                                                        using (Html.BeginForm("InvestItemDelete", "DiseaseMonitor", FormMethod.Post, new { onclick = "return confirm('確定刪除?');" }))
+                                                        {
+                                                            @Html.Hidden("mpid", Model.ID)
+                                                            @Html.Hidden("Id", item.ID)
+                                                            <input type="submit" class="btn btn-secondary m-2" value="刪除" />
+                                                            @*<button type="button" class="btn btn-secondary m-2">刪除</button>*@
+                                                        }
+                                                    }
+                                                </div>                                                
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="form-inline" style="justify-content:center">
+                            <button type="button" class="btn btn-primary m-2" onclick="location.href='/DiseaseMonitor/ProjectList?year=@(Model.Year)'">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

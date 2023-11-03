@@ -1,0 +1,74 @@
+﻿@model List<InformationSystem.ViewModel.NotifyStatModel>
+@{
+    ViewBag.Title = "NotifyStat";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">訂閱訊息統計</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    @*<th style="width:10%">
+                                            <label>日期區間：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="date" class="form-control" />
+                                                <span>～</span>
+                                                <input type="date" class="form-control" />
+                                            </div>
+                                        </td>*@
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align:right">
+                                        @*<button type="submit" class="btn btn-primary m-2"><i class="fas fa-search mr-2"></i>查詢</button>*@
+                                        @using (Html.BeginForm("OutputExcel", "DiseasePrevention", FormMethod.Post))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-export m-2"><i class="fas fa-search mr-2"></i>匯出</button>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="table-responsive">
+                            <h4 class="m-3">根據會員所輸入的疫情訊息訂閱關鍵字，進行關鍵字統計。</h4>
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">排行順序</th>
+                                        <th scope="col">計次</th>
+                                        <th scope="col">關鍵字</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@item.Counts</td>
+                                                <td>@item.KeyWord</td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

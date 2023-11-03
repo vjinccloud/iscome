@@ -1,0 +1,117 @@
+﻿@*
+    診斷次數與服務面積圖表
+*@
+@model InformationSystem.ViewModel.ServiceAreaStatisticModel
+@{
+    Layout = null;
+}
+
+<div id="DiagnosisAndServiceArea" class="table-responsive mt-4">
+    <table class="table mb-0 no-border" style="min-width:700px;">
+        <tbody>
+            <tr>
+                <th>診斷次數與服務面積圖表</th>
+            </tr>
+            <tr>
+                <td>
+                    <canvas id="DiagnosisAndServiceAreaCvs"></canvas>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+
+    /**
+    * 診斷次數與服務面積圖表產生模組
+    */
+    class DiagnosisAndServiceArea {
+
+        static chart;
+
+        /**
+         * 繪製報表
+         */
+        static Draw() {
+            DiagnosisAndServiceArea.ApiGetStatData().then(statData => {
+                DiagnosisAndServiceArea.DrawChart(statData);
+            });
+        }
+
+        /**
+        * 將統計資料繪製成圖表
+        * @@param statData 統計資料
+        */
+        static DrawChart(statData) {
+            var ctx = $('#DiagnosisAndServiceAreaCvs');
+
+            if (DiagnosisAndServiceArea.chart) {
+                DiagnosisAndServiceArea.chart.destroy();
+            }
+
+            DiagnosisAndServiceArea.chart = new Chart(ctx, {
+                data: {
+                    datasets: [{
+                        type: 'bar',
+                        label: '總面積',
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        data: statData.map(data => data.TotalArea)
+                    }, {
+                        type: 'line',
+                        label: '診斷次數',
+                        borderColor: '#36a2eb',
+                        data: statData.map(data => data.TotalCount)
+                    }],
+                    labels: statData.map(data => data.YearMonth)
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 16
+                                }
+                            }
+                        }
+
+                    }
+                }
+            });
+
+
+        }
+
+        /**
+         * 取的報表統計資料
+         */
+        static ApiGetStatData() {
+
+            let url = `/StatisticApi/GetDiagnosisAndServiceArea`;
+
+            let headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+
+            let body = {
+                startDate: document.querySelector("#MonthlyStartDate").value,
+                endDate: document.querySelector("#MonthlyEndDate").value
+            }
+
+            return fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(body)
+            }).then(response => response.json());
+
+        }
+
+    }
+
+
+</script>
+
+

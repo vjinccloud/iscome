@@ -1,0 +1,143 @@
+﻿@model ICCModule.Entity.Tables.Platform.doctorSchedule
+@{
+    ViewBag.Title = "ReserveDetail";
+    Layout = null;
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title -->
+    <title>高雄市政府農業局線上植物防疫平台</title>
+
+
+    <!-- Core Stylesheet -->
+    <link href="../css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="../icon/css/all.min.css" rel="stylesheet" />
+    <link href="../css/vnstyle.css" rel="stylesheet" />
+    <link href="../css/anstyle.css" rel="stylesheet" />
+
+    <link href="../css/bootstrap/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="../packages/core/main.css" rel="stylesheet" />
+    <link href="../packages/daygrid/main.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+    <link href="../Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="../css/pesticidesInventoryInfo.css" rel="stylesheet" />
+    <!-- jQuery-->
+    <script src="../Scripts/jquery-3.6.3.min.js"></script>
+    <script src="../Scripts/jquery.validate.min.js"></script>
+    <script src="../Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="../Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="../Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="../js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="../js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="../Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Moment -->
+    <script src="../Scripts/moment.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="../js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="../js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <script src="../packages/core/main.js"></script>
+    <script src="../packages/core/locales-all.js"></script>
+    <script src="../packages/daygrid/main.js"></script>
+    <script src="../packages/interaction/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <style>
+        body {
+            font-size: 14px;
+        }
+    </style>
+    <style>
+        .btn {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="bg-img">
+
+    <div class="container2">
+
+        <div class="text-center">
+            <a href="../Home/Index">
+                <img src="/images/logo2.png" style="width:200px; margin:40px 0;">
+            </a>
+        </div>
+
+        <!-- 內頁 -->
+        <section id="SignUp" class="">
+            <div class="con-box" style="margin-bottom:20px">
+                <span class="">
+                    預約日期:@ViewBag.model.ReserveDatetime</ span >
+                    <div class="card2">
+                        <div class="card-body">
+                            <div class="col-12 col-lg-12 text-left">
+                                <span class="">植物醫生：@ViewBag.doctor</span>
+                            </div>
+                            <div class="col-12 col-lg-12 text-left">
+                                <span class="">作物病徵圖片：</span>
+
+                                @foreach (var file in (ViewBag.model.CropSymptoms ?? "").Split(','))
+                                {
+                                    <img src="@(System.Configuration.ConfigurationManager.AppSettings["base_admin_url"] + file)" style="width:100%;" />
+                                }
+
+                            </div>
+
+                        </div>
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">診斷日期：@if (ViewBag.model.DateDiagnosis != null)
+                            {
+                                @Convert.ToDateTime(ViewBag.model.DateDiagnosis).ToString("yyyy/MM/dd");
+                            }</span>
+                        </div>
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">診斷結果：</span>@if (ViewBag.model.ResultDiagnosis != null) { @ViewBag.model.ResultDiagnosis}
+                        </div>
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">防治建議：</span>
+                            @if (ViewBag.model.RecommendationCategory != null)
+                            {
+                                if (ViewBag.model.RecommendationCategory == "PesticideMaterials")
+                                {
+                                    @("農藥資材")
+                                }
+                                else if (ViewBag.model.RecommendationCategory == "NonPesticideMaterials")
+                                {
+                                    @("非農藥資材")
+                                }
+                                else if (ViewBag.model.RecommendationCategory == "Other")
+                                {
+                                    @("其他 (可輸入備註)")
+                                }
+                            }
+                            @if (ViewBag.model.Recommendation != null)
+                            {@ViewBag.model.Recommendation}
+                        </div>
+
+                    </div>
+            </div>
+        </section>
+    </div>
+
+
+
+</body>
+
+</html>
+

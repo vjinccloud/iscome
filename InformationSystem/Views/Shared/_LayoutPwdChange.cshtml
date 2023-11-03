@@ -1,0 +1,263 @@
+﻿@{
+    var rp = new List<ICCModule.Entity.Tables.Platform.Permission>();
+    if (Session["LoginRole"] != null)
+    {
+        rp = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ICCModule.Entity.Tables.Platform.Permission>>(Session["LoginRole"].ToString());
+    }
+
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        作物病蟲害預警系統暨植物醫師診斷系統管理平台
+    </title>
+    <meta name="description" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Custom fonts for this template-->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+    <!-- Custom styles for this template-->
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet" />
+    @*<link href="~/css/vnstyle02.css" rel="stylesheet" />*@
+    <link href="~/css/tablegrow.css" rel="stylesheet" />
+    <link href="~/css/vnstyle.css" rel="stylesheet" />
+
+    <link href="~/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="~/packages/core/main.css" rel="stylesheet" />
+    <link href="~/packages/daygrid/main.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+
+    @RenderSection("Style", required: false)
+
+    <!-- jQuery-->
+    <script src="~/Scripts/jquery-3.6.3.min.js"></script>
+    @*jquery.validate套件 用於前端表單驗證*@
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="~/js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="~/js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="~/Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="~/js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="~/js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <!-- Moment -->
+    <script src="~/Scripts/moment.js"></script>
+    <!-- Other -->
+    <script src="~/packages/core/main.js"></script>
+    <script src="~/packages/core/locales-all.js"></script>
+    <script src="~/packages/daygrid/main.js"></script>
+    <script src="~/packages/interaction/main.js"></script>
+    <!--Duallistbox-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap4-duallistbox/4.0.2/jquery.bootstrap-duallistbox.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap4-duallistbox/4.0.2/bootstrap-duallistbox.min.css" />
+
+    @*Chartjs*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    @*jquery-ui套件 *@
+    <script src="~/Scripts/jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+    @*blockUI-顯示讀取中的區塊*@
+    <script src="http://malsup.github.io/jquery.blockUI.js"></script>
+    @*select2-可搜尋的下拉選單套件*@
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+    @RenderSection("HeadScript", required: false)
+
+
+    <style>
+        .no-border > tbody > tr th, .no-border > tbody > tr td {
+            border-top: none !important;
+        }
+
+        .important:before {
+            content: "*";
+            color: red;
+        }
+
+        .table td, .table th {
+            vertical-align: middle !important;
+        }
+
+        .btn-export {
+            background-color: #1caec5;
+            border-color: #1caec5;
+            color: white;
+        }
+
+            .btn-export:hover {
+                background-color: #199aaf;
+                border-color: #199aaf;
+                color: white;
+            }
+    </style>
+
+</head>
+
+<body id="page-top">
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <!-- End of Sidebar -->
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <!-- Main Content -->
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light topbar mb-4 static-top">
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <!-- Topbar Search -->
+                    <h2 class="mb-0 system-title">作物病蟲害預警系統暨植物醫師診斷系統管理平台</h2>
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item no-arrow top-bar d-none d-lg-inline">
+                            <div class="nav-link">
+                                <span class="text-gray-600 small">
+                                    若未切換網頁，將於<span id="timer-minute"></span>:<span id="timer-second"></span>後登出
+                                    <button type="button" class="btn btn-sm btn-dark shadow-sm" onclick="extendTimer(10)">延長<i class="fas fa-hourglass-half ml-2"></i></button>
+                                    @{
+                                        string Account = SessionHelper.Get("LoginID");
+                                        if (String.IsNullOrEmpty(Account))
+                                        {
+                                            Account = "?";
+                                        }
+                                        <span>，@(Account)，您好</span>
+                                    }
+                                    <a href="/Login/Logout" class="btn btn-sm btn-dark shadow-sm">登出 <i class="fas fa-sign-out-alt ml-2"></i></a>
+                                </span>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown no-arrow mx-1 d-lg-none">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="far fa-user"></i>
+                                <!-- Counter - Alerts -->
+                            </a>
+                            <!-- Dropdown - Alerts -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                 aria-labelledby="alertsDropdown">
+                                <a class="dropdown-item d-flex align-items-center" onclick="extendTimer(10)">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-success">
+                                            <i class="fas fa-hourglass-half color-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">將於<span id="mtimer-minute"></span>:<span id="mtimer-second"></span>後登出</div>
+                                        <span class="font-weight-bold">延長</span>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center" href="/Login/Logout">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-success">
+                                            <i class="fas fa-sign-out-alt color-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="font-weight-bold">登出</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- End of Topbar -->
+                <section class="section">
+                    @RenderBody()
+                </section>
+            </div>
+            <!-- End of Main Content -->
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright©2021 作物病蟲害預警系統暨植物醫師診斷系統管理平台  版權所有</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+        </div>
+        <!-- End of Content Wrapper -->
+    </div>
+    <!-- End of Page Wrapper -->
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.min.js"></script>
+
+    <!-- Page level plugins -->
+    <script src="~/vendor/chart.js/Chart.min.js"></script>
+    <!-- Page level custom scripts -->
+    <script src="~/js/demo/chart-area-demo.js"></script>
+    <script src="~/js/demo/chart-pie-demo.js"></script>
+    <script src="~/js/demo/chart-bar-demo.js"></script>
+    <script type="text/javascript">
+        var InfoMsg = '@(TempData["InfoMsg"])';
+        function extendTimer(minute) {
+            let timerMinute = parseInt($('#timer-minute').text()) + minute;
+            let timerSecond = parseInt($('#timer-second').text());
+            let timerMinute = parseInt($('#mtimer-minute').text()) + minute;
+            let timerSecond = parseInt($('#mtimer-second').text());
+            $('#timer-minute').text(timerMinute > 59 ? 59 : timerMinute.toString().padStart(2, '0'));
+            $('#timer-second').text(timerMinute > 59 ? 59 : timerSecond.toString().padStart(2, '0'));
+            $('#mtimer-minute').text(timerMinute > 59 ? 59 : timerMinute.toString().padStart(2, '0'));
+            $('#mtimer-second').text(timerMinute > 59 ? 59 : timerSecond.toString().padStart(2, '0'));
+        }
+        $(document).ready(function () {
+            $('#timer-minute').text(59);
+            $('#timer-second').text(59);
+            $('#mtimer-minute').text(59);
+            $('#mtimer-second').text(59);
+            setInterval(function () {
+                let timerMinute = parseInt($('#timer-minute').text());
+                let timerSecond = parseInt($('#timer-second').text());
+                let timerMinute = parseInt($('#mtimer-minute').text());
+                let timerSecond = parseInt($('#mtimer-second').text());
+                if (timerMinute == 0 && timerSecond == 0) {
+                    return location.assign("/Login/TimeOut");
+                }
+                if (timerSecond - 1 < 0) {
+                    timerMinute--;
+                    timerSecond = 59;
+                } else {
+                    timerSecond--;
+                }
+                $('#timer-minute').text(timerMinute.toString().padStart(2, '0'));
+                $('#timer-second').text(timerSecond.toString().padStart(2, '0'));
+                $('#mtimer-minute').text(timerMinute.toString().padStart(2, '0'));
+                $('#mtimer-second').text(timerSecond.toString().padStart(2, '0'));
+            }, 1000);
+            if (InfoMsg) {
+                Swal.fire({
+                    icon: 'info',
+                    title: InfoMsg,
+                    confirmButtonText: "關閉",
+                });
+            }
+        });
+    </script>
+    @RenderSection("Script", required: false)
+</body>
+
+</html>

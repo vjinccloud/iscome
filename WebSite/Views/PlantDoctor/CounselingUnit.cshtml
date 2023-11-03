@@ -1,0 +1,265 @@
+﻿@model  Website.ViewModel.PlantDoctor.CounselingUnitModel
+@using Newtonsoft.Json;
+
+@{
+    ViewBag.Title = "CounselingUnit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    .form-control.error {
+        border-color: red;
+        border-width: 2px;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .form-inline .form-control.error {
+        width: auto;
+    }
+
+    .form-check-input.error {
+        width: auto !important;
+    }
+
+    label.error {
+        bottom: -30px;
+        color: red;
+        font-size: 14px;
+        justify-content: flex-start;
+        position: absolute;
+    }
+
+    .form-inline label.error {
+        bottom: -20px;
+    }
+
+    .error-border {
+        border-color: red;
+        border-width: 2px;
+    }
+
+    table > tbody > tr th {
+        text-align: right !important;
+        background-color: #ccffff;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .text-red {
+        color: red;
+        text-decoration: underline;
+    }
+
+    #map {
+        height: 650px;
+    }
+
+    li {
+        padding: 3px 20px;
+        margin: 0;
+    }
+
+        li:hover {
+            background: #7FDFFF;
+            border-color: #7FDFFF;
+        }
+
+    .geocoder-control-selected {
+        background: #7FDFFF;
+        border-color: #7FDFFF;
+    }
+
+    ul li {
+        list-style-type: none;
+    }
+
+    .row {
+        margin: 0 !important;
+    }
+
+    .col-6, .col-12 {
+        padding: 0 !important;
+    }
+
+    .bg-th {
+        background-color: #ccffff;
+        box-sizing: border-box;
+    }
+
+    .hover-li {
+        border-bottom: 1px solid rgba(0,0,0,.075);
+    }
+
+        .hover-li > div:last-child:hover {
+            background: rgba(0,0,0,.075);
+            border-color: rgba(0,0,0,.075);
+        }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img" id="Ticket">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">輔導單位(公所/農會/合作社)</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Member/SignUp">會員專區</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">輔導單位</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                請選擇您的輔導單位，若無輔導單位請選擇您所在的行政區
+                            </div>
+                            <form id="form" action="/PlantDoctor/CounselingUnit" method="post" enctype="multipart/form-data" style="width: 100%;">
+                                @Html.AntiForgeryToken()
+                                <div class="row">
+                                    <div class="col-12 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center">
+                                            <span class="important font-weight-bold">輔導單位</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-10 p-2 position-relative form-inline">
+                                            <div class="form-check form-check-inline" v-for="s in CounselingUnitList" v-bind:key="s.Code">
+                                                <input class="form-check-input" type="radio" name="OrgType" v-bind:id="s.Code" v-bind:value="s.Code" v-model="OrgType">
+                                                <label class="form-check-label" v-bind:for="s.Code">{{ s.Name }}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center">
+                                            <span class="important font-weight-bold">輔導單位行政區</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-10 p-2 position-relative form-inline">
+                                            <select class="form-control" style="width: 100px;" disabled="disabled">
+                                                <option>高雄市</option>
+                                            </select>
+                                            <div class="d-flex flex-column position-relative ml-2">
+                                                <select name="OrgDistrict" class="form-control" style="width: 180px;" v-model="OrgDistrict">
+                                                    <option value="">請選擇</option>
+                                                    <option v-for="(s, i) in Districts" v-bind:key="s.Zip" v-bind:value="s.Zip">{{ s.Name }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center">
+                                            <span v-bind:class="OrgType == 'None' ? 'font-weight-bold' : 'important font-weight-bold'">輔導單位名稱</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-10 p-2 position-relative form-inline">
+                                            <input v-bind:readonly="OrgType == 'None'" type="text" class="form-control mr-2" name="OrgName" v-model="OrgName" required />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="w-100 d-flex flex-column align-items-center justify-content-center">
+                                    <div class="form-inline my-4">
+                                        <button type="submit" class="btn btn-primary mr-2" v-on:click="handleSubmit">確認</button>
+                                        <button type="button" class="btn btn-secondary mr-2" onclick="location.href='/Home/Index'">回首頁</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+                const Ticket = new Vue({
+                el: "#Ticket",
+                    data: {
+                        Districts: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
+                        CounselingUnitList: @(new HtmlString(JsonConvert.SerializeObject(Model.CounselingUnitList))),
+                        OrgType: '',
+                        OrgName: '',
+                        OrgDistrict: '',
+                    },
+                    watch: {
+                        'OrgType'(newVal) {
+                            if (this.validator) {
+                                this.validator.resetForm();
+                            }
+                            if (newVal == "None") {
+                                this.OrgName = "";
+                            }
+                        }
+                    },
+                    methods: {
+                        handleSubmit(e) {
+                            const self = this;
+                            this.validator = $('#form').validate({
+                                rules: {
+                                    "OrgType": "required",
+                                    "OrgDistrict": "required",
+                                    "OrgName": {
+                                        required: {
+                                            depends: function (element) {
+                                                console.log(self.Schedule);
+                                                return self.OrgType != "None";
+                                            }
+                                        },
+                                    },
+                                },
+                                messages: {
+                                    "OrgType": "請選擇輔導單位",
+                                    "OrgDistrict": "請選擇輔導單位行政區",
+                                    "OrgName": "請選擇輔導單位名稱"
+                                },
+                                submitHandler: function (form) {
+                                    form.submit();
+                                }
+                            });
+                        }
+                    }
+            });
+        });
+
+    </script>
+}

@@ -1,0 +1,176 @@
+﻿@model InformationSystem.ViewModel.LineBroadcastModel
+@{
+    ViewBag.Title = "SubscribeCount";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">推播資訊</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white ">
+                    <ul class="nav nav-pills mb-3 nav nav-pills nav-justified" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">推播紀錄</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">推播訊息統計</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                            <div class="card-body">
+                                @using (Html.BeginForm("SubscribeCount", "LineSubscribe", FormMethod.Post, new { id = "queryForm" }))
+                                {
+                                    <div class="table-responsive card">
+                                        <table class="table mb-0 no-border">
+                                            <tr>
+                                                <th style="width:10%">
+                                                    <label>推播來源：</label>
+                                                </th>
+                                                <td style="width:40%">
+                                                    <select class="form-control" name="MessageType">
+                                                        <option value="">請選擇</option>
+                                                        @foreach (var item in Model.MessageType)
+                                                        {
+                                                            <option value="@item.Code" @(Model.QueryReq.MessageType == item.Code ? "selected" : "")>@item.Name</option>
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <th style="width:10%">
+                                                    <label>日期起訖：</label>
+                                                </th>
+                                                <td style="width:40%">
+                                                    <div class="form-inline">
+                                                        <input type="hidden" value="1" name="Page" id="setPage" />
+                                                        <input type="hidden" name="Action" id="Action" />
+                                                        <input type="date" name="StartDate" class="form-control mr-2" value="@(Model.QueryReq.StartDate.HasValue ? Model.QueryReq.StartDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                                        <span>～</span>
+                                                        <input type="date" name="EndDate" class="form-control ml-2" value="@(Model.QueryReq.EndDate.HasValue ? Model.QueryReq.EndDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="4" style="text-align:right">
+                                                    <button type="submit" class="btn btn-primary m-2"><i class="fas fa-search mr-2"></i>查詢</button>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                }
+                                <div style="display:flex">
+                                    <div style="margin-left:auto">
+                                        <button type="button" class="btn btn-primary m-2" onclick="location.href='/LineSubscribe/AddBroadcast'"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                                    </div>
+                                </div>
+                                <div class="table-responsive" style="overflow-x:auto">
+                                    <table class="table mb-0 table-striped" style="min-width:700px;">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th scope="col">推播時間</th>
+                                                <th scope="col">推播來源</th>
+                                                <th scope="col">推播內容</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.Data.OrderByDescending(x => x.CreateDate))
+                                            {
+                                                <tr>
+                                                    <td>@item.CreateDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                                    <td>@item.MessageType</td>
+                                                    <td>@item.Contents</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-end align-items-baseline">
+                                    <a @(Model.QueryReq.Page > 1 ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.QueryReq.Page-1)')" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                                    &nbsp
+                                    <nav aria-label="...">
+                                        <ul class="pagination">
+                                            @{
+                                                int sPage = 1, endPage = Model.TotalPage;
+                                                if (Model.TotalPage > 5)
+                                                {
+                                                    if (Model.TotalPage < (Model.QueryReq.Page + 2))
+                                                    {
+                                                        sPage = Model.TotalPage - 4;
+                                                    }
+                                                    else if ((Model.QueryReq.Page - 2) <= 0)
+                                                    {
+                                                        endPage = 5;
+                                                    }
+                                                    else
+                                                    {
+                                                        sPage = Model.QueryReq.Page - 2;
+                                                        endPage = Model.QueryReq.Page + 2;
+                                                    }
+                                                }
+
+                                                for (int p = sPage; p <= endPage; p++)
+                                                {
+
+                                                    if (p == Model.QueryReq.Page)
+                                                    {
+                                                        <li class="page-item active" aria-current="page">
+                                                            <span class="page-link">@p<span class="sr-only"></span></span>
+                                                        </li>
+                                                    }
+                                                    else
+                                                    {
+                                                        <li class="page-item"><a class="page-link" onclick="SetPage('@(p)')">@p</a></li>
+                                                    }
+                                                }
+                                            }
+                                        </ul>
+                                    </nav>
+                                    &nbsp
+                                    <a @(Model.QueryReq.Page < Model.TotalPage ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.QueryReq.Page+1)')" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+                            <div class="card-body">
+                                <div class="table-responsive" style="overflow-x:auto">
+                                    <table class="table mb-0 table-striped" style="min-width:700px;">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th scope="col">年度月份</th>
+                                                <th scope="col">本月推播次數</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.StasticData.OrderByDescending(x => x.Date))
+                                            {
+                                                <tr>
+                                                    <td>@item.Date.ToString("yyyy年MM月")</td>
+                                                    <td>@item.Count</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script type="text/javascript">
+        function SetPage(page) {
+            $('#setPage').val(page);
+            $('#queryForm').submit();
+        }
+    </script>
+}
+

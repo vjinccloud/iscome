@@ -1,0 +1,218 @@
+﻿@model Website.ViewModel.ControlHistoryFrontModel
+@{
+    ViewBag.Title = "PreventInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .item {
+        flex: 1;
+        text-align: right;
+        margin-left: auto;
+    }
+    .table td {
+        word-break: normal;
+        white-space: normal;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/DiseasePrevention/Preventlist">病蟲害防治</a></li>
+            <li><a href="~/DiseasePrevention/Map">農藥販賣業者地圖</a></li>
+            <li><a href="~/DiseasePrevention/Dashboard">病蟲害即時動態儀表板</a></li>
+            <li><a href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a></li>
+            <li><a href="~/Event/AllEvent">活動資訊</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <div><span class="line">病蟲害防治</span></div>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Home/Index">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">病蟲害防治</li>
+                        </ol>
+                    </nav>
+
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-inline">
+                            <h3 style="font-weight:bold">@Model.Name</h3>
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary" onclick="onprint();">友善列印</button>
+                                <button type="button" class="btn btn-primary" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="mr-3">更新日期：@(ICCModule.Helper.Extention.ToMinDateString(Model.UpdatedAt))</span>
+                            <span><i class="far fa-eye m-2"></i>點閱率：@Model.ClickCount</span>
+                        </div>
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-link active" id="nav-info-tab" data-toggle="tab" href="#nav-info" role="tab" aria-controls="nav-info" aria-selected="true">基本資料</a>
+                                <a class="nav-link" id="nav-Expl-tab" data-toggle="tab" href="#nav-Expl" role="tab" aria-controls="nav-Expl" aria-selected="true">防治說明</a>
+                                @{
+                                    int i = 0;
+                                    foreach (var item in Model.ControlHistoryCropFrontModels.OrderBy(x => x.Sort))
+                                    {
+                                        <a class="nav-link" id="nav-@i-tab" data-toggle="tab" href="#nav-@i" role="tab" aria-controls="nav-@i" aria-selected="false">@item.Name</a>
+                                        i++;
+                                    }
+                                }
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-info" role="tabpanel" aria-labelledby="nav-info-tab">
+                                @(new HtmlString((Model.Information??"").Replace("<img src","<img style='max-width:100%' src").Replace("<a href=", "<a target='_blank' href=")))
+                            </div>
+                            <div class="tab-pane fade" id="nav-Expl" role="tabpanel" aria-labelledby="nav-Expl-tab">
+                                @(new HtmlString((Model.Explanation ?? "").Replace("<img src", "<img style='max-width:100%' src").Replace("<a href=", "<a target='_blank' href=")))
+                            </div>
+                            @{
+                                int k = 0;
+                                foreach (var item in Model.ControlHistoryCropFrontModels.OrderBy(x => x.Sort))
+                                {
+                                    <div class="tab-pane fade" id="nav-@k" role="tabpanel" aria-labelledby="nav-@k-tab">
+                                        @*<div class="text-right mb-3">
+                                                <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#print@(k)"><i class="fas fa-search-plus mr-2"></i>放大觀賞</button>
+                                            </div>*@
+                                        <h3>高雄@(item.Name)重要害蟲防治曆</h3>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered grow">
+                                                <thead class="thead-dark">
+                                                    <tr>
+                                                        @foreach (var items in item.CollumHeads.OrderBy(x => x.Sort))
+                                                        {
+                                                            <th>@items.CollumName</th>
+                                                        }
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var items in item.ContentGroups.OrderBy(x => x.Sort))
+                                                    {
+                                                        <tr class="bg-light">
+                                                            <th scope="row">@items.ContentName</th>
+                                                            @for (int a = 1; a <= (item.CollumHeads.Count > 12 ? 12 : 10); a++)
+                                                            {
+                                                                <td>
+                                                                    @foreach (var data in items.ContentDatas.Where(x => x.Sort == a))
+                                                                    {
+                                                                        if (data.ShowType)
+                                                                        {
+                                                                            <div class="progress-box grow" style="@($"width:{data.Width}%;left:{data.Margin}%;")">@data.Name</div>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                <div class="progress-box life01" data-toggle="tooltip" data-placement="top" title="@data.Name" style="@($"width:{data.Width}%;left:{data.Margin}%;")">@data.Name</div>
+                                                                        }
+                                                                    }
+                                                                </td>
+                                                            }
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="mt-3">
+                                            @item.Comment
+                                        </div>
+                                    </div>
+                                    k++;
+                                }
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@{
+    int s = 0;
+    foreach (var item in Model.ControlHistoryCropFrontModels.OrderBy(x => x.Sort))
+    {
+        <!-- Modal -->
+        <div class="modal fade" id="print@(s)" tabindex="-1" aria-labelledby="printModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">高雄@(item.Name)重要害蟲防治曆</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered grow">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        @foreach (var items in item.CollumHeads.OrderBy(x => x.Sort))
+                                        {
+                                            <th>@items.CollumName</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var items in item.ContentGroups.OrderBy(x => x.Sort))
+                                    {
+                                        <tr>
+                                            <th scope="row">@items.ContentName</th>
+                                            @for (int a = 1; a <= (item.CollumHeads.Count > 12 ? 12 : 10); a++)
+                                            {
+                                                <td>
+                                                    @foreach (var data in items.ContentDatas.Where(x => x.Sort == a))
+                                                    {
+                                                        if (data.ShowType)
+                                                        {
+                                                            <div class="progress-box grow" style="@($"width:{data.Width}%;left:{data.Margin}%;")">@data.Name</div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="progress-box life01" data-toggle="tooltip" data-placement="top" title="@data.Name" style="@($"width:{data.Width}%;left:{data.Margin}%;")"></div>
+                                                        }
+                                                    }
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        s++;
+    }
+}
+@section Script{
+    <script>
+        function printHtml(html) {
+            var bodyHtml = document.body.innerHTML;
+            document.body.innerHTML = html;
+            window.print();
+            document.body.innerHTML = bodyHtml;
+        }
+        function onprint() {
+            var html = $("#nav-tabContent").children('.active').html();
+            printHtml(html);
+        }
+    </script>
+}

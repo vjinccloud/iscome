@@ -1,0 +1,617 @@
+﻿@model Website.ViewModel.Member.MemberManageModel
+@using Newtonsoft.Json;
+@{
+    ViewBag.Title = "Manage";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .text-red {
+        color: red;
+        text-decoration: underline;
+    }
+
+    .table > thead > tr th {
+        text-align: center;
+    }
+
+    .table > thead > tr th,
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">個人資料管理</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Home/Index">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">個人資料管理</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-link active" id="nav-info-tab" data-toggle="tab" href="#nav-info" role="tab" aria-controls="nav-info" aria-selected="true">基本資料</a>
+                                <a class="nav-link" id="nav-record-tab" data-toggle="tab" href="#nav-record" role="tab" aria-controls="nav-record" aria-selected="false">預約紀錄</a>
+                                <a class="nav-link" id="nav-event-tab" data-toggle="tab" href="#nav-event" role="tab" aria-controls="nav-event" aria-selected="false">活動報名</a>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-info" role="tabpanel" aria-labelledby="nav-info-tab">
+                                <form id="form" method="post" enctype="multipart/form-data">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" value="@Model.MemberData.ID" name="ID" />
+                                    <table class="table rwd-table">
+                                        <tbody>
+                                            <tr>
+                                                <th rowspan="7" style="width:5%;border:1px black solid">基本資料</th>
+                                                <td style="word-break:keep-all">
+                                                    <span>使用者帳號：</span>
+                                                </td>
+                                                <td>
+                                                    <span>@Model.MemberData.Account</span>
+                                                </td>
+                                                <td>
+                                                    <span class="important">姓名：</span>
+                                                </td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <input name="Name" id="hidName" type="hidden" value="@Model.MemberData.Name" />
+                                                        <input id="hidNameShow" type="hidden" value="0" />
+                                                        <input class="form-control mr-2" id="txtName" onchange="EditName();" value="@Model.MemberData.Name" required title="此為必填欄位" />
+                                                        <button type="button" style="width:50px" class="btn btn-default ml-2" onclick="SetNameShow();"><i class="far fa-eye"></i></button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <span>Email：</span>
+                                                </td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <input class="form-control mr-2" name="Email" id="txtEmail" value="@Model.MemberData.Email" @(Model.MemberData.VerifyMethod == "SMS" ? "" : "readonly='readonly'") />
+                                                        @*<button type="button" style="width:50px" class="btn btn-default ml-2" onclick="SetEmailShow();"><i class="far fa-eye"></i></button>*@
+                                                        @if (Model.MemberData.VerifyMethod != "SMS")
+                                                        {
+                                                            <span style="color:blue"><i class="fas fa-check mr-2"></i>驗證通過</span>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span>行動電話：</span>
+                                                </td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <input id="hidMobile" name="Mobile" type="hidden" value="@Model.MemberData.Mobile" />
+                                                        <input id="hidMobileShow" type="hidden" value="0" />
+                                                        <input class="form-control" id="txtMobile" onchange="EditMobile();" value="@Model.MemberData.Mobile" @(Model.MemberData.VerifyMethod == "SMS" ? "readonly='readonly'" : "") />
+                                                        <button type="button" style="width:50px" class="btn btn-default ml-2" onclick="SetMobileShow();"><i class="far fa-eye"></i></button>
+                                                        @if (Model.MemberData.VerifyMethod == "SMS")
+                                                        {
+                                                            <span style="color:blue"><i class="fas fa-check mr-2"></i>驗證通過</span>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <span>所在區域：</span>
+                                                </td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <select class="form-control mr-2" style="flex:40%">
+                                                            <option>高雄市</option>
+                                                        </select>
+                                                        <select class="form-control ml-2" style="flex:40%" name="District">
+                                                            @foreach (var item in Model.CityDistricts)
+                                                            {
+                                                                <option @(item.Name == Model.MemberData.District ? "selected" : "")>@item.Name</option>
+                                                            }
+
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span>性別：</span>
+                                                </td>
+                                                <td>
+                                                    <select class="form-control" name="Sexy">
+                                                        <option value="" @(string.IsNullOrEmpty(Model.MemberData.Sexy) ? "selected" : "")>請選擇</option>
+                                                        <option value="M" @(Model.MemberData.Sexy == "M" ? "selected" : "")>男</option>
+                                                        <option value="F" @(Model.MemberData.Sexy == "F" ? "selected" : "")>女</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <span>申請身分別：</span>
+                                                </td>
+                                                <td>
+                                                    <select class="form-control" disabled="disabled">
+                                                        @foreach (var item in Model.UserType)
+                                                        {
+                                                            <option @(item.Code == Model.MemberData.Identify ? "selected" : "")>@item.Name</option>
+                                                        }
+
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <span>出生年次：</span>
+                                                </td>
+                                                <td>
+                                                    <input type="number" name="NewYear" value="@Model.MemberData.Year" class="form-control" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="word-break:keep-all">
+                                                    <span>預約診斷狀態：</span>
+                                                </td>
+                                                <td colspan="3">
+                                                    @if (Model.MemberData.BlacklistExpiredAt.HasValue && Model.MemberData.BlacklistExpiredAt > DateTime.Now)
+                                                    {
+                                                        <span style="color:red">線上預約@(Model.MemberData.ExpiredTimes)次未看診，停權至@(Model.MemberData.BlacklistExpiredAt.Value.ToString("yyyy-MM-dd"))</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>正常</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="word-break:keep-all">
+                                                    <span>Line OA綁定狀態：</span>
+                                                </td>
+                                                <td colspan="3">
+                                                    @if (!string.IsNullOrEmpty(Model.MemberData.LineNonce))
+                                                    {
+                                                        <span>已綁定</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="color:red">未綁定</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="word-break:keep-all">
+                                                    <span>快速登入綁定：</span>
+                                                </td>
+                                                <td colspan="3">
+                                                    <input type="hidden" id="hidGoogleId" name="GoogleId" value="@(Model.MemberData.GoogleId ??"")" />
+                                                    <input type="hidden" id="hidFacebookId" name="FacebookId" value="@(Model.MemberData.FacebookId ??"")" />
+                                                    @if (!string.IsNullOrEmpty(Model.MemberData.GoogleId ?? ""))
+                                                    {
+                                                        <span>Google帳號已綁定</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a id="customBtn" class="btn btn-primary mr-4 mb-3"><i class="fab fa-google mr-2"></i>Google 登入</a>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(Model.MemberData.FacebookId ?? ""))
+                                                    {
+                                                        <span>Facebook帳號已綁定</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a class="btn btn-primary ml-4 mb-3" onclick="checkLoginState();"><i class="fab fa-facebook-square mr-2"></i>FaceBook 登入</a>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(Model.MemberData.LineLoginId ?? ""))
+                                                    {
+                                                        <span>Line帳號已綁定</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a class="btn btn-primary ml-4 mb-3" onclick="LineAuth();"><i class="fab fa-facebook-square mr-2"></i>Line 登入</a>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5">
+                                                    <div class="form-inline" style="justify-content:center">
+                                                        <input type="hidden" name="ActionName" id="actid" />
+                                                        <a class="btn btn-secondary m-2" onclick="location.href='/Home/Index'">返回首頁</a>
+                                                        <button class="btn btn-orange m-2" onclick="handleSubmit(event,'')">更新資料</button>
+                                                        <a class="btn btn-primary m-2" onclick="location.href='/Member/UpdatePwd'">更新密碼</a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="nav-record" role="tabpanel" aria-labelledby="nav-record-tab">
+                                <div class="mb-3" style="text-align:left">
+                                    變更預約日期需在看診<span class="text-red">前一天</span>進行，預約看診當日不得變更。
+                                    <br>
+                                    請先加入「高雄植醫來幫忙」Line官方帳號，與植醫進行直接溝通說明。
+                                    <br />
+                                    三次預約看診未準時接聽電話，將予以停權一個月不得進行線上植醫掛號。
+                                </div>
+                                <table class="table rwd-table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>項次</th>
+                                            <th>預約日期</th>
+                                            <th>作物種類</th>
+                                            <th>作物名稱</th>
+                                            <th>狀態</th>
+                                            <th>功能</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int j = 1;
+                                            foreach (var item in Model.ScheduleList)
+                                            {
+                                                <tr>
+                                                    <td style="text-align:center">@j</td>
+                                                    <td>@(item.ReserveDatetimeStr) @(item.Period)</td>
+                                                    <td>@item.CropType</td>
+                                                    <td>@item.CropName</td>
+                                                    <td>@item.StatusStr</td>
+                                                    <td>
+                                                        <div class="form-inline">
+                                                            <button class="btn btn-primary m-2" onclick="GoToDetail(@item.ID)">查看掛號單</button>
+                                                            @if (item.Status == "ToBeScheduled" || item.Status == "Appointment")
+                                                            {
+                                                                <button class="btn btn-primary m-2" onclick='removeOrCancel("@(item.Status)", "@item.ID")'>@(item.Status == "Appointment" ? "取消預約" : "刪除掛號單")</button>
+                                                                <button class="btn btn-primary m-2" onclick="location.href='/PlantDoctor/Calendar'">@(item.Status == "Appointment" ? "變更預約" : "再次預約")</button>
+                                                            }
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                j++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="tab-pane fade" id="nav-event" role="tabpanel" aria-labelledby="nav-event-tab">
+                                <div class="mb-3" style="text-align:left">
+                                    取消報名需在活動開始<span class="text-red">前一天</span>進行，活動當天若有狀況，請聯繫承辦人員。
+                                </div>
+                                <div style="overflow-x:auto">
+                                    <table class="table rwd-table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>項次</th>
+                                                <th>類型</th>
+                                                <th>活動名稱</th>
+                                                <th>時數</th>
+                                                <th>活動日期</th>
+                                                <th>地點</th>
+                                                <th>狀態</th>
+                                                <th>動作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                int i = 1;
+                                                foreach (var item in Model.PlanList)
+                                                {
+                                                    <tr>
+                                                        <td style="text-align:center">@i</td>
+                                                        <td>@item.TypeName</td>
+                                                        <td>@item.Name</td>
+                                                        <td>@item.ClassHours.ToString("0.0#")</td>
+                                                        <td>
+                                                            @item.StartDateStr~@item.EndDateStr
+                                                        </td>
+                                                        <td>
+                                                            @item.Address
+                                                        </td>
+
+                                                        @if (item.StartDate > DateTime.Now)
+                                                        {
+                                                            <td>尚未開始</td>
+                                                        }
+                                                        else if (item.EndDate < DateTime.Now)
+                                                        {
+                                                            <td>已結束</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td>活動進行中</td>
+                                                        }
+                                                        <td>
+                                                            <div class="form-inline">
+                                                                @using (Html.BeginForm("CancelPlan", "Member", FormMethod.Post, new { onclick = "return confirm('確定取消?');" }))
+                                                                {
+                                                                    @Html.AntiForgeryToken()
+                                                                    @Html.Hidden("Id", item.ID)
+                                                                    @*<button type="button" class="btn btn-secondary m-2"></button>*@
+                                                                    <input type="submit" class="btn btn-secondary m-2" value="取消" />
+                                                                    @*<i class="fas fa-minus-circle mr-2">刪除</i>*@@*<i class="fas fa-minus-circle mr-2">刪除</i>*@
+                                                                    @*<button type="button" class="btn btn-secondary m-2">刪除</button>*@
+                                                                }
+                                                                <button type="button" class="btn btn-primary" onclick="location.href='/Event/Info?id=@item.ID'">查看活動</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<meta name="google-signin-client_id" content="@(ICCModule.Helper.AppSettingHelper.GetAppSetting("GoogleLoginId"))">
+<script src="https://apis.google.com/js/api:client.js"></script>
+@section Script {
+    <script>
+        $(document).ready(function () {
+            ShowName();
+            ShowMobile();
+        });
+        function SetNameShow() {
+            if ($("#hidNameShow").val() == "0") $("#hidNameShow").val("1");
+            else $("#hidNameShow").val("0");
+            ShowName();
+        }
+        function EditName() {
+            var _name = $("#hidName").val();
+            var _nameValue = $("#txtName").val();
+            if (_name.length < _nameValue.length) {
+                _name += _nameValue.substring(_name.length, (_nameValue.length));
+            }
+            if (_name.length > _nameValue.length) {
+                _name = _name.substring(0, (_nameValue.length))
+            }
+            $("#hidName").val(_name);
+            ShowContactPerson();
+        }
+        function ShowName() {
+            var _name = $("#hidName").val();
+            if ($("#hidNameShow").val() == "0") {
+                var _nameValue = "";
+                for (let i = 0; i < _name.length; i++) {
+                    if (i == 0 || i == (_name.length - 1)) {
+                        _nameValue += _name[i];
+                    }
+                    else {
+                        _nameValue += "*";
+                    }
+                }
+                $("#txtName").val(_nameValue);
+            }
+            else {
+                $("#txtName").val(_name);
+            }
+        }
+
+        function SetMobileShow() {
+            if ($("#hidMobileShow").val() == "0") $("#hidMobileShow").val("1");
+            else $("#hidMobileShow").val("0");
+            ShowMobile();
+        }
+        function EditMobile() {
+            var _Mobile = $("#hidMobile").val();
+            var _MobileValue = $("#txtMobile").val();
+            if (_Mobile.length < _MobileValue.length) {
+                _Mobile += _MobileValue.substring(_Mobile.length, (_MobileValue.length));
+            }
+            if (_Mobile.length > _MobileValue.length) {
+                _Mobile = _Mobile.substring(0, (_MobileValue.length))
+            }
+            $("#hidMobile").val(_Mobile);
+            ShowContactPerson();
+        }
+        function ShowMobile() {
+            var _Mobile = $("#hidMobile").val();
+            if ($("#hidMobileShow").val() == "0") {
+                var _MobileValue = "";
+                for (let i = 0; i < _Mobile.length; i++) {
+                    if (i < 4 || i >= (_Mobile.length - 3)) {
+                        _MobileValue += _Mobile[i];
+                    }
+                    else {
+                        _MobileValue += "*";
+                    }
+                }
+                $("#txtMobile").val(_MobileValue);
+            }
+            else {
+                $("#txtMobile").val(_Mobile);
+            }
+        }
+
+        function handleSubmit(e, act) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            $('#actid').val(act);
+            if (validate) {
+
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+
+        function GoToDetail(ID) {
+            location.assign('/PlantDoctor/GetTicket?ID=' + ID);
+        }
+
+        function removeOrCancel(status, ID) {
+            Swal.fire({
+                icon: 'info',
+                title: '確定' + (status == "Appointment" ? "取消預約" : "刪除掛號單") + "?",
+                showCancelButton: true,
+                confirmButtonText: "確定",
+                cancelButtonText: "取消",
+            }).then(res => {
+                if (res.isConfirmed) {
+                    let url = "/PlantDoctor/" + (status == "Appointment" ? "CancelReserve" : "DeleteSchedule");
+                    $.ajax({
+                        url: url,
+                        data: {
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(),
+                            ID: ID
+                        },
+                        type: 'POST',
+                        cache: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            Swal.fire({
+                                icon: data.result ? "info" : "error",
+                                title: data.Msg
+                            }).then(res => {
+                                location.reload();
+                            })
+                        }
+                    })
+                }
+            });
+        }
+
+        //google登入
+        var googleUser = {};
+        var startApp = function () {
+            gapi.load('auth2', function () {
+                // Retrieve the singleton for the GoogleAuth library and set up the client.
+                auth2 = gapi.auth2.init({
+                    client_id: '@(ICCModule.Helper.AppSettingHelper.GetAppSetting("GoogleLoginId"))',
+                    cookiepolicy: 'single_host_origin',
+                    // Request scopes in addition to 'profile' and 'email'
+                    //scope: 'additional_scope'
+                });
+                attachSignin(document.getElementById('customBtn'));
+            });
+        };
+
+        function attachSignin(element) {
+            auth2.attachClickHandler(element, {},
+                function (googleUser) {
+                    var profile = googleUser.getBasicProfile();
+                    //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+                    //console.log('Name: ' + profile.getName());
+                    //console.log('Image URL: ' + profile.getImageUrl());
+                    //console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+                    $('#hidGoogleId').val(profile.getId());
+                    document.forms[0].submit();
+                }, function (error) {
+                    //alert(JSON.stringify(error, undefined, 2));
+                });
+        }
+
+        //FB登入
+        function statusChangeCallback(response) {
+            if (response.status === 'connected') {
+                //location.href = "fbLogin.aspx?fbid=" + response.authResponse.userID;
+                console.log(response.authResponse.userID);
+                $('#hidFacebookId').val(response.authResponse.userID);
+                document.forms[0].submit();
+            }
+            else {
+                FB.login(function (response) {
+                    if (response.status === 'connected') {
+                        //location.href = "fbLogin.aspx?fbid=" + response.authResponse.userID;
+                        console.log(response.authResponse.userID);
+                        $('#hidLoginId').val(response.authResponse.userID);
+                        $('#hidLoginType').val("2");
+                        document.forms[0].submit();
+                    }
+                });
+            }
+        }
+
+        function checkLoginState() {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
+        }
+
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '@(ICCModule.Helper.AppSettingHelper.GetAppSetting("FbAppId"))',
+                cookie: true,
+                xfbml: true,
+                version: 'v7.0'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = 'https://connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v3.2';
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        function LineAuth() {
+            var URL = 'https://access.line.me/oauth2/v2.1/authorize?';
+            URL += 'response_type=code';
+            URL += '&client_id=@(ICCModule.Helper.AppSettingHelper.GetAppSetting("ChannelId"))';
+            URL += '&redirect_uri=@(Request.Url.Scheme)://@(Request.Url.Authority)/LineRegist/LineCallBack';
+            URL += '&state=bfmml';
+            URL += '&scope=openid%20profile';
+            window.location.href = URL;
+        }
+    </script>
+    <script>startApp();</script>
+}

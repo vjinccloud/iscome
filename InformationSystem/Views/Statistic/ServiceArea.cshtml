@@ -1,0 +1,262 @@
+﻿@model InformationSystem.ViewModel.ServiceAreaStatisticModel
+@using Newtonsoft.Json;
+
+@{
+    ViewBag.Title = "ServiceArea";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="/Scripts/ServiceArea/d3.min.js"></script>
+<script src="/Scripts/ServiceArea/D3Gis.js"></script>
+<script src="/Scripts/ServiceArea/CanvasS.js"></script>
+<script src="/Scripts/ServiceArea/Base64Icon.js"></script>
+<script src="/Scripts/ServiceArea/chart.js"></script>
+<script src="/Scripts/ServiceArea/chartjs-plugin-labels.min.js"></script>
+<script src="/Scripts/ServiceArea/PromiseChart.js"></script>
+<script src="/Scripts/ServiceArea/CanvasTable.js"></script>
+
+<style>
+    /*統計查詢預覽區域*/
+    .StatPreview {
+        margin-top: 50px;
+    }
+
+    canvas {
+        border: 1px solid black;
+    }
+
+    .HiddenDom {
+        visibility: hidden;
+        position: absolute;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">服務面積統計圖表</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white ">
+
+                    <!--上方頁籤-->
+                    <ul class="nav nav-pills mb-3 nav nav-pills nav-justified" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="pills-home-tab"
+                               data-toggle="pill" href="#stat-yearly" role="tab" aria-controls="pills-home" aria-selected="true">
+                                年度統計
+                            </a>
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="pills-profile-tab"
+                               data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">
+                                各月統計
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="card-body">
+
+                        <!---->
+                        <div class="tab-content" id="pills-tabContent">
+
+                            <!--年度統計-->
+                            <div class="tab-pane fade show active" id="stat-yearly" role="tabpanel" aria-labelledby="pills-home-tab">
+
+                                <div class="table-responsive">
+                                    <table class="table mb-0 table-striped" style="min-width:700px;">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th scope="col">圖表名稱</th>
+                                                <th scope="col">動作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>輔導人次、輔導面積與作物種類</td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <a id="search" class="btn btn-primary m-2" onclick="ShowYearOverview()">查詢預覽</a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>輔導人次、輔導面積與作物種類(直方圖)</td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <a id="search" class="btn btn-primary m-2" onclick="ShowYearHistogram()">查詢預覽</a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div>
+                                    <div id="YearOverviewPreview" class="StatPreview" style="display: none">
+
+                                        <div class="form-inline mb-2">
+                                            年度：
+                                            @Html.DropDownList("Year", Model.YearDdl, new { @class = "form-control" })
+
+                                            日期：
+                                            <input id="StartDate" type="date" class="form-control">
+                                            -
+                                            <input id="EndDate" type="date" class="form-control">
+
+                                            行政區：
+                                            @Html.DropDownList("Dist", Model.DistDdl, "高雄市全區", new { @class = "form-control" })
+
+                                            <button type="button" class="btn btn-primary ml-2" onclick="DrawYearOverview()">查詢</button>
+
+                                        </div>
+
+                                        <div id="YearOverviewChart" style="display: none">
+                                            @Html.Partial("ServiceArea/_DistStat", Model)
+
+                                            @Html.Partial("ServiceArea/_CropsTypeStat", Model)
+                                        </div>
+                                    </div>
+
+                                    <div id="YearHistogramPreview" class="StatPreview" style="display: none">
+                                        @Html.Partial("ServiceArea/_AllCropsEachYearStat", Model)
+
+                                        @Html.Partial("ServiceArea/_CropsTypeEachYearStat", Model)
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                            <!--每月統計-->
+                            <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+
+                                <div class="card-body">
+                                    <div class="form-inline mb-3">
+                                        <label>查詢年月：</label>
+                                        <input type="date" class="form-control" id="MonthlyStartDate" />
+                                        <span>～</span>
+                                        <input type="date" class="form-control" id="MonthlyEndDate" />
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table mb-0 table-striped" style="min-width:700px;">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th scope="col">圖表名稱</th>
+                                                    <th scope="col">動作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>診斷次數與服務面積圖表</td>
+                                                    <td>
+                                                        <div class="form-inline">
+                                                            <a class="btn btn-primary m-2" onclick="ShowDiagnosisAndServiceArea()">查詢預覽</a>
+                                                            <a class="btn btn-primary m-2" onclick="DiagnosisAndServiceAreaExport()">Excel</a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>作物類別與服務面積</td>
+                                                    <td>
+                                                        <div class="form-inline">
+                                                            <a class="btn btn-primary m-2" onclick="ShowCropsAndServiceArea()">查詢預覽</a>
+                                                            <a class="btn btn-primary m-2" onclick="CropsAndServiceAreaExport()">Excel</a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div id="DiagnosisAndServiceAreaPreview" class="StatPreview" style="display: none">
+                                        @Html.Partial("ServiceArea/_DiagnosisAndServiceArea", Model)
+                                    </div>
+
+                                    <div id="CropsAndServiceAreaPreview" class="StatPreview" style="display: none">
+                                        @Html.Partial("ServiceArea/_CropsAndServiceArea", Model)
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!--診斷次數與服務面積圖表的匯出Form-->
+<form id="DiagnosisAndServiceAreaExportForm" method="post" action="/StatisticApi/ExportDiagnosisAndServiceArea">
+    <input id="DiagnosisAndServiceStartDate" type="hidden" name="startDate" />
+    <input id="DiagnosisAndServiceEndDate" type="hidden" name="endDate" />
+</form>
+
+<form id="CropsAndServiceAreaExportForm" method="post" action="/StatisticApi/ExportCropsAndServiceArea">
+    <input id="CropsAndServiceAreaStartDate" type="hidden" name="startDate" />
+    <input id="CropsAndServiceAreaEndDate" type="hidden" name="endDate" />
+</form>
+
+<script>
+    function DiagnosisAndServiceAreaExport() {
+        document.querySelector("#DiagnosisAndServiceStartDate").value = document.querySelector("#MonthlyStartDate").value;
+        document.querySelector("#DiagnosisAndServiceEndDate").value = document.querySelector("#MonthlyEndDate").value;
+        document.querySelector("#DiagnosisAndServiceAreaExportForm").submit();
+    }
+
+    function CropsAndServiceAreaExport() {
+        document.querySelector("#CropsAndServiceAreaStartDate").value = document.querySelector("#MonthlyStartDate").value;
+        document.querySelector("#CropsAndServiceAreaEndDate").value = document.querySelector("#MonthlyEndDate").value;
+        document.querySelector("#CropsAndServiceAreaExportForm").submit();
+    }
+</script>
+
+<script>
+
+    function ShowYearOverview() {
+        $("#YearOverviewPreview").show()
+        $(".StatPreview:not(#YearOverviewPreview)").hide();
+    }
+
+    function ShowYearHistogram() {
+        $("#YearHistogramPreview").show()
+        $(".StatPreview:not(#YearHistogramPreview)").hide();
+
+        AllCropsTypeEachYear.Draw();
+    }
+
+    function DrawYearOverview() {
+        $("#YearOverviewChart").show();
+        DistStat.Draw();
+        CropsTypePie.Draw();
+    }
+
+</script>
+
+<script>
+
+    function ShowDiagnosisAndServiceArea() {
+        $("#DiagnosisAndServiceAreaPreview").show()
+        $(".StatPreview:not(#DiagnosisAndServiceAreaPreview)").hide();
+        DiagnosisAndServiceArea.Draw();
+    }
+
+    function ShowCropsAndServiceArea() {
+        $("#CropsAndServiceAreaPreview").show()
+        $(".StatPreview:not(#CropsAndServiceAreaPreview)").hide();
+        CropsAndServiceArea.Draw();
+    }
+
+</script>

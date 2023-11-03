@@ -1,0 +1,44 @@
+﻿@model ICCModule.Entity.Tables.Platform.memberInfo
+@{
+    ViewBag.Title = "FastRegistComplete";
+    Layout = "~/Views/Shared/_LineRegistLayout.cshtml";
+}
+
+<style>
+    .container2 {
+        margin: 0 auto;
+        width: 300px;
+    }
+
+    .ologin {
+        color: #b2b2b2;
+        font-size: 14px;
+        border-bottom: 1px #b2b2b2 solid;
+        padding-bottom: 5px;
+    }
+
+    /*  */
+
+    .title2 {
+        /* border-bottom: 2px solid #D0D5D5; */
+        font-weight: 900;
+        padding-bottom: 10px;
+        font-size: 24px;
+    }
+
+    .title3 {
+        color: #696969;
+        padding-bottom: 10px;
+        font-size: 16px;
+    }
+</style>
+
+<div class="col-12 text-center" style="margin-top: 100px;">
+    <span class="title2">恭喜您完成註冊！</span><br>
+</div>
+
+<div class="col-12 text-left" style="margin-top: 50px;">
+    <span class="title3">提醒您：目前尚未完成綁定，需再次點擊【會員註冊/綁定】完成綁定流程。</span><br>
+    <span class="title3">請勿封鎖 高雄植醫來幫忙 高雄市政府農業局，以免影響訊息接收。</span><br>
+    <a href="@(ICCModule.Helper.AppSettingHelper.GetAppSetting("LineOaUrl"))" class="btn btn-success">點這裡回去</a>
+</div>

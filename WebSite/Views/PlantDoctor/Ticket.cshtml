@@ -1,0 +1,765 @@
+﻿@using Newtonsoft.Json;
+@using System.Web.Security.AntiXss;
+@{
+    ViewBag.Title = "Ticket";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("LeafletMapBasic")
+
+@section HeadScript {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    .form-control.error {
+        border-color: red;
+        border-width: 2px;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .form-inline .form-control.error {
+        width: auto;
+    }
+
+    .form-check-input.error {
+        width: auto !important;
+    }
+
+    label.error {
+        bottom: -30px;
+        color: red;
+        font-size: 14px;
+        justify-content: flex-start;
+        position: absolute;
+    }
+
+    .form-inline label.error {
+        bottom: -20px;
+    }
+
+    .error-border {
+        border-color: red;
+        border-width: 2px;
+    }
+
+    table > tbody > tr th {
+        text-align: right !important;
+        background-color: #ccffff;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .text-red {
+        color: red;
+        text-decoration: underline;
+    }
+
+    #map {
+        height: 650px;
+    }
+
+    li {
+        padding: 3px 20px;
+        margin: 0;
+    }
+
+        li:hover {
+            background: #7FDFFF;
+            border-color: #7FDFFF;
+        }
+
+    .geocoder-control-selected {
+        background: #7FDFFF;
+        border-color: #7FDFFF;
+    }
+
+    ul li {
+        list-style-type: none;
+    }
+
+    .row {
+        margin: 0 !important;
+    }
+
+    .col-6, .col-12 {
+        padding: 0 !important;
+    }
+
+    .bg-th {
+        background-color: #ccffff;
+        box-sizing: border-box;
+    }
+
+    .hover-li {
+        border-bottom: 1px solid rgba(0,0,0,.075);
+    }
+
+        .hover-li > div:last-child:hover {
+            background: rgba(0,0,0,.075);
+            border-color: rgba(0,0,0,.075);
+        }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img" id="Ticket" v-cloak>
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">植物醫師線上掛號</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Member/SignUp">會員專區</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">植物醫師線上掛號</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 mb-3 text-center" v-if="!Readonly">
+                                紅色<span class="important">為<span class="text-red">必填</span>欄位，完整填入預約資料，讓植物醫師更能掌握作物狀況。</span>
+                            </div>
+                            @*<div class="mb-3" style="text-align:center" v-if="!Readonly">
+                                    紅色<span class="important">為<span class="text-red">必填</span>欄位，完整填入預約資料，讓植物醫師更能掌握作物狀況。</span>
+                                </div>*@
+
+                            <form id="form" action="/PlantDoctor/ReserveSchedule" method="post" enctype="multipart/form-data" style="width: 100%;">
+                                @Html.AntiForgeryToken()
+                                <div class="col-12 text-left p-2 mb-2 font-weight-bold" style="background-color:#ffffcc !important;border:1px black solid">
+                                    預約日期：@Model.ReserveDate @(Model.ReservePeriod == "am" ? "上午" : "下午")場
+                                    <input type="hidden" name="ReserveDate" value="@Model.ReserveDate" />
+                                    <input type="hidden" name="ReservePeriod" value="@Model.ReservePeriod" />
+                                    <input type="hidden" name="Schedule.OrgType" value="@Model.Schedule.OrgType" />
+                                    <input type="hidden" name="Schedule.OrgName" value="@Model.Schedule.OrgName" />
+                                    <input type="hidden" name="Schedule.OrgDistrict" value="@Model.Schedule.OrgDistrict" />
+                                    <input type="hidden" name="Schedule.LoginID" value="@Model.Schedule.LoginID" />
+                                </div>
+
+                                <div class="row">
+                                    @*姓名*@
+                                    <div class="col-12 col-lg-6 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-4 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">姓名</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-8 p-2 position-relative">
+                                            <input type="text" name="Schedule.Name" class="form-control" v-model="Schedule.Name" v-bind:readonly="Readonly" />
+                                        </div>
+                                    </div>
+                                    @*性別*@
+                                    <div class="col-12 col-lg-6 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-4 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">性別</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-8 p-2 position-relative">
+                                            <select name="Schedule.Sexy" class="form-control" v-model="Schedule.Sexy" v-bind:readonly="Readonly">
+                                                <option value="null">請選擇</option>
+                                                <option value="M">男</option>
+                                                <option value="F">女</option>
+                                                @*<option value="O">第三性</option>*@
+                                            </select>
+                                        </div>
+                                    </div>
+                                    @*行政區*@
+                                    <div class="col-12 col-lg-6 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-4 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">作物栽種行政區</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-8 p-2 position-relative form-inline">
+                                            <select class="form-control" style="width: 100px;" disabled="disabled">
+                                                <option>高雄市</option>
+                                            </select>
+                                            <div class="d-flex flex-column position-relative ml-2">
+                                                <select name="Schedule.Zip" class="form-control" style="width: 180px;" v-model="Schedule.Zip" v-bind:readonly="Readonly">
+                                                    <option value="null">請選擇</option>
+                                                    <option v-for="(s, i) in Districts" v-bind:key="s.Zip" v-bind:value="s.Zip">
+                                                        {{ s.Name }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*作物種類*@
+                                    <div class="col-12 col-lg-6 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-4 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">作物種類</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-8 p-2 position-relative form-inline">
+                                            <div class="d-flex flex-column position-relative">
+                                                <select name="Schedule.CropType" class="form-control mr-2" style="flex:40%" v-model="Schedule.CropType" v-bind:readonly="Readonly">
+                                                    <option>請選擇</option>
+                                                    <option v-for="(s, i) in CropTypeList" v-bind:key="'CropType_' + s.ID" v-bind:value="s.Name">
+                                                        {{ s.Name }}
+                                                    </option>
+                                                    <option value="Other">其他</option>
+                                                </select>
+                                            </div>
+                                            <div class="d-flex flex-column position-relative">
+                                                <select name="Schedule.CropName" class="form-control ml-2" style="flex:40%" v-model="Schedule.CropName" v-bind:readonly="Readonly">
+                                                    <option>請選擇</option>
+                                                    <option v-for="(s, i) in CropList" v-bind:key="'Crop_' + s.ID" v-bind:value="s.Name">
+                                                        {{ s.Name }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*行動電話*@
+                                    <div class="col-12 col-lg-6 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-4 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">行動電話</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-8 p-2 position-relative form-inline">
+                                            <input type="text" class="form-control mr-2" name="Schedule.Mobile"
+                                                   placeholder="例：0911111111"
+                                                   minlength="10" maxlength="10" pattern="[0-9]{10}" required
+                                                   v-model="Schedule.Mobile"
+                                                   v-bind:readonly="Readonly" />
+                                        </div>
+                                    </div>
+                                    @*栽種面積*@
+                                    <div class="col-12 col-lg-6 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-4 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">栽種面積</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-8 p-2 position-relative form-inline">
+                                            <div class="d-flex flex-column position-relative">
+                                                <input type="number" step="0.1" min="0.1" name="Schedule.PlantingArea" class="form-control mr-2" v-model="Schedule.PlantingArea" v-bind:readonly="Readonly" />
+                                            </div>
+                                            <span>公頃</span>
+                                        </div>
+                                    </div>
+                                    @*耕作方式*@
+                                    <div class="col-12 col-lg-6 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-4 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">耕作方式</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-8 p-2 position-relative form-inline d-flex">
+                                            <div class="form-check form-check-inline" v-for="s in FarmingMethodList" v-bind:key="s.Code">
+                                                <input class="form-check-input" type="radio" name="Schedule.FarmingMethod" v-bind:id="s.Code" v-bind:value="s.Code" v-model="Schedule.FarmingMethod" v-bind:disabled="Readonly">
+                                                <label class="form-check-label" v-bind:for="s.Code">{{ s.Name }}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*聯繫管道*@
+                                    <div class="col-12 col-lg-6 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-4 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">聯繫管道</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-8 p-2 position-relative form-inline">
+                                            <div class="form-check form-check-inline" v-for="s in ContactList" v-bind:key="s.Code">
+                                                <input class="form-check-input" type="checkbox"
+                                                       name="Schedule.ContactMethodArr"
+                                                       v-bind:value="s.Code"
+                                                       v-on:change="changeCheckbox('ContactMethodArr', s.Code)"
+                                                       v-bind:checked="Schedule.ContactMethodArr && Schedule.ContactMethodArr.includes(s.Code)"
+                                                       v-bind:disabled="Readonly">
+                                                <label class="form-check-label" v-bind:for="s.Code">{{ s.Name }}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*發病位置（複選）*@
+                                    <div class="col-12 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">發病位置<br />（複選）</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-10 p-2 position-relative form-inline">
+                                            <div class="form-check form-check-inline" v-for="s in OnsetLocationList" v-bind:key="s.Code">
+                                                <input class="form-check-input" type="checkbox"
+                                                       name="Schedule.OnsetLocationArr"
+                                                       v-bind:id="s.Code"
+                                                       v-bind:value="s.Code"
+                                                       v-on:change="changeCheckbox('OnsetLocationArr', s.Code)"
+                                                       v-bind:checked="Schedule.OnsetLocationArr && Schedule.OnsetLocationArr.includes(s.Code)"
+                                                       v-bind:disabled="Readonly">
+                                                <label class="form-check-label" v-bind:for="s.Code">{{ s.Name }}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*諮詢內容*@
+                                    <div class="col-12 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="important font-weight-bold">諮詢內容</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-10 p-2 position-relative form-inline">
+                                            <textarea class="form-control w-100" name="Schedule.Context" rows="5"
+                                                      placeholder="請說明您的作物病癥，或是最近使用農藥或肥料等資材名稱。"
+                                                      v-model="Schedule.Context"
+                                                      v-bind:readonly="Readonly">
+                                                    </textarea>
+                                        </div>
+                                    </div>
+                                    @*作物病徵 圖 / 影片上傳*@
+                                    <div class="col-12 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="font-weight-bold">作物病徵<br />圖 / 影片上傳</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-10 p-2 position-relative form-inline">
+                                            <input type="file" multiple attempt=".jpg, .png, .jpeg,video/mp4,video/x-m4v,video/*" name="CropSymptomsFiles" class="mr-3" v-if="!Readonly" />
+
+                                            <div v-if="Readonly && Schedule.CropSymptoms">
+                                                <img v-for="(src, s) in Schedule.CropSymptoms.split(',')" v-bind:src="src" v-bind:key="'CropSymptoms_' + s" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*最近使用農藥 / 肥料 圖 / 影片上傳*@
+                                    <div class="col-12 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="font-weight-bold">最近使用農藥 / 肥料<br />圖 / 影片上傳</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-10 p-2 position-relative form-inline">
+                                            <input type="file" multiple attempt=".jpg, .png, .jpeg,video/mp4,video/x-m4v,video/*" name="RecentlyFertilizerFiles" class="mr-3" v-if="!Readonly" />
+
+                                            <div v-if="Readonly && Schedule.RecentlyFertilizer">
+                                                <img v-for="(src, s) in Schedule.RecentlyFertilizer.split(',')" v-bind:src="src" v-bind:key="'RecentlyFertilizer_' + s" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*我的田區位置*@
+                                    <div class="col-12 row hover-li">
+                                        <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center justify-content-end bg-th">
+                                            <span class="font-weight-bold">我的田區位置</span>
+                                        </div>
+                                        <div class="col-7 col-md-9 col-lg-10 p-2 position-relative d-flex flex-column">
+                                            <span>田區位置，可輸入地址進行定位(亦可點擊地圖進行定位)</span>
+                                            <div class="form-inline mt-3">
+                                                <input type="hidden" name="Schedule.FramLocation" v-bind:value="Schedule.FramLocation" />
+                                                <div class="w-100 d-flex flex-column flex-md-row align-items-start align-items-md-center">
+                                                    <input id="address" autocomplete="off" type="text"
+                                                           class="w-100 form-control mr-3"
+                                                           v-model="SearchLocation"
+                                                           v-bind:readonly="Readonly" />
+                                                    <button type="button" class="btn btn-secondary text-nowrap ml-md-2" v-on:click="SearchAddress">地圖定位</button>
+                                                </div>
+                                                <span style="font-size: 16px" v-text="Schedule.FramLocation"></span>
+                                            </div>
+                                            <div class="rwd-map mt-2">
+                                                <div id="map"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="w-100 d-flex flex-column align-items-center justify-content-center">
+                                    <div class="d-flex align-items-center">
+                                        <input type="checkbox" name="Agree" class="mr-2" v-model="Agree" />
+                                        <span class="important">同意書：高雄農業局植物醫師掛號服務<a href="javascript:void（0）;" data-toggle="modal" data-target="#InfoModal">個資蒐集</a></span>
+                                    </div>
+                                    <div class="text-center">確認資料正確後，請輸入驗證碼後，按「確認」進行預約</div>
+                                    <div class="form-inline">
+                                        <span class="important mr-2">驗證碼</span>
+                                        <div class="d-flex flex-column position-relative">
+                                            <input type="text" name="VerifyCode" v-model="VerifyCode" class="form-control underlined mr-2" placeholder="請輸入圖形驗證碼" autocomplete="off" />
+                                        </div>
+                                        <figure class="m-2">
+                                            <img id="verifyimage" src="/Home/GetValidateCodeImage" href="#" onclick="Refresh_ValidateCode()" title="刷新驗證碼">
+                                        </figure>
+                                    </div>
+                                    <div class="text-center" style="font-size:14px">（驗證碼無區分英文大小寫並請以英文半形輸入）</div>
+
+                                    <div class="form-inline my-4">
+                                        <button type="submit" class="btn btn-primary mr-2" v-if="!Readonly">確認</button>
+                                        <button type="button" class="btn btn-secondary mr-2" onclick="location.href='/Home/Index'">回首頁</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+
+<!--個資蒐集Modal -->
+<div class="modal fade" id="InfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="exampleModalLabel">高雄農業局踐行個人資料保護法第8條之告知義務</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span>
+                    高雄市政府農業局植物醫師診斷輔導服務個資蒐集
+                    <br />
+                    一、公務機關名稱：高雄市政府農業局
+                    <br />
+                    二、蒐集之目的：植物醫師診斷輔導服務統計
+                    <br />
+                    三、蒐集個人資料之類別：
+                    <br />
+                    （一）C001識別個人（姓名、電話號碼、行動電話及電子郵件）
+                    <br />
+                    （二）C011 個人描述（性別）
+                    <br />
+                    四、個人資料利用之期間、地區、對象及方式：
+                    <br />
+                    （一）期間：5年
+                    <br />
+                    （二）個資利用機關：高雄市政府農業局
+                    <br />
+                    （三）利用方式：統計資料
+                    <br />
+                    五、當事人依個人資料保護法第3條可行使下列權利：
+                    <br />
+                    查詢或請求閱覽、請求製給複製本、請求補充或更正、請求停止蒐集、處理或利用、請求刪除
+                    <br />
+                    六、不提供之權益影響：
+                    <br />
+                    當事人如不願意提供上述個人資訊，將無法行使上述權利
+                </span>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    string Which_MAP = System.Configuration.ConfigurationManager.AppSettings["Which_MAP"];
+    string APIKEY = String.Empty;
+    switch (Which_MAP)
+    {
+        case "Google":
+            APIKEY = System.Configuration.ConfigurationManager.AppSettings["MapApiKey"];
+            break;
+        case "TGOS":
+            APIKEY = System.Configuration.ConfigurationManager.AppSettings["TGOS_Geocoding_APIKEY"];
+            string APPID = System.Configuration.ConfigurationManager.AppSettings["TGOS_Geocoding_APPID"];
+            break;
+        case "ArcGIS":
+            APIKEY = System.Configuration.ConfigurationManager.AppSettings["ArcGIS_APIKEY"];
+            break;
+    }
+}
+
+@section Script {
+    <script type="text/javascript">
+        //重新整理驗證碼
+        function Refresh_ValidateCode() {
+            document.getElementById('verifyimage').src = '/Home/GetValidateCodeImage?' + Math.random();
+        }
+        $(document).ready(function () {
+                const Ticket = new Vue({
+                el: "#Ticket",
+                data: {
+                error: @(new HtmlString(JsonConvert.SerializeObject(TempData["error"]))),
+                    Readonly: @(new HtmlString(JsonConvert.SerializeObject(Model.Readonly))),
+                    Districts: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
+                    CropTypes: @(new HtmlString(JsonConvert.SerializeObject(Model.CropTypes))),
+                    FarmingMethodList: @(new HtmlString(JsonConvert.SerializeObject(Model.FarmingMethodList))),
+                    OnsetLocationList: @(new HtmlString(JsonConvert.SerializeObject(Model.OnsetLocationList))),
+                    Schedule: @(new HtmlString(JsonConvert.SerializeObject(Model.Schedule))),
+                    ContactList: [
+                        {
+                    Code: 'Mobile',
+                            Name: '行動電話'
+                        },
+                        {
+                    Code: 'Email',
+                            Name: 'Email'
+                        },
+                        {
+                    Code: 'Line',
+                            Name: 'Line'
+                        },
+                    ],
+                    validator: null,
+                    Agree: false,
+                    VerifyCode: "",
+                    SearchLocation: '',
+                    defaultCenter: [22.6307027, 120.3414354],
+                    center: [],
+                    map: null,
+                    popup: L.popup(),
+                    promptStr: '',
+                    MakerIcon: L.icon({
+                    iconUrl: @(new HtmlString(JsonConvert.SerializeObject(Url.Content("/Scripts/Leaflet/images/marker-icon-change.png")))),
+                        iconSize: [42, 42],
+                    }),
+                    marker: null,
+                    search: null,
+                    APIKEY: "@APIKEY",
+                    Which_MAP: @(new HtmlString(JsonConvert.SerializeObject(Which_MAP))),
+                },
+                watch: {
+                    center: {
+                        handler(val) {
+                        let lat = val[0], lng = val[1];
+                        this.map.panTo(new L.LatLng(lat, lng));
+                            if (this.marker) {
+                                this.map.removeLayer(this.marker);
+                            }
+                            this.Schedule.FramLocation = `${lat},${lng}`;
+                            this.marker = L.marker(val, {
+                                title: this.promptStr,
+                                opacity: 1.0
+                            }).addTo(this.map);
+                            // 加上 Popup
+                            this.marker.bindPopup(this.promptStr).openPopup();
+                            this.marker.bindTooltip(this.promptStr, {
+                                direction: 'bottom', // right、left、top、bottom、center。default: auto
+                                sticky: true, // true 跟著滑鼠移動。default: false
+                                permanent: false, // 是滑鼠移過才出現，還是一直出現
+                                opacity: 1.0
+                            });
+                        },
+                        deep: true
+                    }
+                },
+                computed: {
+                    CropTypeList() {
+                        if (!this.CropTypes) {
+                            return [];
+                        }
+                        return this.CropTypes.map(c => {
+                            return {
+                            ID: c.ID,
+                                Name: c.Name
+                            }
+                        });
+                    },
+                    CropList() {
+                        let CropType = this.CropTypes.find(c => c.Name == this.Schedule.CropType);
+                        if (CropType) {
+                            return CropType.Crops.map(c => {
+                                return {
+                                ID: c.ID,
+                                    Name: c.Name
+                                }
+                            });
+                        }
+                        return [];
+                    }
+                },
+                methods: {
+                    changeCheckbox(name, key) {
+                        let arr = this.Schedule[name] || [];
+                        let i = arr.findIndex(a => a === key);
+
+                        if (i < 0) {
+                            arr.push(key);
+                        } else {
+                            arr.splice(i, 1);
+                        }
+                        this.$set(this.Schedule, name, arr);
+                    },
+                    getUserPosition() {
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(this.successGPS, this.errorGPS);
+                            return true;
+                        }
+                        return false;
+                    },
+                    // 跟使用者要位置
+                    successGPS(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        this.promptStr = '所在位置';
+                        this.center = [lat, lng];
+                    },
+                    errorGPS() {
+                        this.center = this.defaultCenter;
+                        window.alert('定位失敗! 請確認您的瀏覽器有提供定位功能，並允許取得位置。預設地點將為 高雄市農業局');
+                    },
+                    onMapClick(e) {
+                        let lat = e.latlng.lat; // 緯度
+                        let lng = e.latlng.lng; // 經度
+                        this.promptStr = `點選位置<br />${lat},${lng}`;
+                        this.center = [lat, lng];
+                        this.popup
+                            .setLatLng(e.latlng)
+                            .setContent(`緯度：${lat}<br/>經度：${lng}`)
+                            .openOn(this.map);
+                    },
+                    SearchAddress() {
+                        if (!this.SearchLocation) {
+                            this.getUserPosition();
+                            return;
+                        }
+                        const self = this;
+                        if (this.Which_MAP == "Google") {
+                            $.ajax({
+                                url: 'https://maps.googleapis.com/maps/api/geocode/json?address=' + this.SearchLocation + '&key=' + this.APIKEY,
+                                method: 'GET',
+                                dataType: 'json',
+                                success: function (response) {
+                                    console.log(response);
+                                    // equal center
+                                    let location = response.results[0].geometry.location;
+                                    self.promptStr = `${response.results[0].formatted_address}<br />${location.lat},${location.lng}`;
+                                    self.center = [location.lat, location.lng];
+                                }
+                            })
+                        } else if (this.Which_MAP == "TGOS") {
+                            $.ajax({
+                                url: 'https://addr.tgos.tw/addrws/v30/QueryAddr.asmx/PlugInQueryAddr',
+                                data: {
+                                    oAPIKey: this.TGOS.APIKEY,
+                                    oAddress: this.SearchLocation,
+                                    oSRS: "EPSG:4326",
+                                    oFuzzyType: 0,
+                                    oResultDataType: "JSON",
+                                    oFuzzyBuffer: 0,
+                                    oIsOnlyFullMatch: false,
+                                    oIsLockCounty: false,
+                                    oIsLockTown: false,
+                                    oIsLockVillage: false,
+                                    oIsLockRoadSection: false,
+                                    oIsLockLane: false,
+                                    oIsLockAlley: false,
+                                    oIsLockArea: false,
+                                    oIsSameNumber_SubNumber: true,
+                                    oCanIgnoreVillage: true,
+                                    oCanIgnoreNeighborhood: true,
+                                    oReturnMaxCount: 3
+                                },
+                                method: 'POST',
+                                dataType: 'json',
+                                success: function (response) {
+                                    console.log(response);
+                                    // 需要將 座標 由 TWD97 轉換為 WGS84
+                                }
+                            });
+                        } else {
+
+                        }
+                    },
+
+                    searchResult(e) {
+                        console.log('search', e)
+                        // http://leafletjs.com/reference.html#map-invalidatesize
+                        this.map.invalidateSize();
+                    }
+                },
+                mounted() {
+                    // *** 放置地圖
+                    this.map = L.map('map', {
+                        center: this.defaultCenter, // 中心點座標
+                        zoom: 15, // 0 - 18
+                        attributionControl: true, // 是否秀出「leaflet」的貢獻標記
+                        zoomControl: true, // 是否秀出 - + 按鈕
+                    });
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(this.map);
+                    L.control.locate({
+                        initialZoomLevel: 15
+                    }).addTo(this.map);
+                    // 監聽點擊事件
+                    this.map.on('click', this.onMapClick);
+
+                    if (this.Schedule.FramLocation && this.Schedule.FramLocation.indexOf(',') > -1) {
+                        let center = this.Schedule.FramLocation.split(',');
+                        if (center.length == 2 && !Number.isNaN(parseFloat(center[0])) && !Number.isNaN(parseFloat(center[1]))) {
+                            this.center = center;
+                        }
+                    } else {
+                        console.log('已有地址紀錄');
+                        this.SearchLocation = this.Schedule.FramLocation;
+                        this.SearchAddress();
+                    }
+
+                    if (!this.getUserPosition()) {
+                        this.errorGPS();
+                    }
+                    this.validator = $('#form').validate({
+                        rules: {
+                            "Schedule.Name": "required",
+                            "Schedule.District": "required",
+                            "Schedule.CropType": "required",
+                            "Schedule.Mobile": {
+                            required: true,
+                                pattern: "[0-9]{10}"
+                            },
+                            "Schedule.PlantingArea": {
+                            required: true,
+                                min: 0.1
+                            },
+                            "Schedule.FarmingMethod": "required",
+                            "Schedule.ContactMethod": "required",
+                            "Schedule.Context": "required",
+                            "Agree": "required",
+                            "VerifyCode": "required",
+                        },
+                        messages: {
+                            "Schedule.Name": "請輸入姓名",
+                            "Schedule.District": "請選擇行政區",
+                            "Schedule.CropType": "請選擇作物種類",
+                            "Schedule.Mobile": {
+                            required: "請輸入行動電話",
+                                pattern: "請輸入有效電話號碼"
+                            },
+                            "Schedule.PlantingArea": {
+                            required: "請輸入栽種面積",
+                                min: $.validator.format("請輸入有效栽種面積，最小 {0}")
+                            },
+                            "Schedule.FarmingMethod": "請選擇耕作方式",
+                            "Schedule.ContactMethod": "請選擇聯繫管道",
+                            "Schedule.Context": "請輸入諮詢內容",
+                            "Agree": "請勾選同意書",
+                            "VerifyCode": "請輸入驗整碼",
+                        },
+                        errorPlacement: function(error, element) {
+                            console.log(error, element);
+                            if ($(element).hasClass('form-check-input')) {
+                                error.appendTo($(element).parent().parent().parent());
+                            } else {
+                                error.appendTo(element.parent());
+                            }
+                        },
+                        submitHandler: function (form) {
+                            form.submit();
+                        }
+                    });
+                    if (!this.Readonly && this.error) {
+                        Swal.fire({
+                        icon: this.ID ? 'info' : 'error',
+                            title: this.error
+                        });
+                    }
+                }
+            });
+        });
+
+    </script>
+}

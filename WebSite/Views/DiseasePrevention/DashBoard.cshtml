@@ -1,0 +1,509 @@
+﻿@model Website.ViewModel.DiseasePrevention.DashboardModel
+@using Newtonsoft.Json;
+@{ ViewBag.Title = "DashBoard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .lg-white {
+        font-size: 36px;
+        color: white;
+        font-weight: bolder;
+    }
+
+    .no-bordertop > tbody > tr th, .no-bordertop > tbody > tr td {
+        border-top: none !important;
+    }
+
+    .yellow-table > tbody > tr th {
+        background-color: #ffffcc;
+        border: 1px black solid;
+    }
+
+    #map {
+        height: 100%;
+    }
+
+    .top5 {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .top5__desc {
+        width: 100%;
+        text-align: left;
+        font-weight: bolder;
+    }
+
+    .top5__list {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .listCard {
+        min-width: 20%;
+        padding: 12px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+        .listCard strong {
+            font-size: 36px;
+            color: white;
+            font-weight: bolder;
+        }
+
+    .listCard__title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .caseBlock {
+        width: 100%;
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .caseBlock__block {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .caseBlock__block--title {
+        width: 100%;
+        text-align: left;
+        font-size: 18px;
+        font-weight: bolder;
+        color: #212529;
+    }
+
+    .caseBlock__block > #map {
+        width: 100%;
+        height: 750px;
+    }
+
+    .form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form__block {
+        width: 100%;
+        padding: 8px 0;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        border-bottom: 1px solid #EAEAEA;
+    }
+
+    .form__block--title {
+        font-size: 20px;
+        color: #212529;
+    }
+
+    .form__block--field {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .form__btn {
+        width: 100%;
+    }
+
+    .form__chart {
+        width: 100%;
+    }
+
+    @@media screen and (min-width: 1024px) {
+        .caseBlock {
+            flex-direction: row;
+        }
+
+        .caseBlock__block {
+            width: 50%;
+        }
+    }
+</style>
+@Html.Partial("LeafletMapBasic")
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/DiseasePrevention/Preventlist">病蟲害防治</a></li>
+            <li><a href="~/DiseasePrevention/Map">農藥販賣業者地圖</a></li>
+            <li><a href="~/DiseasePrevention/Dashboard">病蟲害即時動態儀表板</a></li>
+            <li><a href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a></li>
+            <li><a href="~/Event/AllEvent">活動資訊</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <div><span class="line">病蟲害即時動態儀表板</span></div>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">病蟲害即時動態儀表板</li>
+                        </ol>
+                    </nav>
+
+                </div>
+            </div>
+            <div class="con-body">
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <a class="nav-link @(Model.IsSearch?"":"active")" id="nav-PestDashboard-tab" data-toggle="tab" href="#nav-PestDashboard" role="tab" aria-controls="nav-PestDashboard" aria-selected="false"><i class="far fa-calendar-alt mr-2"></i>主動調查</a>
+                        <a class="nav-link @(!Model.IsSearch?"":"active")" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true"><i class="fas fa-list-ul mr-2"></i>案件分析</a>
+                        <div style="flex:auto"></div>
+                        <button type="button" class="btn btn-secondary" onclick="location.href='/Home/Index'">回首頁</button>
+                    </div>
+                </nav>
+                <div class="tab-content" id="nav-tabContent">
+                    <div class="tab-pane fade @(!Model.IsSearch?"":"show active")" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                        <div class="card">
+                            <div class="card-body">
+                                <!-- 高雄市植醫診斷案件資料分析 -->
+                                <div class="top5">
+                                    <span>高雄市植醫診斷案件資料分析</span>
+                                    <div class="top5__desc">作物分類 TOP 5</div>
+                                    <div class="top5__list">
+                                        @{
+                                            int c = 1;
+                                            foreach (var item in Model.CropRanks)
+                                            {
+                                                var color = "";
+                                                switch (c)
+                                                {
+                                                    case 1:
+                                                        color = "#d37295";
+                                                        break;
+                                                    case 2:
+                                                        color = "#8cd17d";
+                                                        break;
+                                                    case 3:
+                                                        color = "#79706e";
+                                                        break;
+                                                    case 4:
+                                                        color = "#59a14f";
+                                                        break;
+                                                    case 5:
+                                                        color = "#edc948";
+                                                        break;
+                                                }
+                                                <div class="listCard" style="background-color: @(color)">
+                                                    <div class="listCard__title">
+                                                        <strong>@item.Rank</strong>
+                                                        <span>@item.CropName</span>
+                                                    </div>
+                                                    <strong>@(item.DataCount)件</strong>
+                                                </div>
+
+                                                c++;
+                                            }
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- 診斷案件數地區統計/案件回報數時間分析 -->
+                                <div class="caseBlock">
+                                    <div class="caseBlock__block">
+                                        <div class="caseBlock__block--title">診斷案件數地區統計</div>
+                                        <div id="map"></div>
+                                    </div>
+                                    <div class="caseBlock__block">
+                                        <div class="caseBlock__block--title">案件回報數時間分析</div>
+                                        <form id="form" class="form" method="post" enctype="multipart/form-data">
+                                            @Html.AntiForgeryToken()
+                                            <!-- 時間區間 -->
+                                            <div class="form__block">
+                                                <strong>時間區間</strong>
+                                                <div class="form__block--field">
+                                                    <input type="date" class="form-control" style="width: 47%" value="@(Model.QueryData.StartDate.HasValue? Model.QueryData.StartDate.Value.ToString("yyyy-MM-dd") : "")" name="StartDate" />
+                                                    <span>～</span>
+                                                    <input type="date" class="form-control" style="width: 47%" value="@(Model.QueryData.EndDate.HasValue? Model.QueryData.EndDate.Value.ToString("yyyy-MM-dd") : "")" name="EndDate" />
+                                                </div>
+                                            </div>
+                                            <!-- 行政區 -->
+                                            <div class="form__block">
+                                                <strong>行政區</strong>
+                                                <div class="form__block--field">
+                                                    <select class="form-control" name="Zip">
+                                                        <option value="">全部</option>
+                                                        @foreach (var item in Model.Districts)
+                                                        {
+                                                            <option value="@item.Zip" @(Model.QueryData.Zip == item.Zip ? "selected" : "")>@item.Name</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <!-- 作物類別 -->
+                                            <div class="form__block">
+                                                <strong>作物類別</strong>
+                                                <div class="form__block--field">
+                                                    <input type="hidden" id="hidCropList" value="@(Newtonsoft.Json.JsonConvert.SerializeObject(Model.CropList))" />
+                                                    <select class="form-control" name="CropType" onchange="ChangeCropType($(this))">
+                                                        <option value="">全部</option>
+                                                        @foreach (var item in Model.CropList)
+                                                        {
+                                                            <option value="@item.CropTypes" @(Model.QueryData.CropType == item.CropTypes ? "selected" : "")>@item.CropTypes</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <!-- 作物 -->
+                                            <div class="form__block">
+                                                <strong>作物</strong>
+                                                <div class="form__block--field">
+                                                    <select class="form-control" name="Crops" id="ddlCrops">
+                                                        <option value="">全部</option>
+                                                        @if (!string.IsNullOrEmpty(Model.QueryData.CropType) && Model.CropList.Any(x => x.CropTypes == Model.QueryData.CropType))
+                                                        {
+                                                            foreach (var item in Model.CropList.FirstOrDefault(x => x.CropTypes == Model.QueryData.CropType).CropNames)
+                                                            {
+                                                                <option value="@item" selected="@(Model.QueryData.Crops == item? "selected":"")">@item</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <!-- 搜尋 -->
+                                            <div class="form__btn">
+                                                <input type="button" class="btn btn-primary form-control" value="搜尋" onclick="handleSubmit(event)" />
+                                            </div>
+                                            <!-- chart -->
+                                            <div class="form__chart">
+                                                <canvas id="chart"></canvas>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade @(Model.IsSearch?"":"show active")" id="nav-PestDashboard" role="tabpanel" aria-labelledby="nav-PestDashboard-tab">
+                        @Html.Partial("_PestDashboard")
+                    </div>
+                 </div>
+             </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    var time = @(new HtmlString(JsonConvert.SerializeObject(Model.Label)));
+    var edi_data = @(new HtmlString(JsonConvert.SerializeObject(Model.DataCount)));
+    var ctx = $('#chart');
+    var Chart = new Chart(ctx, {
+
+        type: 'line',
+        data: {
+
+            labels: time,
+            datasets: [{
+                label: '案件數量',
+                data: edi_data,
+                borderWidth: 3,
+                borderColor:function(context) {
+                    const chart = context.chart;
+                    const { ctx, chartArea } = chart;
+
+                    if (!chartArea) {
+                        // This case happens on initial chart load
+                        return;
+                    }
+                    return getGradient(ctx, chartArea);
+                },
+                pointBorderWidth: 5
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        display: false
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        responsive: true
+                    }
+                }]
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+
+            }
+        }
+    });
+
+    var width, height, gradient;
+    function getGradient(ctx, chartArea) {
+        const chartWidth = chartArea.right - chartArea.left;
+        const chartHeight = chartArea.bottom - chartArea.top;
+        if (!gradient || width !== chartWidth || height !== chartHeight) {
+            // Create the gradient because this is either the first render
+            // or the size of the chart has changed
+            width = chartWidth;
+            height = chartHeight;
+            gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+            gradient.addColorStop(0, '#66FF00');
+            //gradient.addColorStop(0.5, Utils.CHART_COLORS.yellow);
+            gradient.addColorStop(1, '#B22222');
+        }
+
+        return gradient;
+    }
+</script>
+
+<script>
+    //顏色級距設定
+    var MinColor = '#00ff6f';
+    var MaxColor = '#790909';
+    var MinValue = 0;
+    var MaxValue = 100;
+    var Length = 5;
+    var colorGradient = GenerateGradient(MaxColor, MinColor, Length);
+
+    function GetGradientColor(value) {
+        if (value < MinValue) value = MinValue;
+        if (value > MaxValue) value = MaxValue;
+
+        var distance = (MaxValue - MinValue) / (Length);
+        var position = Math.ceil(value / distance) - 1;
+        return `#${colorGradient[position]}`;
+    }
+</script>
+
+@section Script {
+    <script>
+        var district;
+        var map, marker;
+        var MakerIcon = L.icon({
+            iconUrl: @(new HtmlString(JsonConvert.SerializeObject(Url.Content("/Scripts/Leaflet/images/marker-icon-change.png")))),
+            iconSize: [42, 42],
+        });
+
+        $(document).ready(function () {
+            LoadDistrictData().then(function () {
+                // *** 放置地圖
+                map = L.map('map', {
+                    center: [22.6307027, 120.3414354], // 中心點座標
+                    zoom: 12, // 0 - 18
+                    attributionControl: true, // 是否秀出「leaflet」的貢獻標記
+                    zoomControl: true, // 是否秀出 - + 按鈕
+                });
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                //L.control.locate({
+                //    initialZoomLevel: 12
+                //}).addTo(map);
+
+                var _location = @(new HtmlString(JsonConvert.SerializeObject(Model.DashboardMapData)));
+                var layerGroup = L.layerGroup();
+                for (let i of _location) {
+                    let lat = i.Lat, lng = i.Lng, promptStr = i.PopupWord.replace('cla','<br/>');
+                    //if (marker) {
+                    //    map.removeLayer(marker);
+                    //}
+
+                    marker = L.marker([lat, lng], {
+                        title: promptStr,
+                        opacity: 1.0
+                    }).addTo(map);
+
+                    var geoJson = DistrictGeoJson(i.DistrictName);
+                    var style = {
+                        "color": GetGradientColor(i.TotalCount)
+                    };
+
+                    L.geoJSON(geoJson, { style: style }).addTo(map);
+
+                    // 加上 Popup
+                    marker.bindPopup(promptStr);
+                    marker.bindTooltip(promptStr, {
+                        direction: 'bottom', // right、left、top、bottom、center。default: auto
+                        sticky: false, // true 跟著滑鼠移動。default: false
+                        permanent: false, // 是滑鼠移過才出現，還是一直出現
+                        opacity: 1.0
+                    });
+                }
+                //map.Layers.push(layerGroup);
+                //layerGroup.addTo(map);
+
+                let LatLng = ('@Model.Center').split(",");
+                if (LatLng.length == 2) {
+                    var ct = [LatLng[0], LatLng[1]]
+                    map.setView(ct, 14);
+                }
+            });
+        });
+        function handleSubmit(e) {
+            e.preventDefault();
+
+            console.log($('form').serializeArray())
+            document.getElementById('form').submit();
+        }
+        function ChangeCropType(_selector) {
+            var thisSelect = _selector;
+            var changeSelector = $('#ddlCrops').each(function () {
+                $(this).empty();
+                var obj = jQuery.parseJSON($('#hidCropList').val());
+                $(this).append(new Option("全部", "", false))
+                for (let i of obj) {
+                    if (i.CropTypes == _selector.val()) {
+                        for (let j of i.CropNames) {
+                            $(this).append(new Option(j, j, false))
+                        }
+                    }
+                }
+            });
+        }
+
+        function LoadDistrictData() {
+            var p1 = fetch('@Url.Content("/Scripts/Leaflet/district.json")')
+                .then(function (response) { return response.json(); })
+                .then(function (jsonData) { district = jsonData });
+
+            return Promise.all([p1]);
+        }
+        function DistrictGeoJson(districtName) {
+            var v = district.features.find(x => x.properties.T_Name === districtName);
+            return v;
+        }
+
+
+    </script>
+}
+

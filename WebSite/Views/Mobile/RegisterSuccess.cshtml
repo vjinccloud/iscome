@@ -1,0 +1,133 @@
+﻿
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title -->
+    <title>高雄市政府農業局線上植物防疫平台</title>
+
+
+    <!-- Core Stylesheet -->
+    <link href="../css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="../icon/css/all.min.css" rel="stylesheet" />
+    <link href="../css/vnstyle.css" rel="stylesheet" />
+    <link href="../css/anstyle.css" rel="stylesheet" />
+
+    <link href="../css/bootstrap/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="../packages/core/main.css" rel="stylesheet" />
+    <link href="../packages/daygrid/main.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+    <link href="../Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="../css/pesticidesInventoryInfo.css" rel="stylesheet" />
+    <!-- jQuery-->
+    <script src="../Scripts/jquery-3.6.3.min.js"></script>
+    <script src="../Scripts/jquery.validate.min.js"></script>
+    <script src="../Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="../Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="../Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="../js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="../js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="../Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Moment -->
+    <script src="../Scripts/moment.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="../js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="../js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <script src="../packages/core/main.js"></script>
+    <script src="../packages/core/locales-all.js"></script>
+    <script src="../packages/daygrid/main.js"></script>
+    <script src="../packages/interaction/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <style>
+        .container2 {
+            margin: 0 auto;
+            width: 300px;
+        }
+
+        .ologin {
+            color: #b2b2b2;
+            font-size: 14px;
+            border-bottom: 1px #b2b2b2 solid;
+            padding-bottom: 5px;
+        }
+
+        /*  */
+
+        .title2 {
+            /* border-bottom: 2px solid #D0D5D5; */
+            font-weight: 900;
+            padding-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .title3 {
+            color: #696969;
+            padding-bottom: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body class="bg-img">
+    <div class="container2">
+
+        <div class="text-center">
+            <a href="../Home/Index">
+                <img src="../images/logo2.png" style="width:200px; margin:40px 0;">
+            </a>
+        </div>
+
+        <!-- 步驟條 -->
+        <div style="width:80%; margin:0px auto">
+            <ol class="ui-step ui-step-6" id="liudaxia">
+
+                <li class="step-none-done">
+                    <div class="ui-step-line"></div>
+                    <div class="ui-step-cont">
+                        <span class="ui-step-cont-number">1</span>
+                        <span class="ui-step-cont-text">會員註冊</span>
+                    </div>
+                </li>
+
+
+                <li class="step-active step-end ">
+                    <div class="ui-step-line"></div>
+                    <div class="ui-step-cont">
+                        <span class="ui-step-cont-number">2</span>
+                        <span class="ui-step-cont-text">註冊完成</span>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="col-12 text-center" style="margin-top: 100px;">
+            <span class="title2">恭喜您完成註冊！</span><br>
+            <span class="title2">註冊帳號:@ViewBag.id</span>
+        </div>
+
+        <div class="col-12 text-left" style="margin-top: 50px;">
+            <span class="title3">提醒您：目前尚未完成綁定，需再次點擊【會員註冊/綁定】完成綁定流程。</span><br>
+            <span class="title3">請勿封鎖 高雄植醫來幫忙 高雄市政府農業局，以免影響訊息接收。</span><br>
+        </div>
+
+
+
+    </div>
+
+
+
+
+</body>
+
+</html>

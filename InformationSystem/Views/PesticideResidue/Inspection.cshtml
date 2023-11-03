@@ -1,0 +1,435 @@
+﻿@model InformationSystem.ViewModel.PesticideResidueModel
+@{
+    ViewBag.Title = "Inspection";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">農藥殘留檢測資料</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="form" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>採樣日期：</label>
+                                        </th>
+                                        <td style="width:35%">
+                                            <div class="form-inline">
+                                                <input type="date" class="form-control" style="width:40%" name="SampleStartDate" value="@(Model.prQueryReq.SampleStartDate.HasValue ? Model.prQueryReq.SampleStartDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                                <span>～</span>
+                                                <input type="date" class="form-control" style="width:40%" name="SampleEndDate" value="@(Model.prQueryReq.SampleEndDate.HasValue ? Model.prQueryReq.SampleEndDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                            </div>
+                                        </td>
+                                        <th style="width:10%">
+                                            <label>計畫別：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select class="form-control" name="PlanType">
+                                                <option value="" selected="@(string.IsNullOrEmpty(Model.prQueryReq.PlanType))">請選擇</option>
+                                                @foreach (var item in Model.PlanType.OrderBy(x => x.Sort))
+                                                {
+                                                    <option value="@item.Code" selected="@(Model.prQueryReq.PlanType == item.Code)">@item.Name</option>
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>行政區：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <select class="form-control mr-2" style="width:40%">
+                                                    <option>高雄市</option>
+                                                </select>
+                                                <select class="form-control ml-2" style="width:40%" name="District">
+                                                    <option value="" selected="@(string.IsNullOrEmpty(Model.prQueryReq.District))">請選擇</option>
+                                                    @foreach (var item in Model.Districts)
+                                                    {
+                                                        <option value="@item" selected="@(Model.prQueryReq.District == item)">@item</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <label>提供單位：</label>
+                                        </th>
+                                        <td>
+                                            <select class="form-control" name="ProvideUnit">
+                                                <option value="" selected="@(string.IsNullOrEmpty(Model.prQueryReq.ProvideUnit))">請選擇</option>
+                                                @foreach (var item in Model.ProvideUnit.OrderBy(x => x.Sort))
+                                                {
+                                                    <option value="@item.Code" selected="@(Model.prQueryReq.ProvideUnit == item.Code)">@item.Name</option>
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>作物類別：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <select class="form-control mr-2" style="width:40%" onchange="ChangeCropType($(this))" name="CropType">
+                                                    <option value="" selected="@(string.IsNullOrEmpty(Model.prQueryReq.CropType))">請選擇</option>
+                                                    @foreach (var item in Model.PlantCategory)
+                                                    {
+                                                        <option value="@item.ID" selected="@(Model.prQueryReq.CropType == item.ID.ToString())">@item.Name</option>
+                                                    }
+                                                </select>
+                                                <input type="hidden" id="hidCropData" value="@(Newtonsoft.Json.JsonConvert.SerializeObject(Model.CropName))" />
+                                                <select id="iptCrops" class="form-control mr-2" style="width:40%" name="CropName">
+                                                    <option value="" selected="@(!Model.CropName.Where(x => x.TypeID.ToString() == Model.prQueryReq.CropType).Any(x => x.ID.ToString() == Model.prQueryReq.CropName))">請選擇</option>
+                                                    @foreach (var item in Model.CropName.Where(x => x.TypeID.ToString() == Model.prQueryReq.CropType))
+                                                    {
+                                                        <option value="@item.ID" selected="@(Model.prQueryReq.CropName == item.ID.ToString())">@item.Name</option>
+                                                    }
+                                                </select>
+                                                @*<input type="text" class="form-control ml-2" style="width:40%" name="CropName" value="@Model.prQueryReq.CropName" />*@
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <label>結果判定：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <select class="form-control mr-2" style="width:30%" name="Result">
+                                                    <option value="" selected="@(!Model.prQueryReq.Result.HasValue)">請選擇</option>
+                                                    <option value="1" selected="@(Model.prQueryReq.Result == 1)">合格</option>
+                                                    <option value="2" selected="@(Model.prQueryReq.Result == 2)">不合格</option>
+                                                    <option value="3" selected="@(Model.prQueryReq.Result == 3)">暫存</option>
+                                                </select>
+                                                <select class="form-control" style="width:30%;margin-left:auto;margin-right:auto;" name="HandingSituation">
+                                                    <option value="0" selected="@(Model.prQueryReq.HandingSituation == 0)">請選擇</option>
+                                                    <option value="1" selected="@(Model.prQueryReq.HandingSituation == 1)">查處中</option>
+                                                    <option value="2" selected="@(Model.prQueryReq.HandingSituation == 2)">確認中</option>
+                                                    <option value="3" selected="@(Model.prQueryReq.HandingSituation == 3)">結案</option>
+                                                </select>
+                                                <select class="form-control ml-2" style="width:30%" name="ClosingSituation">
+                                                    <option value="" selected="@(!Model.prQueryReq.ClosingSituation.HasValue)">請選擇</option>
+                                                    <option value="1" selected="@(Model.prQueryReq.ClosingSituation == 1)">移送外縣市</option>
+                                                    <option value="2" selected="@(Model.prQueryReq.ClosingSituation == 2)">裁罰</option>
+                                                    <option value="3" selected="@(Model.prQueryReq.ClosingSituation == 3)">鄰田汙染免罰</option>
+                                                    <option value="4" selected="@(Model.prQueryReq.ClosingSituation == 4)">不予裁罰</option>
+                                                    <option value="5" selected="@(Model.prQueryReq.ClosingSituation == 5)">移送衛生局</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>樣品名稱：</label>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" value="@Model.prQueryReq.SampleName" name="SampleName" />
+                                        </td>
+                                        <th>
+                                            <label>農藥藥劑：</label>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" value="@Model.prQueryReq.SampleContextName" name="SampleContextName" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>檢體編號：</label>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" value="@Model.prQueryReq.SampleNum" name="SampleNum" />
+                                        </td>
+                                        <th>
+                                            <label>使用方法(and)：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="checkbox" class="form-control mr-2" @(Model.prQueryReq.SampleContextUseWay.Contains("核准使用") ? "checked" : "") name="SampleContextUseWay[]" value="核准使用" />核准使用</label>
+                                                <label class="mr-2"><input type="checkbox" class="form-control mr-2" @(Model.prQueryReq.SampleContextUseWay.Contains("☆未核准使用") ? "checked" : "") name="SampleContextUseWay[]" value="☆未核准使用" />☆未核准使用</label>
+                                                <label class="mr-2"><input type="checkbox" class="form-control mr-2" @(Model.prQueryReq.SampleContextUseWay.Contains("◎已公告使用方法未公告容許量") ? "checked" : "") name="SampleContextUseWay[]" value="◎已公告使用方法未公告容許量" />◎已公告使用方法未公告容許量</label>
+                                                <label class="mr-2"><input type="checkbox" class="form-control mr-2" @(Model.prQueryReq.SampleContextUseWay.Contains("□公告禁用") ? "checked" : "") name="SampleContextUseWay[]" value="□公告禁用" />□公告禁用</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>供應代號：</label>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" value="@Model.prQueryReq.ProviderCode" name="ProviderCode" />
+                                        </td>
+                                        <th>
+                                            <label>轉單植醫輔導：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select class="form-control">
+                                                <option value="" selected="@(!Model.prQueryReq.IsTransfer.HasValue)">請選擇</option>
+                                                <option value="true" selected="@(Model.prQueryReq.IsTransfer == true)">已轉單</option>
+                                                <option value="false" selected="@(Model.prQueryReq.IsTransfer == false)">未轉單</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>採樣來源：</label>
+                                        </th>
+                                        <td>
+                                            <select class="form-control" name="SampleSource">
+                                                <option value="" selected="@(string.IsNullOrEmpty(Model.prQueryReq.SampleSource))">請選擇</option>
+                                                @foreach (var item in Model.SampleSource.OrderBy(x => x.Sort))
+                                                {
+                                                    <option value="@item.Code" selected="@(Model.prQueryReq.SampleSource == item.Code)">@item.Name</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <th></th>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <input type="hidden" name="act" id="act" />
+                                            <button type="submit" class="btn btn-primary m-2" onclick="handleSubmit(event,'')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                            <button type="submit" class="btn btn-export m-2" onclick="handleSubmit(event,'export')">匯出</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <div style="display:flex">
+                            <button type="button" class="btn btn-primary m-2" onclick="location.href='/PesticideResidue/ImportOldData'">舊資料匯入</button>
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/PesticideResidue/InspectionDetail'"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                                @*<button type="button" class="btn btn-secondary m-2"><i class="fas fa-minus-circle mr-2"></i>刪除</button>*@
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">項次</th>
+                                        <th scope="col">檢體編號</th>
+                                        <th scope="col">行政區</th>
+                                        <th scope="col">採樣來源</th>
+                                        <th scope="col">名稱</th>
+                                        <th scope="col">樣品名稱</th>
+                                        <th scope="col">作物種類</th>
+                                        <th scope="col">作物名稱</th>
+                                        <th scope="col">採樣日期</th>
+                                        <th scope="col">結果判定</th>
+                                        <th scope="col">處理情形</th>
+                                        <th scope="col">轉單輔導</th>
+                                        <th scope="col">功能</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listbody">
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model.prModel)
+                                        {
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@item.SampleNum</td>
+                                                <td>@item.District</td>
+                                                <td>@(ICCModule.EntityService.Service.Service_defCode.GetDetail("SampleSource", item.SampleSource)?.Name?? item.SampleSource)</td>
+                                                <td id="tr_@i" class="firstName">
+                                                    <div class="form-inline">
+                                                        <input type="hidden" id="idShowName" value="0"/>
+                                                        <input type="hidden" id="idNameValue" value="@item.ProviderName"/>
+                                                        <span id="pName">@item.ProviderName</span>
+                                                        <button type="button" class="btn btn-default" onclick="ChangeShow(@i)"><i class="far fa-eye"></i></button>
+                                                    </div>
+                                                </td>
+                                                <td>@item.SampleName</td>
+                                                <td>@item.CropTypeStr</td>
+                                                <td>@item.CropNameStr</td>
+                                                <td>@item.SampleDate.ToString("yyyy-MM-dd")</td>
+                                                <td style="color:red">@(item.Result.HasValue ? (item.Result == true ? "合格" : "不合格") : "暫存")</td>
+                                                <td>@(item.HandingSituation == 1 ? "查處中" : (item.HandingSituation == 2 ? "確認中" : (item.HandingSituation == 3 ? "結案" : "")))</td>
+                                                <td>@((item.IsTransfer == true && item.TransferDate.HasValue) ? item.TransferDate.Value.ToString("yyyy-MM-dd") : "")</td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <button type="button" class="btn btn-danger" onclick="location.href = '/PesticideResidue/InspectionDetail?id=@item.ID'">編輯</button>
+                                                        @using (Html.BeginForm("InspectionDelete", "PesticideResidue", FormMethod.Post, new { onclick = "return confirm('確定刪除?');" }))
+                                                        {
+                                                            @Html.AntiForgeryToken()
+                                                            @Html.Hidden("ID", item.ID)
+                                                            <input type="submit" class="btn btn-secondary m-2" value="刪除" />
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            @{
+                                var url = "";
+                                if (Model.prQueryReq.SampleStartDate.HasValue) { url += "&SampleStartDate=" + Model.prQueryReq.SampleStartDate; }
+                                if (Model.prQueryReq.SampleStartDate.HasValue) { url += "&SampleEndDate=" + Model.prQueryReq.SampleEndDate; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.PlanType)) { url += "&PlanType=" + Model.prQueryReq.PlanType; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.District)) { url += "&District=" + Model.prQueryReq.District; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.ProvideUnit)) { url += "&ProvideUnit=" + Model.prQueryReq.ProvideUnit; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.CropType)) { url += "&CropType=" + Model.prQueryReq.CropType; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.CropName)) { url += "&CropName=" + Model.prQueryReq.CropName; }
+                                if (Model.prQueryReq.Result.HasValue) { url += "&Result=" + Model.prQueryReq.Result; }
+                                if (Model.prQueryReq.HandingSituation > 0) { url += "&HandingSituation=" + Model.prQueryReq.HandingSituation; }
+                                if (Model.prQueryReq.ClosingSituation.HasValue) { url += "&ClosingSituation=" + Model.prQueryReq.ClosingSituation; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.SampleName)) { url += "&SampleName=" + Model.prQueryReq.SampleName; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.SampleContextName)) { url += "&SampleContextName=" + Model.prQueryReq.SampleContextName; }
+                                if (Model.prQueryReq.SampleContextUseWay.Any()) { url += "&SampleContextUseWay=[" + string.Join(",", Model.prQueryReq.SampleContextUseWay) + "]"; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.SampleNum)) { url += "&SampleNum=" + Model.prQueryReq.SampleNum; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.ProviderCode)) { url += "&ProviderCode=" + Model.prQueryReq.ProviderCode; }
+                                if (Model.prQueryReq.IsTransfer.HasValue) { url += "&IsTransfer=" + Model.prQueryReq.IsTransfer; }
+                                if (!string.IsNullOrEmpty(Model.prQueryReq.SampleSource)) { url += "&SampleSource=" + Model.prQueryReq.SampleSource; }
+                            }
+                            <a @(Model.Pages > 1 ? "" : "style=pointer-events:none;") href="/PesticideResidue/Inspection?Pages=@(Model.Pages-1)@url" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                            <nav aria-label="...">
+                                <ul class="pagination">
+                                    @{
+                                        int sPage = 1, endPage = Model.TotalPage;
+                                        if (Model.TotalPage > 5)
+                                        {
+                                            if (Model.TotalPage < (Model.Pages + 2))
+                                            {
+                                                sPage = Model.TotalPage - 4;
+                                            }
+                                            else if ((Model.Pages - 2) <= 0)
+                                            {
+                                                endPage = 5;
+                                            }
+                                            else
+                                            {
+                                                sPage = Model.Pages - 2;
+                                                endPage = Model.Pages + 2;
+                                            }
+                                        }
+
+                                        for (int p = sPage; p <= endPage; p++)
+                                        {
+
+                                            if (p == Model.Pages)
+                                            {
+                                                <li class="page-item active" aria-current="page">
+                                                    <span class="page-link">@p<span class="sr-only"></span></span>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="page-item"><a class="page-link" href="/PesticideResidue/Inspection?Pages=@p@url">@p</a></li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </nav>
+                            <a @(Model.Pages < Model.TotalPage ? "" : "style=pointer-events:none;") href="/PesticideResidue/Inspection?Pages=@(Model.Pages+1)@url" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script{
+    <script>
+        $(document).ready(function () {
+            $('#listbody').find('.firstName').each(function () {
+                var tr = $(this);
+                var _val = tr.find('#idShowName');
+                var _name = tr.find('#idNameValue');
+                var showPlace = tr.find('#pName');
+
+                var checkVal = _val.val();
+                if (checkVal == "0") {
+                    var _nameValue = "";
+                    for (let i = 0; i < _name.val().length; i++) {
+                        if (i == 0 || i == (_name.val().length - 1)) {
+                            _nameValue += _name.val()[i];
+                        }
+                        else {
+                            _nameValue += "O";
+                        }
+                    }
+                    showPlace.html(_nameValue);
+                    _val.val("1");
+                }
+                else {
+                    showPlace.html(_name.val());
+                    _val.val("0");
+                }
+            });            
+        });
+        function ChangeCropType(_selector) {
+            var thisSelect = _selector;
+            var changeSelector = $('#iptCrops');
+            changeSelector.empty();
+                var obj = jQuery.parseJSON($('#hidCropData').val());
+            changeSelector.append(new Option("請選擇", "", false))
+                for (let i of obj) {
+                    if (i.TypeID == _selector.val()) changeSelector.append(new Option(i.Name, i.ID, false))
+                }
+        }
+
+        function handleSubmit(e, act) {
+            e.preventDefault();
+
+            if (act) {
+                $('#act').val(act);
+            }
+
+            var validate = $("form").valid();
+            if (validate) {
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+        function ChangeShow(a) {
+            var tr = $('#tr_' + a);
+            var _val = tr.find('#idShowName');
+            var _name = tr.find('#idNameValue');
+            var showPlace = tr.find('#pName');
+
+            if (_val.val() == "0") {
+                var _nameValue = "";
+                for (let i = 0; i < _name.val().length; i++) {
+                    if (i == 0 || i == (_name.val().length - 1)) {
+                        _nameValue += _name.val()[i];
+                    }
+                    else {
+                        _nameValue += "O";
+                    }
+                }
+                showPlace.html(_nameValue);
+                _val.val("1");
+            }
+            else {
+                showPlace.html(_name.val());
+                _val.val("0");
+            }
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+

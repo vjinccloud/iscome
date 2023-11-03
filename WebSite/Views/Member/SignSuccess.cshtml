@@ -1,0 +1,81 @@
+﻿
+@{
+    ViewBag.Title = "SignSuccess";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section id="SignUp" class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">會員註冊</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Member/SignUp">會員專區</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">註冊會員</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="card">
+                <strong>恭喜您成功註冊！再次登入會員後，即可預約植物醫師看診，或是修改個人資料。</strong>
+                <strong>也可以加入高雄植醫來幫忙綁定LINE官方帳號預約看診！</strong>
+
+                <div class="card-block">
+                    <img src="https://qr-official.line.me/gs/M_572lrxcn_BW.png">
+                    <div><a href="https://lin.ee/77YnUrV" target="_blank">https://lin.ee/77YnUrV</a></div>
+                    <strong>掃行動條碼即可將官方帳號加入好友</strong>
+                    <p>請先點選LINE應用程式搜尋欄位旁的掃描圖是，再掃描此行動條碼</p>
+                    <a type="button" class="btn btn-primary ml-4" href="/Home/Index?isPopup=false">返回首頁</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<style>
+    .card {
+        width: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap:  12px;
+    }
+
+    .card-block {
+        width: 100%;
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+    }
+
+    @@media (max-width: 376px) {
+        img {
+            width: 100%
+        }
+    }
+</style>

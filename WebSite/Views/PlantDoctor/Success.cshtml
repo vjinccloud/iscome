@@ -1,0 +1,136 @@
+﻿
+@{
+    ViewBag.Title = "Success";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .text-red {
+        color: red;
+        text-decoration: underline;
+    }
+
+    .row, p {
+        margin: 0
+    }
+    .col-6, .col-12 {
+        padding: 0;
+    }
+
+    .tableBlock > div > span {
+        padding: 12px;
+        box-sizing: border-box;
+        text-align: right;
+    }
+    .tableBlock__head {
+        width: 40%;
+        background-color: #ccffff;
+        font-weight: bold;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">植物醫師線上掛號</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Member/SignUp">會員專區</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">植物醫師線上掛號</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="mb-3" style="text-align:left">
+                                <span>
+                                    網路預約成功！
+                                    <br />
+                                    系統已發送預約通知至您的電子信箱，諮詢當天<span class="text-red">請務必準時接聽電話</span>，以利植醫進行諮詢。
+                                </span>
+                            </div>
+
+                            <div class="w-100 p-2 font-weight-bold mb-3" style="background-color:#ffffcc !important;border:1px black solid">
+                                預約日期：@(Model.ReserveDateTaiwainStr) @(Model.Period)場（預計看診時間 @(Model.ReserveTime)）
+                            </div>
+
+                            <div class="w-100">
+                                <div class="w-100 row tableBlock border">
+                                    <div class="col-12 col-md-6 d-flex align-items-center border-bottom">
+                                        <span class="tableBlock__head">姓名</span>
+                                        <span>@Model.Name</span>
+                                    </div>
+                                    <div class="col-12 col-md-6 d-flex align-items-center border-bottom">
+                                        <span class="tableBlock__head">性別</span>
+                                        <span>@Model.SexyStr</span>
+                                    </div>
+                                    <div class="col-12 col-md-6 d-flex align-items-center border-bottom">
+                                        <span class="tableBlock__head">行政區</span>
+                                        <span>@Model.District</span>
+                                    </div>
+                                    <div class="col-12 col-md-6 d-flex align-items-center border-bottom">
+                                        <span class="tableBlock__head">作物種類</span>
+                                        <span>@Model.CropType－@Model.CropName</span>
+                                    </div>
+                                    <div class="col-12 col-md-6 d-flex align-items-center border-bottom">
+                                        <span class="tableBlock__head">行動電話</span>
+                                        <span>@Model.Mobile</span>
+                                    </div>
+                                    <div class="col-12 col-md-6 d-flex align-items-center border-bottom">
+                                        <span class="tableBlock__head">栽種面積</span>
+                                        <span>@Model.PlantingArea 公頃</span>
+                                    </div>
+                                    <div class="col-12 col-md-6 d-flex align-items-center border-bottom">
+                                        <span class="tableBlock__head">耕作方式</span>
+                                        <span>@Model.FarmingMethodStr</span>
+                                    </div>
+                                    <div class="col-12 col-md-6 d-flex align-items-center border-bottom">
+                                        <span class="tableBlock__head">聯繫管道</span>
+                                        <span>@Model.ContactMethodStr</span>
+                                    </div>
+                                </div>
+                                    
+                                <div class="w-100 text-center my-4">
+                                    <button type="button" class="btn btn-secondary mr-2" onclick="location.href='/Home/Index'">回首頁</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+@section Script {
+    <script type="text/javascript">
+        let error = '@(TempData["error"])';
+        if (error) {
+            Swal.fire({
+                icon: 'info',
+                title: error
+            });
+        }
+    </script>
+}

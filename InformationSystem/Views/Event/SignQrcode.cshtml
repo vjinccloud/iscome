@@ -1,0 +1,41 @@
+﻿@model InformationSystem.ViewModel.Event.OpenTimeQrcode
+@{
+    ViewBag.Title = "SignQrcode";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var a = Model;
+}
+
+<style>
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+    .itemblock {
+        margin-left: 29.17%;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">活動報名管理-查看報名</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div id="html-content-holder" class="card shadow mb-4">
+                <div class="col-5 itemblock">
+                    <img id="barcode" src="@Model.imgSrc" width="100%"/>
+                    <a class="btn btn-primary m-2 form-control" href="@Model.imgSrc" target="_blank">下載</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Script {
+    <script>
+        function downloadIamge() {
+            download($('#barcode').attr('src'), "strcode.png", "image/png");
+        };
+    </script>
+}

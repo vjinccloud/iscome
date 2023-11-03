@@ -1,0 +1,269 @@
+﻿@*
+    作物類別、作物總面積與診斷次數圖表(直方圖)
+*@
+@model InformationSystem.ViewModel.ServiceAreaStatisticModel
+@{
+    Layout = null;
+}
+
+<canvas class="HiddenDom" id="AllCropHiddenChart" width="1000" height="500"
+        style="border:1px black solid">
+</canvas>
+
+<div style="width: 1200px; height: 576px; position: relative;">
+    <button style="position: absolute; top: 20px; right: 20px;"
+            type="button" onclick="AllCropExport()" class="btn btn-primary">
+        Excel
+    </button>
+    <canvas id="AllCropCvs" width="1200" height="576"></canvas>
+</div>
+
+<form id="AllCropExportForm" method="post" action="/StatisticApi/ExportAllCropsTypeEachYearStat">
+</form>
+
+<script>
+    function AllCropExport() {
+        document.querySelector("#AllCropExportForm").submit();
+    }
+</script>
+
+<script>
+
+    /**
+     * 所有作物各年度統計表
+     */
+    class AllCropsTypeEachYear {
+
+        static allCropCvs = new CanvasS("#AllCropCvs");
+        
+        /**
+        * 統計圖的背景顏色
+        * @@type {string} 顏色代碼
+        */
+        static backgroundColor = "azure";
+
+        static chartOptions = {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "black",
+                        font: {
+                            size: 40,
+                            weight: "bold",
+                            family: "Microsoft JhengHei"
+                        },
+
+                    }
+                },
+                x: {
+                    display: false
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        };
+
+        /**
+         * 繪製報表
+         */
+        static Draw() {
+
+            AllCropsTypeEachYear.allCropCvs.BackgroundColor = AllCropsTypeEachYear.backgroundColor;
+
+            AllCropsTypeEachYear.ApiGetStatData().then(statData => {
+
+                //圖例
+                AllCropsTypeEachYear.DrawLegend();
+
+                //表格
+                AllCropsTypeEachYear.DrawTable(statData);
+
+                //畫直方圖
+                AllCropsTypeEachYear.DrawChart(150, 80, 600, 300, statData);
+
+            });
+
+        }
+
+        /**
+         * 畫圖例
+         */
+        static DrawLegend() {
+
+            let cvs = AllCropsTypeEachYear.allCropCvs;
+
+            //圖例外框
+            cvs.Context2D.setLineDash([5]); //使用虛線
+            cvs.DrawRoundRect(800, 100, 350, 380, 20);
+            cvs.Context2D.setLineDash([]); //改回實線
+
+            //圖例Icon
+            cvs.FillImage(1010, 120, 70, 70, "/img/輔導農友人次Icon.png");
+            cvs.FillImage(1010, 210, 70, 70, "/img/輔導面積Icon.png");
+            cvs.FillImage(1010, 300, 70, 70, "/img/輔導作物數Icon.png");
+            cvs.FillImage(1010, 390, 70, 70, "/img/輔導行政區Icon.png");
+
+
+            //圖例文字
+            cvs.FillMultiText(815, 165,
+                [
+                    new CanvasText("█", "25px Microsoft JhengHei", "orange"),
+                    new CanvasText("輔導農友人次", "bold 28px Microsoft JhengHei")
+                ]);
+
+            cvs.FillMultiText(815, 255,
+                [
+                    new CanvasText("█", "25px Microsoft JhengHei", "gold"),
+                    new CanvasText("輔導面積", "bold 28px Microsoft JhengHei")
+                ]);
+
+            cvs.FillMultiText(815, 345,
+                [
+                    new CanvasText("█", "25px Microsoft JhengHei", "YellowGreen"),
+                    new CanvasText("輔導作物數", "bold 28px Microsoft JhengHei")
+                ]);
+
+            cvs.FillMultiText(815, 435,
+                [
+                    new CanvasText("█", "25px Microsoft JhengHei", "DarkRed"),
+                    new CanvasText("輔導行政區", "bold 28px Microsoft JhengHei")
+                ]);
+
+        }
+
+        /**
+        * 畫表格
+        * @@param statData 統計資料
+        */
+        static DrawTable(statData) {
+
+            let allCropData = AllCropsTypeEachYear.ConvertToTableFormat(statData);
+            let allCropCt = new CanvasTable(AllCropsTypeEachYear.allCropCvs.Context2D, allCropData);
+            //手動設定邊界距離
+            allCropCt.SetCellPadding(5, 5, 5, 5);
+            //手動設定欄寬
+            let dataSetWidth = 111;
+            allCropCt.ColumnWidth[1] = dataSetWidth;
+            allCropCt.ColumnWidth[2] = dataSetWidth;
+            allCropCt.ColumnWidth[3] = dataSetWidth;
+            allCropCt.ColumnWidth[4] = dataSetWidth;
+            allCropCt.ColumnWidth[5] = dataSetWidth;
+            allCropCt.SkipLeftTop = true;
+
+            //畫表
+            allCropCt.RenderTable(30, 380);
+        }
+
+        /**
+        * 畫統計圖
+        */
+        static DrawChart(x, y, width, height, statData) {
+
+            const chartData = {
+                labels: statData.map(data => `${data.Year}年`),
+                datasets: [
+                    {
+                        label: '輔導人次',
+                        data: statData.map(data => data.TotalCount),
+                        borderWidth: 1,
+                        backgroundColor: "orange"
+                    },
+                    {
+                        label: '輔導面積',
+                        data: statData.map(data => data.TotalArea),
+                        borderWidth: 1,
+                        backgroundColor: "gold"
+                    },
+                    {
+                        label: '作物數',
+                        data: statData.map(data => data.TotalCrops),
+                        borderWidth: 1,
+                        backgroundColor: "YellowGreen"
+                    },
+                    {
+                        label: '輔導行政區',
+                        data: statData.map(data => data.DistCount),
+                        borderWidth: 1,
+                        backgroundColor: "DarkRed"
+                    }]
+            };
+
+
+            let chart = new PromiseChart("AllCropHiddenChart", "bar", chartData, CropsTypeEachYear.chartOptions);
+            chart.Render().then(() => {
+                AllCropsTypeEachYear.allCropCvs.DrawCanvas(x, y, width, height, chart.Dom);
+                chart.Destroy();
+            });
+        }
+
+        /**
+        * 將統計資料轉成繪製表格用的格式
+        * @@param statData 統計資料
+        * @@returns {Cell[][]} 繪製表格用資料
+        */
+        static ConvertToTableFormat(statData) {
+
+            let colYear = [new Cell()];
+
+            let colTotalCount = [new Cell([
+                new CanvasText("█", "20px Microsoft JhengHei", "orange"),
+                new CanvasText("輔導人次", "bold 20px Microsoft JhengHei")
+            ])];
+
+            let colTotalArea = [new Cell([
+                new CanvasText("█", "20px Microsoft JhengHei", "gold"),
+                new CanvasText("輔導面積(公頃)", "bold 20px Microsoft JhengHei"),
+            ])];
+
+            let colTotalCrops = [new Cell([
+                new CanvasText("█", "20px Microsoft JhengHei", "YellowGreen"),
+                new CanvasText("作物數", "bold 20px Microsoft JhengHei"),
+            ])];
+
+            let colDistCount = [new Cell([
+                new CanvasText("█", "20px Microsoft JhengHei", "DarkRed"),
+                new CanvasText("輔導行政區", "bold 20px Microsoft JhengHei"),
+            ])];
+
+            statData.forEach(x => {
+                colYear.push(new Cell(new CanvasText(`${x.Year - 1911}年`, "bold 22px Microsoft JhengHei"), AnchorType.Middle));
+                colTotalCount.push(new Cell(new CanvasText(x.TotalCount, "20px Microsoft JhengHei"), AnchorType.Middle));
+                colTotalArea.push(new Cell(new CanvasText(x.TotalArea, "20px Microsoft JhengHei"), AnchorType.Middle));
+                colTotalCrops.push(new Cell(new CanvasText(x.TotalCrops, "20px Microsoft JhengHei"), AnchorType.Middle));
+                colDistCount.push(new Cell(new CanvasText(x.DistCount, "20px Microsoft JhengHei"), AnchorType.Middle));
+            });
+
+            return [colYear, colTotalCount, colTotalArea, colTotalCrops, colDistCount];
+        }
+
+        /**
+         * 取得報表統計資料
+         */
+        static ApiGetStatData() {
+
+            let url = `/StatisticApi/GetAllCropsTypeEachYearStat`;
+
+            let headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+
+            let body = {
+            }
+
+            return fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(body)
+            }).then(response => response.json());
+
+        }
+
+
+    }
+
+</script>

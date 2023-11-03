@@ -1,0 +1,226 @@
+﻿@using Newtonsoft.Json;
+@{
+    ViewBag.Title = "SignUpVerfiy";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (TempData["VerifyMethod"].ToString() == "SMS")
+{
+    @section HeadScript {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+        @*<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>*@
+    }
+}
+
+
+
+@if (TempData["VerifyMethod"].ToString() == "SMS")
+{
+    <style>
+        .important:after {
+            content: "*";
+            color: red;
+        }
+
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            bottom: -30px;
+            color: red;
+            font-size: 14px;
+            position: absolute;
+        }
+
+        .form-inline label.error {
+            bottom: -20px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+}
+
+
+
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section id="SignUp" class="content bg-img" v-cloak>
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">會員註冊-帳號驗證</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Member/SignUp">會員專區</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">帳號驗證</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body" id="SignWait">
+                        <form id="form" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="row">
+                                @if (TempData["VerifyMethod"].ToString() == "SMS")
+                                {
+                                    <div>
+                                        高雄農業局線上植物防疫系統帳號審核完成，已發送簡訊驗證碼至您的手
+                                    </div>
+                                    <div>
+                                        機，電話號碼為 @Model.MaskMobile ,請輸入您所收到的簡訊驗證!
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div>高雄農業局線上植物防疫系統帳號審核完成，已將帳號驗證信件發送至您的</div>
+                                    <div>信箱 @Model.Email !請於15分鐘內至您的信箱收信，以利完成email</div>
+                                    <div>帳號驗證!</div>
+                                }
+                            </div>
+
+                            @if (TempData["VerifyMethod"].ToString() == "SMS")
+                            {
+                                <div class="row mb-3">
+                                    <label for="SmsVerifyCode" class="col-sm-2 col-form-label important">簡訊驗證碼</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control-plaintext" id="SmsVerifyCode" name="SmsVerifyCode" v-model="SmsVerifyCode" required>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label for="VerifyCode" class="col-sm-2 col-form-label important">驗證碼</label>
+                                    <div class="col-sm-4">
+                                        <figure class="mr-2 mt-2 mb-2">
+                                            <img id="verifyimage" style="height: 49px; width: 92px;" v-bind:src="captchaImg" href="#" v-on:click="refreshValidateCode" title="刷新驗證碼">
+                                        </figure>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <input type="text" class="form-control-plaintext" id="VerifyCode" name="VerifyCode" v-model="VerifyCode" required>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button class="btn btn-warning" style="color:white !important;" v-on:click.prevent="refreshValidateCode">
+                                            <i class="fas fa-undo mr-2"></i>重新取得驗證碼
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <button class="btn btn-primary mr-4" v-on:click="handleSubmit">送出</button>
+                                    <a type="button" class="btn btn-primary ml-4" href="/Home/Index">返回首頁</a>
+                                </div>
+                            }
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const SignWait = new Vue({
+                el: "#SignWait",
+                data: {
+                    token: $('input[name="__RequestVerificationToken"]').val(),
+                    validator: null,
+                    SmsVerifyCode: @(new HtmlString(JsonConvert.SerializeObject(Model.SmsVerifyCode))),
+                    SmsVerifyCodeError: @(new HtmlString(JsonConvert.SerializeObject(ViewData["SmsVerifyCodeError"]))),
+                    VerifyCode: @(new HtmlString(JsonConvert.SerializeObject(Model.VerifyCode))),
+                    VerifyCodeError: @(new HtmlString(JsonConvert.SerializeObject(ViewData["VerifyCodeError"]))),
+                    captchaImg: ''.
+                },
+                methods: {
+                    refreshValidateCode() {
+                        const self = this;
+                        $.ajax({
+                            url: '/Member/GetValidateCodeImage',
+                            cache: false,
+                            xhrFields: {
+                                responseType: 'blob',
+                            },
+                            success: function (data) {
+                                const urlHepler = window.URL || window.webkitURL;
+                                if (self.captchaImg) {
+                                    urlHepler.revokeObjectURL(self.captchaImg);
+                                    self.captchaImg = null;
+                                }
+                                self.captchaImg = urlHepler.createObjectURL(data);
+                            }
+                        });
+                    },
+                    handleSubmit(e) {
+                        const self = this;
+                        this.validator = $('#form').validate({
+                            rules: {
+                                "SmsVerifyCode": "required",
+                                "VerifyCode": "required",
+                            },
+                            messages: {
+                                "SmsVerifyCode": "請輸入簡訊驗證碼",
+                                "VerifyCode": "請輸入驗證碼",
+
+                            },
+                            submitHandler: function (form) {
+                                form.submit();
+                            }
+                        });
+                    }
+                },
+                mounted() {
+                    this.refreshValidateCode();
+                    let title = [];
+                    if (this.SmsVerifyCodeError) {
+                        title.push("簡訊驗證碼錯誤");
+                    }
+                    if (this.VerifyCodeError) {
+                        title.push("驗證碼錯誤");
+                    }
+                    if (title.length > 0) {
+                        Swal.fire({
+                            icon: "error",
+                            title: title.join(",")
+                        })
+                    }
+                }
+            });
+        });
+
+
+    </script>
+}

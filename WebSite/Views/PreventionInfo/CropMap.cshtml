@@ -1,0 +1,52 @@
+﻿
+@{
+    ViewBag.Title = "CropMap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/PreventionInfo/Detail">疫情預警</a></li>
+            <li><a href="~/PreventionInfo/CropMap">作物防災告警分布地圖</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">作物防災告警分布地圖</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/PreventionInfo/Detail">疫情資訊</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">作物防災告警分布地圖</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>農產業資訊共通平台 - 歡迎使用<a href="https://agri-data.kcg.gov.tw/" target="_blank">農來訊</a>查看更多資訊！</h3>
+                        <div>
+                            <span>
+                                高雄作物防災告警：以氣象局資料判斷是否達到本平台作物防災告警門檻，再關聯本市最新農情資料之行政區
+                                <br />
+                                資料更新頻率：每小時
+                            </span>
+                        </div>
+                        <div class="rwd-map">
+                            <iframe src="https://agri-data.kcg.gov.tw/" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>

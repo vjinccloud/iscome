@@ -1,0 +1,206 @@
+﻿@model Website.ViewModel.SignInModel
+@{
+    Layout = "~/Views/Shared/_LineRegistLayout.cshtml";
+}
+
+<style>
+    body {
+        font-size: 14px;
+        font-size: 1rem;
+    }
+</style>
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    table > tbody > tr th {
+        text-align: right !important;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .form-control.error {
+        border-color: red;
+        border-width: 2px;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .form-inline .form-control.error {
+        width: auto;
+    }
+
+    label.error {
+        bottom: -30px;
+        color: red;
+        font-size: 14px;
+        position: absolute;
+    }
+
+    .form-inline label.error {
+        bottom: -20px;
+    }
+
+    .error-border {
+        border-color: red;
+        border-width: 2px;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+
+    /* form css */
+
+
+    .formList {
+        position: relative;
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        transition: all .3s;
+        border-bottom: 1px solid rgba(0, 0, 0, .125)
+    }
+
+        .formList > div > span {
+            font-weight: bold;
+            min-width: 100px;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        .formList:hover {
+            background: rgba(0, 0, 0, .075);
+        }
+
+    .btn-primary2 {
+        background-color: #169bd5;
+        border-color: #169bd5;
+        border-bottom: 3px #0f6990 solid;
+        color: white;
+    }
+
+
+
+    .row {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        margin: 0 auto;
+    }
+
+    .card-body {
+        -ms-flex: 1 1 auto;
+        flex: 1 1 auto;
+        min-height: 1px;
+        padding: 10px;
+    }
+
+    .btn-orange {
+        background-color: #f57d31;
+        border-color: #f57d31;
+        color: white;
+        border-bottom: 3px #cf570a solid;
+    }
+</style>
+
+<!-- 內頁 -->
+<section id="SignUp" class="content">
+    <div class="con-box">
+        <div class="con-head">
+            <div class="title d-flex justify-content-between pb-0 align-items-end">
+                <h5><span class="line">@Model.ActivityName 活動簽到</span></h5>
+            </div>
+        </div>
+        <div class="con-body">
+            <div class="card">
+                <div class="card-body">
+                    <form id="form" method="post" enctype="multipart/form-data" class="row">
+                        @Html.AntiForgeryToken()
+                        <div class="formList row">
+                            <input type="hidden" name="ActivityOpenTimesId" value="@Model.OpenId" />
+                            <div class="col-12 col-lg-12 d-flex align-items-center">
+                                <span class="important">姓名：</span>
+                                <div class="d-flex flex-column position-relative">
+                                    <input type="text" name="Name" required="required" autocomplete="off" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="formList row">
+                            <div class="col-12 col-lg-12 d-flex align-items-center">
+                                <span class="important">身分證字號：</span>
+                                <div class="d-flex flex-column mr-2 position-relative"
+                                     style="flex: 1 1 auto; min-width: 100px; width: 1%;">
+                                    <input type="text" name="IdentityKey" required="required" autocomplete="off" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="formList row">
+                            <div class="col-12 col-lg-12 d-flex align-items-center">
+                                <span class="important">手機號碼：</span>
+                                <div class="d-flex flex-column position-relative">
+                                    <input type="tel" name="Phone" autocomplete="off" placeholder="" minlength="10" maxlength="10" pattern="[0-9]{10}" required="required" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex align-items-center justify-content-center py-3 border-bottom">
+                            <span>
+                                個人資料蒐集告知及聲明：<br>
+                                為保護個人資料隱私安全及符合個人資料保護法規範，本次資料僅用於本次課程時數認證使用，系統將於60日後自動刪除資料。
+                            </span>
+                        </div>
+                        <div class="col-12 text-center" style="">
+                            <button class="btn btn-orange mr-2 mb-3 mt-3">簽到</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@{
+    if (Model.WrongSignDate)
+    {
+        <script>
+            Swal.fire({
+                icon: "error",
+                title: "非報到時間"
+            }).then(res => {
+                if (res.isConfirmed) {
+                    location.href = '@Model.Url'
+                }
+            })
+        </script>
+    }
+    else if (Model.SignSuccess)
+    {
+        <script>
+            Swal.fire({
+                icon: "info",
+                title: "報到成功"
+            }).then(res => {
+                if (res.isConfirmed) {
+                    location.href = '@Model.Url'
+                }
+            })
+        </script>
+    }
+    else if (!string.IsNullOrEmpty(Model.ErrMsg))
+    {
+        <script>
+            Swal.fire({
+                icon: "error",
+                title: "@Model.ErrMsg"
+            }).then(res => {
+                if (res.isConfirmed) {
+                    location.href = '@Model.Url'
+                }
+            })
+        </script>
+    }
+}

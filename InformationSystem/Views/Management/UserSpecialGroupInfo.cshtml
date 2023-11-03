@@ -1,0 +1,70 @@
+﻿@model InformationSystem.ViewModel.Management.userPermissionViewModel
+@{
+    ViewBag.Title = "UserSpecialGroupInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">權限管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <form id="form" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <span class="important">頁面列表：</span>
+                                        </th>
+                                        <td>
+                                            <select name="PermissionIds" class="form-control" multiple="multiple" name="groups" size="20">
+                                                @{
+                                                    foreach (var item in Model.Permissions)
+                                                    {
+                                                        <option value="@item.Id" selected="@item.Selected">@item.FunctionName</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </form>
+                        <div style="display:flex;justify-content:center">
+                            <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                            <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var selectorx = $('select[name="PermissionIds"]').bootstrapDualListbox({
+        nonSelectedListLabel: '禁用列表',
+        selectedListLabel: '啟用列表',
+        filterTextClear: '展示所有',
+        filterPlaceHolder: '關鍵字搜尋',
+        moveSelectedLabel: "添加",
+        moveAllLabel: '添加所有',
+        removeSelectedLabel: "移除",
+        removeAllLabel: '移除所有',
+        infoText: '',
+        infoTextFiltered: '',
+        infoTextEmpty: '列表为空',
+    });
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        document.getElementById('form').submit();
+    }
+</script>
+

@@ -1,0 +1,229 @@
+﻿@*
+    輔導區域統計圖表
+*@
+@model InformationSystem.ViewModel.ServiceAreaStatisticModel
+@{
+    Layout = null;
+}
+
+
+<div class="HiddenDom" style="width: 1200px;">
+    <canvas id="CropsTypePieCvsHiddenChart"></canvas>
+</div>
+
+<canvas id="CropsTypePieCvs" width="1024" height="576"></canvas>
+
+<script>
+
+    /**
+    * 作物類別圖表繪製模組
+    */
+    class CropsTypePie {
+
+        static LEGEND_PER_COLUMN = 8;
+        static LEGEND_SPAN = 150;
+
+        static cropsTypePieCvs = new CanvasS("#CropsTypePieCvs");
+        static backgroundColor = "azure";
+        static chartOption = {
+            responsive: true,
+            maintainAspectRatio: false,
+            radius: "80%",
+            plugins: {
+                title: {
+                    display: true,
+                    text: '作物類別圖表',
+                    color: "black",
+                    font: {
+                        size: 70,
+                        weight: "bold",
+                        family: "Microsoft JhengHei"
+                    },
+                    padding: {
+                        top: 10,
+                    }
+                },
+                legend: {
+                    display: false
+                },
+                labels: [
+                    {
+                        render: 'label',
+                        position: 'outside',
+                        fontFamily: "Microsoft JhengHei",
+                        fontStyle: 'bold',
+                        fontSize: 30,
+                    },
+                    {
+                        render: 'percentage',
+                        fontFamily: "Microsoft JhengHei",
+                        fontSize: 30,
+                    }
+                ]
+            },
+        };
+
+        /**
+        * 繪製圖表
+        */
+        static Draw() {
+
+            CropsTypePie.cropsTypePieCvs.BackgroundColor = CropsTypePie.backgroundColor;
+
+            CropsTypePie.ApiGetStatData().then(statResult => {
+
+                let dataSet = {
+                    labels: [],
+                    data: [],
+                    backgroundColor: ColorPan.GetColor(statResult.length),
+                }
+
+                statResult.forEach(x => {
+                    dataSet.labels.push(x.CropsType);
+                    dataSet.data.push(x.Count);
+                });
+
+
+                //畫圖例
+                CropsTypePie.DrawLegend(dataSet);
+
+                //畫圓餅圖
+                const X_START = 25;
+                let x = X_START + (parseInt(statResult.length / CropsTypePie.LEGEND_PER_COLUMN) + 1) * CropsTypePie.LEGEND_SPAN;
+                CropsTypePie.DrawChart(x, 20, 550, 550, dataSet);
+
+            });
+        }
+
+
+
+
+        /**
+        * 將統計資料繪製成圖表
+        */
+        static DrawChart(x, y, width, height, dataSet) {
+
+            let chartData = {
+                labels: dataSet.labels,
+                datasets: [
+                    {
+                        //label: 'My First dataset',
+                        data: dataSet.data,
+                        backgroundColor: dataSet.backgroundColor
+                    }
+                ]
+            };
+
+            let pieChart = new PromiseChart("CropsTypePieCvsHiddenChart", "pie", chartData, CropsTypePie.chartOption);
+            pieChart.Render().then(() => {
+                CropsTypePie.cropsTypePieCvs.DrawCanvas(x, y, width, height, pieChart.Dom);
+                pieChart.Destroy();
+            });
+        }
+
+        /**
+        * 畫圖例
+        */
+        static DrawLegend(dataSet) {
+
+            const X_START = 50;
+            const Y_START = 100;
+            const Y_SPAN = 50;
+            
+
+            //圖例
+            for (let i = 0; i < dataSet.labels.length; i++) {
+
+                let col = parseInt(i / CropsTypePie.LEGEND_PER_COLUMN);
+                let row = i % CropsTypePie.LEGEND_PER_COLUMN;
+
+                let x = X_START + (CropsTypePie.LEGEND_SPAN * col);
+                let y = Y_START + (Y_SPAN * row);
+
+                CropsTypePie.cropsTypePieCvs.FillMultiText(x, y, [
+                    new CanvasText("█", "25px Microsoft JhengHei", dataSet.backgroundColor[i]),
+                    new CanvasText(dataSet.labels[i], "bold 28px Microsoft JhengHei")
+                ]);
+            }
+
+        }
+
+        /**
+         * 取得統計資料
+         */
+        static ApiGetStatData() {
+
+            let url = `/StatisticApi/GetCropsTypeStat`;
+
+            let headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+
+            let body = {
+                year: document.querySelector("#Year").value,
+                startDate: document.querySelector("#StartDate").value,
+                endDate: document.querySelector("#EndDate").value,
+                district: [document.querySelector("#Dist").value],
+            }
+
+            return fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(body)
+            }).then(response => response.json());
+
+        }
+    }
+
+    /**
+    * 用來產生顏色的工具
+    */
+    class ColorPan {
+    
+        /**
+        * 可用的顏色清單
+        */
+        static Color = [
+            'Aquamarine ',
+            'PaleGreen',
+            'Tomato',
+            'LimeGreen',
+            'Teal',
+            'Aqua',
+            'Chartreuse',
+            'Chocolate',
+            'Crimson',
+            'DarkCyan',
+            'Fuchsia',
+            'ForestGreen',
+            'Gold',
+            'LightBlue',
+            'Thistle',
+            'LightSeaGreen',
+            'LightSalmon',
+            'LightSkyBlue',
+            'LightSteelBlue',
+            'Maroon',
+            'MediumOrchid',
+            'MediumSlateBlue',
+            'Olive',
+            'RosyBrown'
+        ]
+
+        /**
+        * 取得顏色清單，如果數量超出顏色表數量，會重頭開始加入
+        * @@param numOfColor 需要的顏色數量
+        * @@returns {string[]} 顏色清單
+        */
+        static GetColor(numOfColor) {
+            let colorList = [];
+            for (let i = 0; i < numOfColor; i++) {
+                let idx = i % ColorPan.Color.length;
+                colorList.push(ColorPan.Color[idx]);
+            }
+            return colorList;
+        }
+    }
+</script>
+

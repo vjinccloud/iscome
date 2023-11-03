@@ -1,0 +1,17 @@
+﻿@{
+    string Which_MAP = System.Configuration.ConfigurationManager.AppSettings["Which_MAP"];
+    if (Which_MAP == "ArcGIS")
+    {
+        <link rel="stylesheet" href="https://js.arcgis.com/4.22/esri/themes/light/main.css">
+        <script src="https://js.arcgis.com/4.22/"></script>
+    }
+    else
+    {
+        <link rel="stylesheet" href="~/Scripts/Leaflet/leaflet.css">
+        <link rel="stylesheet" href="~/Scripts/Leaflet/Plugin/leaflet.locate/L.Control.Locate.min.css">
+        <script type="text/javascript" src="~/Scripts/Leaflet/leaflet.js"></script>
+        <script type="text/javascript" src="~/Scripts/Leaflet/Plugin/leaflet.locate/L.Control.Locate.min.js"></script>
+        <script type="text/javascript" src="~/Scripts/proj4.js"></script>
+        <script type="text/javascript" src="~/Scripts/proj4jsHelp.js"></script>
+    }
+}

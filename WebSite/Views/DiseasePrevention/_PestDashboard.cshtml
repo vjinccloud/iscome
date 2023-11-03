@@ -1,0 +1,685 @@
+﻿<script type="text/javascript" src="~/Scripts/Leaflet/leaflet.js"></script>
+<link href="~/Scripts/Leaflet/leaflet.css" rel="stylesheet" />
+<script src="~/Scripts/Leaflet/ColorGradient.js"></script>
+<script src="~/Scripts/Leaflet/Plugin/Leaflet.Sync/L.Map.Sync.js"></script>
+
+<style>
+
+    .PestMap {
+        height: 450px;
+        width: 600px;
+    }
+
+    #slider label {
+        position: absolute;
+        width: 20px;
+        margin-left: -10px;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    /* below is not necessary, just for style */
+
+    #slider {
+        background-color: grey;
+    }
+
+    .pestPopupTable th {
+        text-align: right !important;
+        border: 0 !important;
+        background-color: transparent !important;
+    }
+
+    .pestPopupTable td {
+        text-align: left !important;
+        border: 0 !important;
+        background-color: transparent !important;
+    }
+</style>
+
+<style type="text/css">
+    .yellow-table .title {
+        background-color: #ffffcc;
+        border: 1px black solid;
+        padding: 12px;
+        text-align: center;
+    }
+</style>
+
+<style>
+    @@media screen and (max-width: 1140px) {
+        #PestYearSelector_DDL {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #PestYearSelector_Slider {
+            display: none;
+        }
+    }
+
+    @@media screen and (min-width: 1140px) {
+        #PestYearSelector_DDL {
+            display: none;
+        }
+
+        #PestYearSelector_Slider {
+            display: block;
+            margin-top: 10px;
+        }
+    }
+
+    .nav-tabs.small-tab .nav-link {
+        font-size: 20px;
+    }
+
+    .nav-tabs.small-tab .nav-item.show .nav-link, .nav-tabs.small-tab .nav-link.active {
+        background-color: white;
+        color: darkblue;
+        font-size: 20px;
+    }
+
+</style>
+
+    <nav>
+        <div class="nav nav-tabs small-tab" id="nav-tab-species" role="tablist" >
+            <a class="nav-link active" id="nav-western-tab" data-toggle="tab"
+               href="#nav-western" role="tab" aria-controls="nav-western" aria-selected="true">東方果實蠅/瓜實蠅</a>
+            <a class="nav-link" id="nav-magna-tab" data-toggle="tab" 
+               href="#nav-magna" role="tab" aria-controls="nav-magna">葉稻熱病/穗稻熱病</a>
+            <a class="nav-link" id="nav-small-yellow-tab" data-toggle="tab" 
+               href="#nav-small-yellow" role="tab" aria-controls="nav-small-yellow">小黃薊馬/琉璃蟻</a>
+            <a class="nav-link" id="nav-papillosa-tab" data-toggle="tab" 
+               href="#nav-papillosa" role="tab" aria-controls="nav-papillosa">荔枝椿象</a>
+            <div style="flex:auto"></div>
+        </div>
+    </nav>
+
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" :"active")" id="nav-western"
+             role="tabpanel" aria-labelledby="nav-western-tab">
+
+            <div id="PestYearSelector_DDL">
+
+                <div>
+                    年度:
+                    <select id="PestYear_DDL" class="form-control" style="width: 6em; display: inline;"></select>
+
+                    月份:
+                    <select id="PestMonth" class="form-control" style="width: 6em; display: inline;"></select>
+                </div>
+
+            </div>
+            <div class="row yellow-table">
+                <div class="col-md-6 col-12">
+                    <div class="title">東方果實蠅</div>
+
+                    <div class="rwd-map">
+                        <!--Map1-->
+                        <div class="PestMap" data-projName="東方果實蠅" id="map1"></div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-6 col-12 mt-md-0 mt-5">
+                    <div class="title">瓜實蠅</div>
+
+                    <div class="rwd-map">
+                        <!--Map2-->
+                        <div class="PestMap" data-projName="瓜實蠅" id="map2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="nav-magna"
+             role="tabpanel" aria-labelledby="nav-magna-tab">
+            <div class="row yellow-table">
+                <div class="col-md-6 col-12">
+                    <div class="title">葉稻熱病</div>
+
+                    <div class="rwd-map">
+                        <!--Map3-->
+                        <div class="PestMap" data-projName="葉稻熱病" id="map3"></div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-6 col-12 mt-md-0 mt-5">
+                    <div class="title">穗稻熱病</div>
+
+                    <div class="rwd-map">
+                        <!--Map4-->
+                        <div class="PestMap" data-projName="穗稻熱病" id="map4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="nav-small-yellow"
+             role="tabpanel" aria-labelledby="nav-small-tab">
+            <div class="row yellow-table">
+                <div class="col-md-6 col-12">
+                    <div class="title">小黃薊馬</div>
+
+                    <div class="rwd-map">
+                        <!--Map3-->
+                        <div class="PestMap" data-projName="小黃薊馬" id="map5"></div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-6 col-12 mt-md-0 mt-5">
+                    <div class="title">琉璃蟻</div>
+
+                    <div class="rwd-map">
+                        <!--Map4-->
+                        <div class="PestMap" data-projName="琉璃蟻" id="map6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="nav-papillosa"
+             role="tabpanel" aria-labelledby="nav-papillosa-tab">
+            <div class="row yellow-table">
+                <div class="col-md-6 col-12">
+                    <div class="title">荔枝椿象</div>
+
+                    <div class="rwd-map">
+                        <!--Map3-->
+                        <div class="PestMap" data-projName="荔枝椿象" id="map7"></div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+<div style="margin-bottom:2.5em" id="PestYearSelector_Slider">
+    <div>
+        年度:
+        <select id="PestYear_Slider" class="form-control" style="width: 7em; display: inline;"></select>
+    </div>
+
+    <br />
+
+    <div id="slider"></div>
+</div>
+
+
+
+
+
+
+<script>
+    //查詢範圍設定
+    var qryYearStart = 2021; //查詢年分
+    var qryYearEnd = new Date().getFullYear(); //查詢年分，預設為今年
+    //var startDate = new Date(2021, 0); //JS的月份是從0開始算
+    var displayMonth = 12;
+    var dateAry = [];
+
+
+    //顏色級距設定
+    var MinColor = '#00ff6f';
+    var MaxColor = '#790909';
+    var MinValue = 0;
+    var MaxValue = 2500;
+    var Length = 100;
+    var colorGradient = GenerateGradient(MaxColor, MinColor, Length);
+
+    function GetGradientColorByLevel(data) {
+        if (data.Level4 > 0) {
+            return `#${colorGradient[99]}`;
+        }
+        else if (data.Level4 > 0) {
+            return `#${colorGradient[75]}`;
+        }
+        else if (data.Level4 > 0) {
+            return `#${colorGradient[50]}`;
+        }
+        else if (data.Level4 > 0) {
+            return `#${colorGradient[25]}`;
+        }
+        else {
+            return `#${colorGradient[0]}`;
+        }
+
+    }
+
+    function GetGradientColor(value) {
+        if (value < MinValue) value = MinValue;
+        if (value > MaxValue) value = MaxValue;
+
+        var distance = (MaxValue - MinValue) / (Length);
+        var position = Math.ceil(value / distance) - 1;
+        return `#${colorGradient[position]}`;
+    }
+    var pestMapCollection = [];
+    var pestData = {};
+    var village;
+    var layers = [];
+
+    $(document).ready(function() {
+
+        $("#PestYear_Slider").empty();
+        $("#PestYear_DDL").empty();
+
+
+        let year = qryYearStart;
+        while (year <= qryYearEnd) {
+            $("#PestYear_Slider").append($('<option>').text(year - 1911 + '年').val(year).attr('selected', year == qryYearEnd));
+            $("#PestYear_DDL").append($('<option>').text(year - 1911 + '年').val(year).attr('selected', year == qryYearEnd));
+            year = year + 1;
+        }
+
+        var startDate = new Date(qryYearEnd, 0);
+
+        dateAry = GetDateAry(startDate, displayMonth);
+        InitMap();
+        LoadSlider(dateAry, displayMonth);
+        SetPestMonthDdl(dateAry);
+
+        LoadApiData()
+            .then(function() {
+                RefreshMap(startDate.getFullYear(), (startDate.getMonth() + 1));
+            });
+
+
+    });
+
+
+    function GetDateAry(startDate, displayMonth) {
+
+        let dateAry = [];
+
+        for (var i = 0; i < displayMonth; i++) {
+            var d = new Date(startDate);
+            d.setMonth(startDate.getMonth() + i);
+
+            dateAry.push({
+                Year: d.getFullYear(),
+                Month: (d.getMonth() + 1),
+                Text: d.getFullYear() - 1911 + '/' + (d.getMonth() + 1)
+            });
+        }
+
+        return dateAry;
+    }
+
+
+    function InitMap() {
+        $('.PestMap').each(function(idx, dom) {
+            var id = $(dom).attr('id');
+            var projName = $(dom).attr('data-projName');
+            var map = GenerateMap(id);
+            pestMapCollection.push({ Map: map, ProjName: projName, Layers: [] });
+
+            //sync
+            for (var i = 0; i < pestMapCollection.length; i++) {
+                for (var j = 0; j < pestMapCollection.length; j++) {
+
+                    if (i !== j) {
+                        var map1 = pestMapCollection[i].Map;
+                        var map2 = pestMapCollection[j].Map;
+                        map1.sync(map2);
+                    }
+
+                }
+            }
+
+
+        });
+
+
+    }
+
+
+    function LoadApiData() {
+        var p1 = fetch('@Url.Content("/Scripts/Leaflet/village.json")')
+            .then(function(response) { return response.json(); })
+            .then(function(jsonData) { village = jsonData });
+
+        return Promise.all([p1]);
+    }
+
+    function RefreshMap(year, month) {
+        var data = new FormData();
+        data.append('year', year);
+        data.append('month', month);
+
+        fetch('@Url.Action("PestMonitor", "Ajax")', { method: 'post', body: data })
+            .then(function (response) { return response.json(); })
+            .then(function (jsonData) { return jsonData.PestMonitorDataList; })
+            .then(function (pestData) { console.log(pestData); ShowOnMap(pestMapCollection, pestData); });
+    }
+
+    function ShowOnMap(mapCollection, data) {
+
+        $.each(mapCollection,
+            function(idx, m) {
+
+                //清掉原有的圖層
+                $.each(m.Layers,
+                    function(idx, layer) {
+                        m.Map.removeLayer(layer);
+                    });
+
+
+                var monitorData = data.find(x => x.ProjName === m.ProjName);
+                if (monitorData) {
+                    var layerGroup = L.layerGroup();
+
+                    $.each(monitorData.Points,
+                        function(idx, p) {
+                            L.marker([p.Lat, p.Lng])
+                                .bindPopup(GeneratePopupTableHtml(p))
+                                .addTo(layerGroup);
+                        });
+
+                    $.each(monitorData.Stats,
+                        function(idx, s) {
+                            var geoJson = VillageGeoJson(s.Village);
+
+                            if (s.projName == "荔枝椿象") {
+                                var style = {
+                                    "color": GetGradientColorByLevel(s)
+                                };
+                            }
+                            else {
+                                var style = {
+                                    "color": GetGradientColor(s.PestNumbers)
+                                };
+                            }
+
+                            L.geoJSON(geoJson, { style: style }).addTo(layerGroup);
+                        });
+
+                    m.Layers.push(layerGroup);
+                    layerGroup.addTo(m.Map);
+                }
+            });
+
+    }
+
+
+    function GeneratePopupTableHtml(point) {
+        var html = `
+            <table class="pestPopupTable">
+                <tr>
+                    <th>調查日期：</th>
+                    <td>${point.MeasureDateText}</td>
+                </tr>
+                <tr>
+                    <th>地區/編號：</th>
+                    <td>${point.SerialNum}</td>
+                </tr>
+                <tr>
+                    <th>蟲數：</th>
+                    <td>${point.PestNumbers}</td>
+                </tr>
+            </table>`;
+
+        return html;
+    }
+
+
+    function VillageGeoJson(villageName) {
+        var v = village.features.find(x => x.properties.VILLNAME === villageName);
+        return v;
+    }
+
+
+    function GenerateMap(id) {
+        var lat = 22.643;
+        var lon = 120.39;
+        var ZoomLevel = 10;
+
+        var map = L.map(id).setView([lat, lon], ZoomLevel);
+
+        //===================================BaseLayers===========================================
+
+        //OpenStreetMap
+        var OSM = new L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>貢獻者' +
+                    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+            });
+
+        //TGOS-TGOS電子地圖
+        var TGOS_TGOSMAP_W = new L.tileLayer('http://gis.sinica.edu.tw/tgos/file-exists.php?img={id}-jpg-{z}-{x}-{y}',
+            {
+                maxZoom: 19,
+                attribution: 'Map data &copy; Sinica',
+                id: 'TGOSMAP_W'
+            });
+
+        //TGOS-通用版電子地圖
+        var TGOS_NLSCMAP_W = new L.tileLayer('http://gis.sinica.edu.tw/tgos/file-exists.php?img={id}-jpg-{z}-{x}-{y}',
+            {
+                maxZoom: 19,
+                attribution: 'Map data &copy; Sinica',
+                id: 'NLSCMAP_W'
+            });
+        //TGOS-路網數值圖
+        var TGOS_MOTCMAP_W = new L.tileLayer('http://gis.sinica.edu.tw/tgos/file-exists.php?img={id}-jpg-{z}-{x}-{y}',
+            {
+                maxZoom: 19,
+                attribution: 'Map data &copy; Sinica',
+                id: 'MOTCMAP_W'
+            });
+        //TGOS-福衛二號影像
+        var TGOS_F2IMAGE_W = new L.tileLayer('http://gis.sinica.edu.tw/tgos/file-exists.php?img={id}-jpg-{z}-{x}-{y}',
+            {
+                maxZoom: 19,
+                attribution: 'Map data &copy; Sinica',
+                id: 'F2IMAGE_W'
+            });
+
+        //國土繪測中心-臺灣通用電子地圖
+        var NLSC_EMAP = new L.tileLayer('https://wmts.nlsc.gov.tw/wmts/{id}/default/GoogleMapsCompatible/{z}/{y}/{x}',
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://maps.nlsc.gov.tw/">NLSC</a>',
+                id: 'EMAP'
+            });
+
+        //國土繪測中心-正射影像圖(通用版)
+        var NLSC_PHOTO2 = new L.tileLayer('https://wmts.nlsc.gov.tw/wmts/{id}/default/GoogleMapsCompatible/{z}/{y}/{x}',
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://maps.nlsc.gov.tw/">NLSC</a>',
+                id: 'PHOTO2'
+            });
+        //國土繪測中心-1/5000基本地形圖
+        var NLSC_B5000 = new L.tileLayer('https://wmts.nlsc.gov.tw/wmts/{id}/default/GoogleMapsCompatible/{z}/{y}/{x}',
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://maps.nlsc.gov.tw/">NLSC</a>',
+                id: 'B5000'
+            });
+
+
+        //==================================OverLayers============================================
+
+
+        //縣市界
+        var NLSC_CITY_overlayer = new L.tileLayer('https://wmts.nlsc.gov.tw/wmts/{id}/default/GoogleMapsCompatible/{z}/{x}/{y}',
+            {
+                maxZoom: 14,
+                attribution: '&copy; <a href="https://maps.nlsc.gov.tw/">NLSC</a>',
+                id: 'CITY'
+            });
+        //鄉鎮區界
+        var NLSC_TOWN_overlayer = new L.tileLayer('https://wmts.nlsc.gov.tw/wmts/{id}/default/GoogleMapsCompatible/{z}/{y}/{x}',
+            {
+                maxZoom: 15,
+                attribution: '&copy; <a href="https://maps.nlsc.gov.tw/">NLSC</a>',
+                id: 'TOWN'
+            });
+        //村里界
+        var NLSC_Village_overlayer = new L.tileLayer('https://wmts.nlsc.gov.tw/wmts/{id}/default/GoogleMapsCompatible/{z}/{y}/{x}',
+            {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://maps.nlsc.gov.tw/">NLSC</a>',
+                id: 'Village'
+            });
+
+        //段籍圖
+        var NLSC_LANDSECT_overlayer = new L.tileLayer('https://wmts.nlsc.gov.tw/wmts/{id}/default/GoogleMapsCompatible/{z}/{y}/{x}',
+            {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://maps.nlsc.gov.tw/">NLSC</a>',
+                id: 'LANDSECT'
+            });
+
+        //臺灣通用電子地圖透明
+        var NLSC_EMAP2_overlayer = new L.tileLayer('https://wmts.nlsc.gov.tw/wmts/{id}/default/GoogleMapsCompatible/{z}/{y}/{x}',
+            {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://maps.nlsc.gov.tw/">NLSC</a>',
+                id: 'EMAP2'
+            });
+
+
+        //==============================LayerControl===============================================
+        L.control.scale({ 'position': 'bottomleft', 'metric': true, 'imperial': false }).addTo(map);
+
+        //預設的底圖
+        NLSC_EMAP.addTo(map);
+
+        var baseLayers = {
+            //"OSM": OSM,
+            //"TGOS-TGOS電子地圖": TGOS_TGOSMAP_W,
+            //"TGOS-通用版電子地圖": TGOS_NLSCMAP_W,
+            //"TGOS-路網數值圖": TGOS_MOTCMAP_W,
+            //"TGOS-福衛二號影像": TGOS_F2IMAGE_W,
+            "NLSC-臺灣通用電子地圖": NLSC_EMAP,
+            "NLSC-正射影像圖(通用版)": NLSC_PHOTO2,
+            //"NLSC-1/5000基本地形圖": NLSC_B5000
+        };
+
+        var overLayers = {
+            //"縣市界": NLSC_CITY_overlayer,
+            "鄉鎮區界": NLSC_TOWN_overlayer,
+            "村里界": NLSC_Village_overlayer,
+            "段籍圖": NLSC_LANDSECT_overlayer,
+            "臺灣通用電子地圖透明": NLSC_EMAP2_overlayer
+        };
+
+        L.control.layers(baseLayers, overLayers).addTo(map);
+
+        map.invalidateSize();
+
+        return map;
+    }
+
+    function FixMap() {
+        $.each(pestMapCollection,
+            function(idx, m) {
+                m.Map.invalidateSize();
+            });
+    }
+
+    //顯示滑桿
+    function LoadSlider(dateAry, displayMonth) {
+        $("#slider").empty();
+        $("#slider").slider({
+            value: 0,
+            min: 0,
+            max: dateAry.length - 1,
+            step: 1
+        })
+            .each(function () {
+
+                // Get the options for this slider
+                //var opt = $(this).data().uiSlider.options;
+
+                // Get the number of possible values
+                //var vals = opt.max - opt.min;
+
+                // Space out values
+                SetSliderLabel(dateAry);
+
+            });
+
+    }
+
+    function SetSliderLabel(dateAry) {
+
+        $('.SliderLabel').remove();
+        let vals = dateAry.length - 1;
+
+        for (var i = 0; i <= vals; i++) {
+
+
+            var date = dateAry[i];
+            var el = $(`<label class="SliderLabel">${date.Text}</label>`).css('left', (i / vals * 100) + '%');
+
+            $("#slider").append(el);
+
+        }
+    }
+
+    function SetPestMonthDdl(dateAry) {
+
+        $('#PestMonth').empty();
+        let vals = dateAry.length - 1;
+
+        for (var i = 0; i <= vals; i++) {
+
+
+            var date = dateAry[i];
+            var el = $(`<option value="${i}">${date.Text}</option>`);
+
+            $("#PestMonth").append(el);
+
+        }
+    }
+
+
+    $("#PestMonth").on("change",
+        function (event, ui) {
+            var idx = $("#PestMonth").val();
+            $("#slider").slider('value', idx);
+
+            var date = dateAry[idx];
+            RefreshMap(date.Year, date.Month);
+        });
+
+    $("#slider").on("slidechange",
+        function (event, ui) {
+            var idx = $("#slider").slider('value');
+            $("#PestMonth").val(idx);
+
+            var date = dateAry[idx];
+            RefreshMap(date.Year, date.Month);
+        });
+
+    $("#PestYear_Slider").on("change",
+        function () {
+            let selectedYear = $("#PestYear_Slider").val();
+            dateAry = GetDateAry(new Date(selectedYear, 0), displayMonth);
+
+            SetPestMonthDdl(dateAry);
+            SetSliderLabel(dateAry)
+            $("#slider").slider('value', 0);
+        });
+
+
+    $("#PestYear_DDL").on("change",
+        function () {
+            let selectedYear = $("#PestYear_DDL").val();
+            dateAry = GetDateAry(new Date(selectedYear, 0), displayMonth);
+
+            SetPestMonthDdl(dateAry);
+            SetSliderLabel(dateAry)
+            $("#slider").slider('value', 0);
+        });
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab',
+        function (event) {
+            FixMap();
+        });
+</script>

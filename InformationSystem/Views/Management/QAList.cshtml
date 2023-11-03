@@ -1,0 +1,125 @@
+﻿
+@{
+    ViewBag.Title = "QAList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">問答管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="queryForm" method="post">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>問題類別：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select name="Code" class="form-control mr-2">
+                                                <option value="">請選擇</option>
+                                                @{
+                                                    foreach (var defCode in Model.Types)
+                                                    {
+                                                        <option value="@defCode.Code">@defCode.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                        <th style="width:10%"></th>
+                                        <td style="width:40%"></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event, 'query')">
+                                                <i class="fas fa-search mr-2"></i>查詢
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/Management/QAInfo'"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                                <button type="button" class="btn btn-secondary m-2" onclick="handleSubmit(event, 'delete')">
+                                    <i class="fas fa-minus-circle mr-2"></i>刪除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="overflow-x:auto">
+                            <form id="deleteForm" method="post">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col" style="width: 50px;"></th>
+                                            <th scope="col">項次</th>
+                                            <th scope="col">問題類別</th>
+                                            <th scope="col">問題</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int i = Model.CurrentPage == 1 ? 0 : Model.CurrentPage * Model.PageCount;
+                                            foreach (var QAModel in Model.List)
+                                            {
+                                                i++;
+                                                <tr>
+                                                    <td>
+                                                        <input type="checkbox" name="DeleteIDs[]" value="@QAModel.ID" />
+                                                    </td>
+                                                    <td>@i</td>
+                                                    <td>@QAModel.TypeName</td>
+                                                    <td>@QAModel.Question</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary" onclick="location.href = '/Management/QAInfo?ID=@QAModel.ID'">編輯</button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function handleSubmit(e, action) {
+            e.preventDefault();
+            let formData = $('form').serializeArray();
+            console.log(action, formData)
+            if (action == 'delete') {
+                if (formData.findIndex(d => d.name === 'DeleteIDs[]') < 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '請先選擇預刪除項次'
+                    });
+                    return;
+                }
+                document.getElementById('deleteForm').submit();
+            } else {
+                document.getElementById('queryForm').submit();
+            }
+            
+        }
+    </script>
+}

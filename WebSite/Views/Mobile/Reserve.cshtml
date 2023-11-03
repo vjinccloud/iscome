@@ -1,0 +1,338 @@
+﻿@model ICCModule.Entity.Tables.Platform.doctorSchedule
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title -->
+    <title>高雄市政府農業局線上植物防疫平台</title>
+
+
+    <!-- Core Stylesheet -->
+    <link href="../css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="../icon/css/all.min.css" rel="stylesheet" />
+    <link href="../css/vnstyle.css" rel="stylesheet" />
+    <link href="../css/anstyle.css" rel="stylesheet" />
+
+    <link href="../css/bootstrap/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="../packages/core/main.css" rel="stylesheet" />
+    <link href="../packages/daygrid/main.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+    <link href="../Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="../css/pesticidesInventoryInfo.css" rel="stylesheet" />
+    <!-- jQuery-->
+    <script src="../Scripts/jquery-3.6.3.min.js"></script>
+    <script src="../Scripts/jquery.validate.min.js"></script>
+    <script src="../Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="../Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="../Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="../js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="../js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="../Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Moment -->
+    <script src="../Scripts/moment.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="../js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="../js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <script src="../packages/core/main.js"></script>
+    <script src="../packages/core/locales-all.js"></script>
+    <script src="../packages/daygrid/main.js"></script>
+    <script src="../packages/interaction/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <style>
+        body {
+            font-size: 14px;
+        }
+    </style>
+    <style>
+        .btn {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="bg-img">
+
+    <div class="container2">
+
+        <div class="text-center">
+            <a href="../Home/Index">
+                <img src="../images/logo2.png" style="width:200px; margin:40px 0;">
+            </a>
+        </div>
+
+
+
+        <!-- 內頁 -->
+        <section id="SignUp" class="">
+            @{
+                int index = 0;
+                List<string> docList = ViewBag.doctorList;
+            }
+            @if(ViewBag.list != null)
+            {
+
+
+                foreach (ICCModule.Entity.Tables.Platform.doctorSchedule reserve in ViewBag.list)
+                {
+                    string strStatus = "";
+                    string color = "";
+                    if (reserve.Status == "ToBeScheduled")
+                    {
+                        strStatus = "已預約";
+                    }
+                    else if (reserve.Status == "Appointment")
+                    {
+                        strStatus = "已預約";
+                    }
+                    else if (reserve.Status == "UserCancel")
+                    {
+                        strStatus = "已取消";
+                    }
+                    else if (reserve.Status == "PlantDoctorCancel")
+                    {
+                        strStatus = "已取消";
+                    }
+                    else if (reserve.Status == "Overtime")
+                    {
+                        strStatus = "已取消";
+                    }
+                    else if (reserve.Status == "Processing")
+                    {
+                        strStatus = "已看診";
+                    }
+                    else if (reserve.Status == "ToBeTracked")
+                    {
+                        strStatus = "已看診";
+                    }
+                    else if (reserve.Status == "Close")
+                    {
+                        strStatus = "已結案";
+                    }
+
+                    if(strStatus == "已預約")
+                    {
+                        color = "text-danger";
+                    }
+
+                <div class="con-box" style="margin-bottom:20px">
+                    <span class="">預約日期: @reserve.ReserveDatetime</span>
+                    <div class="card2">
+                        <div class="card-body">
+                            <div class="col-12 col-lg-12 text-left">
+                                <span class="">植物醫生：@docList[index]</span>
+                            </div>
+                            <div class="col-12 col-lg-12 text-left">
+                                <span class="">狀態：<span class="@color"> @{
+                                    
+                                    @strStatus
+
+                                }</span></span>
+                            </div>
+                            <div class="col-12 col-lg-12 text-left">
+                                <span class="">診斷日期：</span>
+                                @if (reserve.DateDiagnosis != null)
+                                {
+                                  
+                                    @Convert.ToDateTime(reserve.DateDiagnosis).ToString("yyyy/MM/dd");
+                                }
+                            </div>
+                            <div class="col-12 col-lg-12 text-right">
+                                <button class="btn btn-primary2" onclick="toDetail( @reserve.ID )">查看</button>
+                                @if (reserve.Status == "Appointment")
+                                {
+                                    <button class="btn btn-secondary" onclick="cancelReserve(@reserve.ID)"
+                                            data-target="#modal-media1">
+                                        取消預約
+                                    </button>
+                                }
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                            index++;
+
+                                        }
+                                    }
+            <!--
+                    <div class="con-box" style="margin-bottom:20px">
+                        <span class="">預約日期:2022/07/13 09:30</span>
+                        <div class="card2">
+                            <div class="card-body">
+                                <div class="col-12 col-lg-12 text-left">
+                                    <span class="">植物醫生：</span>
+                                </div>
+                                <div class="col-12 col-lg-12 text-left">
+                                    <span class="">狀態：<span class="text-danger">已預約</span></span>
+                                </div>
+                                <div class="col-12 col-lg-12 text-left">
+                                    <span class="">診斷日期：2022/09/16</span>
+                                </div>
+                                <div class="col-12 col-lg-12 text-right">
+                                    <button class="btn btn-primary2">查看</button>
+                                    <button class="btn btn-secondary" data-toggle="modal"
+                                            data-target="#modal-media1">
+                                        取消預約
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+            <div class="con-box" style="margin-bottom:20px">
+                <span class="">預約日期:2022/07/13 09:30</span>
+                <div class="card2">
+                    <div class="card-body">
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">植物醫生：高通通</span>
+                        </div>
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">狀態：<span class="text-danger">已預約</span></span>
+                        </div>
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">診斷日期：2022/09/16</span>
+                        </div>
+                        <div class="col-12 col-lg-12 text-right">
+                            <button class="btn btn-primary2">查看</button>
+                            <button class="btn btn-secondary" data-toggle="modal"
+                                    data-target="#modal-media1">
+                                取消預約
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="con-box" style="margin-bottom:20px">
+                <span class="">預約日期:2022/07/13 09:30</span>
+                <div class="card2">
+                    <div class="card-body">
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">植物醫生：高通通</span>
+                        </div>
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">狀態：<span class="text-danger">已預約</span></span>
+                        </div>
+                        <div class="col-12 col-lg-12 text-left">
+                            <span class="">診斷日期：2022/09/16</span>
+                        </div>
+                        <div class="col-12 col-lg-12 text-right">
+                            <button class="btn btn-primary2">查看</button>
+                            <button class="btn btn-secondary" data-toggle="modal"
+                                    data-target="#modal-media1">
+                                取消預約
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                -->
+
+        </section>
+
+
+
+
+    </div>
+
+
+    <div class="modal fade" id="modal-media1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-body p-t-2">
+                    <div class="table-responsive">
+
+                        <div class="card-body">
+                            <div class="col-12 col-lg-12 text-center">
+                                <span class="widowtitle">取消預約</span>
+                            </div>
+                            <div class="col-12 col-lg-12 text-left">
+                                <span class="">植物醫生：高通通</span>
+                            </div>
+                            <div class="col-12 col-lg-12 text-left">
+                                <span class="">狀態：<span class="text-danger">已預約</span></span>
+                            </div>
+                            <div class="col-12 col-lg-12 text-left">
+                                <span class="">診斷日期：2022/09/16</span>
+                            </div>
+                            <div class="col-12 col-lg-12 text-center">
+                                <button class="btn btn-primary2" data-dismiss="modal">確定</button>
+                                <button class="btn btn-secondary" data-dismiss="modal">取消</button>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+  <script>
+      function cancelReserve(id) {
+
+          if (window.confirm("是否取消預約?")) {
+              $.ajax({
+                  url: '/mobile/cancelReserve',
+                  data: {
+                      id: id,
+                  },
+                  type: 'POST',
+                  cache: false,
+                  dataType: 'json',
+                  success: function (data) {
+                      //alert(data.msg);
+                      alert('已取消');
+                      history.go(0);
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(JSON.stringify(xhr));
+                  },
+              });
+          }
+          
+      }
+
+      function toDetail(id) {
+          window.location = "/mobile/reserveDetail/" + id + "?userid="+ QueryString("userId");
+      }
+
+      function QueryString(name) {
+          var AllVars = window.location.search.substring(1);
+          var Vars = AllVars.split("&");
+          for (i = 0; i < Vars.length; i++) {
+              var Var = Vars[i].split("=");
+              if (Var[0] == name) return Var[1];
+          }
+          return "";
+      }
+  </script>
+</body>
+
+</html>
+
+
+

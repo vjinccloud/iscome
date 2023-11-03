@@ -1,0 +1,47 @@
+﻿
+@{
+    ViewBag.Title = "PrivacyPolicy";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">隱私權政策</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Home/Index">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">隱私權政策</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div>
+                    <span class="mr-3">更新日期：@(Model.UpdatedAt == null ? Model.CreatedAtStr : Model.UpdatedAtStr)</span>
+                    <span><i class="far fa-eye m-2"></i>點閱率：@Model.Clicks</span>
+                </div>
+                <div class="mt-4">
+                    @Html.Raw(Model.Context)
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

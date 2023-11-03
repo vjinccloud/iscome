@@ -1,0 +1,165 @@
+﻿@model InformationSystem.ViewModel.Management.SysNewsModel
+@{
+    ViewBag.Title = "SysNewsList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">消息管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="qureyForm" method="post">
+                                <table class="table mb-0 no-border">
+                                    @{
+                                        string startDate = "", endDate = "";
+                                        if (Model.SysNewsFilters.StartDate.HasValue) { startDate = Model.SysNewsFilters.StartDate.Value.ToString("yyyy-MM-dd"); }
+                                        if (Model.SysNewsFilters.EndDate.HasValue){ endDate = Model.SysNewsFilters.EndDate.Value.ToString("yyyy-MM-dd"); }
+                                    }
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>起始日期：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <input type="date" value="@startDate" name="StartDate" class="form-control" />
+                                        </td>
+                                        <th style="width:10%">結束日期：</th>
+                                        <td style="width:40%">
+                                            <input type="date" value="@endDate" name="EndDate"  class="form-control"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">公告主旨：</th>
+                                        <td style="width:40%">
+                                            <input type="text" value="@Model.SysNewsFilters.Keyword" name="Keyword"  class="form-control"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <input type="hidden" value="1" name="Page" id="setPage" />
+                                            <input type="hidden" name="DeleteID" id="setDeleteID" />
+                                            <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event, 'query','')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/Management/SysNewsInfo'">
+                                    <i class="fas fa-plus-circle mr-2"></i>新增
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">項次</th>
+                                        <th scope="col">主旨</th>
+                                        <th scope="col">公告期間</th>
+                                        <th scope="col">修改日期</th>
+                                        <th scope="col">至頂</th>
+                                        <th scope="col">功能</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = Model.CurrentPage == 1 ? 0 : Model.CurrentPage * Model.PageCounts;
+                                        foreach (var item in Model.SysNews)
+                                        {
+                                            i++;
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@item.Title</td>
+                                                <td>@(item.StartDate.ToString("yyyy/MM/dd"))~@(item.EndDate.ToString("yyyy/MM/dd"))</td>
+                                                <td>@((item.ModifyDate ?? item.CreateDate).ToString("yyyy/MM/dd"))</td>
+                                                <td>@(item.IsTop ? "是" : "否")</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary" onclick="location.href = '/Management/SysNewsInfo?ID=@item.Id'">編輯</button>
+                                                    <button type="button" class="btn btn-danger" onclick="handleSubmit(event, 'delete','@item.Id')">刪除</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a @(Model.Page > 1 ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.Page-1)')" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                            <nav aria-label="...">
+                                <ul class="pagination">
+                                    @{
+                                        int sPage = 1, endPage = Model.TotalPage;
+                                        if (Model.TotalPage > 5)
+                                        {
+                                            if (Model.TotalPage < (Model.Page + 2))
+                                            {
+                                                sPage = Model.TotalPage - 4;
+                                            }
+                                            else if ((Model.Page - 2) <= 0)
+                                            {
+                                                endPage = 5;
+                                            }
+                                            else
+                                            {
+                                                sPage = Model.Page - 2;
+                                                endPage = Model.Page + 2;
+                                            }
+                                        }
+
+                                        for (int p = sPage; p <= endPage; p++)
+                                        {
+
+                                            if (p == Model.Page)
+                                            {
+                                                <li class="page-item active" aria-current="page">
+                                                    <span class="page-link">@p<span class="sr-only"></span></span>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="page-item"><a class="page-link" onclick="SetPage('@(p)')">@p</a></li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </nav>
+                            <a @(Model.Page < Model.TotalPage ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.Page+1)')" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function handleSubmit(e, action, id) {
+            e.preventDefault();
+            let formData = $('form').serializeArray();
+            console.log(action, formData)
+            if (action == 'delete') {
+                if (id > 0) {
+                    $('#setDeleteID').val(id);
+                }
+                document.getElementById('qureyForm').submit();
+            } else {
+                document.getElementById('qureyForm').submit();
+            }
+        }
+        function SetPage(page) {
+            $('#setPage').val(page);
+            document.getElementById('qureyForm').submit();
+        }
+    </script>
+}

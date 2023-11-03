@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewBag.Title = "Links";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Home/Introduce">平台簡介</a></li>
+            <li><a href="~/Home/News">最新消息</a></li>
+            <li><a href="~/Home/Links">相關網站</a></li>
+            <li><a href="~/Home/Search">全站搜尋</a></li>
+            <li><a href="~/Home/Sitemaps">網站導覽</a></li>
+            <li><a href="~/Home/QA">常見問答</a></li>
+            <li><a href="~/Home/DoctorDailyJob">植醫日常</a></li>
+        </ul>
+    </div>
+</div>
+
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">相關網站</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Home/Index">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">相關網站</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            @{
+                                foreach (var link in @Model)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="link-card" data-toggle="tooltip" title="@link.Title">
+                                            <a href="@link.Url" target="_blank">
+                                                <img src="@link.ImagePath" class="img-fluid">
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4" style="text-align:center">
+                    <button type="button" class="btn btn-primary" onclick="window.history.back()"><i class="fas fa-hand-point-left mr-2"></i>回上一頁</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

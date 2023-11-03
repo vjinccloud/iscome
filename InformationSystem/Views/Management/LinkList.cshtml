@@ -1,0 +1,86 @@
+﻿@{
+    ViewBag.Title = "LinkList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var disabled = Model.Links.Count == 0 ? true : false;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">連結管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div style="display:flex">
+                                <div style="margin-left:auto">
+                                    <button type="button" class="btn btn-primary m-2" onclick="location.href='/Management/LinkInfo'"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                                    <button type="button" class="btn btn-secondary m-2" onclick="handleSubmit(event, 'delete')" disabled="@disabled">
+                                        <i class="fas fa-minus-circle mr-2"></i>刪除
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col" style="width: 50px;"></th>
+                                            <th scope="col">項次</th>
+                                            <th scope="col">建立日期</th>
+                                            <th scope="col">名稱</th>
+                                            <th scope="col">資料狀態</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int i = Model.CurrentPage == 1 ? 0 : Model.CurrentPage * Model.PageCount;
+                                            foreach (var LinkModel in Model.Links)
+                                            {
+                                                i++;
+                                                <tr>
+                                                    <td>
+                                                        <input type="checkbox" name="DeleteIDs[]" value="@LinkModel.ID" />
+                                                    </td>
+                                                    <td>@i</td>
+                                                    <td>@LinkModel.CreatedAtStr</td>
+                                                    <td>@LinkModel.Title</td>
+                                                    <td>@(LinkModel.Show ? "上架" : "下架")</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary" onclick="location.href = '/Management/LinkInfo?ID=@LinkModel.ID'">編輯</button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        function handleSubmit(e, action) {
+            e.preventDefault();
+            let formData = $('form').serializeArray();
+            console.log(action, formData)
+            if (action == 'delete') {
+                if (formData.findIndex(d => d.name === 'DeleteIDs[]') < 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '請先選擇預刪除項次'
+                    });
+                    return;
+                }
+            }
+            document.getElementById('form').submit();
+        }
+    </script>
+}

@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "TagManage";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
+    {
+        @Html.AntiForgeryToken()
+    }
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">標籤管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive" style="overflow:auto">
+                            <table class="table mb-0 table-striped">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">標籤（搜尋關鍵字）</th>
+                                        <th scope="col">搜尋次數</th>
+                                        <th scope="col">動作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        foreach (var tag in Model)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @tag.KeyName
+                                                </td>
+                                                <td>@tag.Searches</td>
+                                                <td>
+                                                    @using (Html.BeginForm("ChangeShow", "DiseasePrevention", FormMethod.Post))
+                                                    {
+                                                        <div class="form-inline">
+                                                            <input type="hidden" name="KeyName" value="@tag.KeyName" />
+                                                            <label class="mr-3">
+                                                                <input type="radio" class="form-control mr-3" name="Show" value="true" checked="@(tag.Show == true ? true : false)" />顯示
+                                                            </label>
+                                                            <label class="mr-3">
+                                                                <input type="radio" class="form-control mr-3" name="Show" value="false" checked="@(tag.Show == false ? true : false)" />隱藏
+                                                            </label>
+                                                        </div>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        $("input[type=radio]").on('click', function () {
+            this.form.submit();
+        });
+    </script>
+}

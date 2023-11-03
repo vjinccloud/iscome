@@ -1,0 +1,244 @@
+﻿@model InformationSystem.ViewModel.DoctorCropStatisticModel
+@{
+    ViewBag.Title = "Diagnose";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">診斷/作物類別統計表</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        @using (Html.BeginForm("Diagnose", "Statistic", FormMethod.Post, new { id = "form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>查詢區間：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <input type="date" class="form-control" name="StartDate" value="@(Model.QueryReq.StartDate.HasValue ? Model.QueryReq.StartDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                                <span>～</span>
+                                                <input type="date" class="form-control" name="EndDate" value="@(Model.QueryReq.EndDate.HasValue ? Model.QueryReq.EndDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                            </div>
+                                        </td>
+                                        <th style="width:10%">
+                                            <label>作物類別：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select class="form-control" name="CropType">
+                                                <option value="" @(string.IsNullOrEmpty(Model.QueryReq.CropType) ? "selected" : "")>全選</option>
+                                                @foreach (var item in Model.CropTypes)
+                                                {
+                                                    <option value="@item.Name" @(Model.QueryReq.CropType == item.Name ? "selected" : "")>@item.Name</option>
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="table-responsive">
+                                <input type="hidden" name="ActionName" id="act" />
+                                <input type="hidden" name="QueryType" id="actType" />
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">報表名稱</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>月份、作物診斷次數統計表</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    @*<button class="btn btn-primary m-2">查詢預覽</button>
+                                    <button class="btn btn-primary m-2">Excel</button>
+                                    <button class="btn btn-primary m-2">ODS</button>*@
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('','1')">查詢預覽</a>
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('export','1')">Excel</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>月份、面積(公頃)統計表</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('','2')">查詢預覽</a>
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('export','2')">Excel</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>月份、問診方式次數統計表</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('','3')">查詢預覽</a>
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('export','3')">Excel</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>月份、問診次數統計表</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('','4')">查詢預覽</a>
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('export','4')">Excel</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>年度、問診次數統計表</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('','5')">查詢預覽</a>
+                                                    <a class="btn btn-primary m-2" onclick="handleSubmit('export','5')">Excel</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        <div class="table-responsive mt-4" style="overflow:auto">
+                            @switch (Model.QueryReq.QueryType)
+                            {
+                                case 1:
+                                    <h4 class="mb-3">月份、作物診斷次數統計表</h4>
+                                    break;
+                                case 2:
+                                    <h4 class="mb-3">月份、面積(公頃)統計表</h4>
+                                    <h5>同一位農友在相同作物的服務面積單一月份僅計算一次。</h5>
+                                    break;
+                                case 3:
+                                    <h4 class="mb-3">月份、問診方式次數統計表</h4>
+                                    break;
+                                case 4:
+                                    <h4 class="mb-3">月份、問診次數統計表</h4>
+                                    <h5>同一位農友於該月份不論作物，診斷完成結案案件次數統計。</h5>
+                                    break;
+                                case 5:
+                                    <h4 class="mb-3">年度、問診次數統計表</h4>
+                                    <h5>同一位農友於各年度不論作物，診斷完成結案案件次數統計。</h5>
+                                    break;
+                            }
+                            @if (Model.QueryReq.QueryType != 5)
+                            {
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">作物</th>
+                                            <th scope="col">1月</th>
+                                            <th scope="col">2月</th>
+                                            <th scope="col">3月</th>
+                                            <th scope="col">4月</th>
+                                            <th scope="col">5月</th>
+                                            <th scope="col">6月</th>
+                                            <th scope="col">7月</th>
+                                            <th scope="col">8月</th>
+                                            <th scope="col">9月</th>
+                                            <th scope="col">10月</th>
+                                            <th scope="col">11月</th>
+                                            <th scope="col">12月</th>
+                                            <th scope="col">合計</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.DataList)
+                                        {
+                                            <tr>
+                                                <td>@item.Title</td>
+                                                <td>@item.Jan</td>
+                                                <td>@item.Feb</td>
+                                                <td>@item.Mar</td>
+                                                <td>@item.Apr</td>
+                                                <td>@item.May</td>
+                                                <td>@item.Jun</td>
+                                                <td>@item.Jul</td>
+                                                <td>@item.Aug</td>
+                                                <td>@item.Sep</td>
+                                                <td>@item.Oct</td>
+                                                <td>@item.Nov</td>
+                                                <td>@item.Dec</td>
+                                                <td>@item.Total</td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <th scope="col">總計</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Jan)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Feb)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Mar)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Apr)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.May)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Jun)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Jul)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Aug)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Sep)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Oct)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Nov)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Dec)</th>
+                                            <th scope="col">@Model.DataList.Sum(x => x.Total)</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            }
+                            else
+                            {
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            @foreach (System.Data.DataColumn item in Model.DataYear.Columns)
+                                            {
+                                                <th scope="col">@item.ColumnName</th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (System.Data.DataRow item in Model.DataYear.Rows)
+                                        {
+                                            <tr>
+                                                @foreach (System.Data.DataColumn itemColumn in Model.DataYear.Columns)
+                                                {
+                                                    <td>@item[itemColumn.ColumnName]</td>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script>
+        $(function () {
+
+            $("#search").on('click', function () {
+                $('#act').val('');
+                document.getElementById('form').submit();
+            });
+            $("#export").on('click', function () {
+                $('#act').val('export');
+                document.getElementById('form').submit();
+            });
+        });
+        function handleSubmit(act, actType) {
+            $('#act').val(act);
+            $('#actType').val(actType);
+
+            document.getElementById('form').submit();
+        }
+    </script>
+}

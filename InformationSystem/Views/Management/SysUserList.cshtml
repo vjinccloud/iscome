@@ -1,0 +1,303 @@
+﻿@model  InformationSystem.ViewModel.Management.SysUserModel
+@{
+    ViewBag.Title = "SysUserList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">帳號管理</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <form id="queryForm" method="post">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>角色別：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <select class="form-control mr-2" name="Identify">
+                                                <option value="">請選擇</option>
+                                                @{
+                                                    foreach (var defCode in Model.defCodes)
+                                                    {
+                                                        <option @(@defCode.RoleCode == Model.Identify_Filter.ToString() ? "selected='selected''" : "") value="@defCode.RoleCode">@defCode.RoleName</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                        <th style="width:10%">特權帳號：</th>
+                                        <td style="width:40%">
+                                            <select class="form-control mr-2" name="Special">
+                                                @{
+                                                    <option value="">全選</option>
+                                                    <option @("Y" == Model.Special_Filter.ToString() ? "selected='selected''" : "") value="Y">是</option>
+                                                    <option @("N" == Model.Special_Filter.ToString() ? "selected='selected''" : "") value="N">否</option>
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>帳號狀態：</label>
+                                        </th>
+                                        <td>
+                                            <select class="form-control mr-2" name="Status">
+                                                <option value="">全選</option>
+                                                <option @("Y" == Model.Status_Filter.ToString() ? "selected='selected''" : "") value="Y">啟用</option>
+                                                <option @("N" == Model.Status_Filter.ToString() ? "selected='selected''" : "") value="N">未啟用</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <input type="hidden" name="act" id="act" />
+                                            <button type="submit" class="btn btn-export m-2" onclick="handleSubmit(event,'export')">匯出</button>
+                                            @*<button type="submit" class="btn btn-primary m-2"><i class="fas fa-search mr-2" onclick="handleSubmit(event, 'export')"></i>匯出</button>*@
+                                            <button type="submit" class="btn btn-primary m-2" onclick="handleSubmit(event, 'query')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </form>
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/Management/MemberAdd'">
+                                    <i class="fas fa-plus-circle mr-2"></i>新增
+                                </button>
+                                <button type="button" class="btn btn-secondary m-2" onclick="handleSubmit(event, 'delete')">
+                                    <i class="fas fa-minus-circle mr-2"></i>刪除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="overflow-x:auto">
+                            <form id="deleteForm" method="post">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col" style="width: 50px;"></th>
+                                            <th scope="col">項次</th>
+                                            <th scope="col">帳號</th>
+                                            <th scope="col">姓名</th>
+                                            <th scope="col">電子信箱</th>
+                                            <th scope="col">角色別</th>
+                                            <th scope="col">特權帳號</th>
+                                            <th scope="col">狀態</th>
+                                            <th scope="col">功能</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            Model.TotalPage = Model.SysUsers.Count / Model.PageCounts + (Model.SysUsers.Count % Model.PageCounts > 0 ? 1 : 0);
+                                            int i = Model.CurrentPage == 1 ? 0 : Model.CurrentPage * Model.PageCounts;
+                                            i = 0;
+                                            foreach (var item in Model.SysUsers)
+                                            {
+
+                                                i++;
+                                                <tr name=@("UserList"+i) id=@("UserList"+i) style=@((i < Model.PageCounts * (Model.CurrentPage - 1) || i > (Model.PageCounts) * Model.CurrentPage) ? "display:none;" : "")>
+                                                    <td>
+                                                        <input type="checkbox" name="DeleteIDs[]" value="@(item.LoginID.ToString())" />
+                                                    </td>
+                                                    <td>@i</td>
+                                                    <td>@item.LoginID</td>
+                                                    <td>
+                                                        <div class="form-inline">
+                                                            <span id=@("UserName"+i) Name=@("UserName"+i) title="@(item.UserName.Substring(0,1)+"O"+"OOOOOOOOOOOOOOOOOOOO".Substring(2, item.UserName.Length- (item.UserName.Length > 2 ? 3 : 0))+ item.UserName.Substring(item.UserName.Length -1, 1))">@(item.UserName.Substring(0,1)+"O"+"OOOOOOOOOOOOOOOOOOOO".Substring(2, item.UserName.Length- (item.UserName.Length > 2 ? 3 : 0))+ item.UserName.Substring(item.UserName.Length -1, 1))</span>
+                                                            <button id=@("UserNameREAL"+i) Name=@("UserNameREAL"+i) title="@item.UserName" type="button" class="btn btn-default" onclick="NameEach('@("UserName"+i)','@("UserNameREAL"+i)')"><i class="far fa-eye"></i></button>
+                                                        </div>
+                                                    </td>
+                                                    <td>@item.EmailAddress</td>
+                                                    <td>@(Model.defCodes.FirstOrDefault(o => o.RoleCode == item.RoleID)?.RoleName)</td>
+                                                    <td>@(item.Special == "Y" ? "是":"否")</td>
+                                                    <td>@(item.State == "Y" ? "啟用":"未啟用")</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary" onclick="location.href='/Management/UserSpecialGroupInfo?id=@item.LoginID'">權限設定</button>
+                                                        <button type="button" class="btn btn-info" onclick="location.href='/Management/SysUserEdit?LoginID=@item.LoginID'">編輯</button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a @(Model.CurrentPage < Model.TotalPage ? "" : "style=pointer-events:none;") href="javascript:void(0)" onclick="PrePage(@(Model.PageCounts),@(Model.SysUsers.Count),@(Model.TotalPage))" class="style-color">上一頁<i class="fas fa-arrow-left mr-2"></i></a>
+                            <nav aria-label="...">
+                                <ul class="pagination">
+                                    @{
+                                        int sPage = 1, endPage = Model.TotalPage;
+                                        for (int p = sPage; p <= endPage; p++)
+                                        {
+
+                                            if (p == Model.CurrentPage)
+                                            {
+                                                <li name=@("Page"+p) id=@("Page"+p) class="page-item active" aria-current="page">
+                                                    <span class="page-link">@p<span class="sr-only"></span></span>
+                                                </li>
+                                                <li name=@("BtnPage"+p) id=@("BtnPage"+p) class="page-item" style="display: none;"><a class="page-link" href="javascript:void(0)" onclick="GoPage(@(Model.PageCounts),@(Model.SysUsers.Count),@(Model.TotalPage),@p)">@p</a></li>
+                                            }
+                                            else
+                                            {
+                                                <li name=@("Page"+p) id=@("Page"+p) @(p > 5 ? "style=display:none" : "") class="page-item active" aria-current="page" style="display: none;">
+                                                    <span class="page-link">@p<span class="sr-only"></span></span>
+                                                </li>
+                                                <li name=@("BtnPage"+p) @(p > 5 ? "style=display:none" : "") id=@("BtnPage"+p) class="page-item"><a class="page-link" href="javascript:void(0)" onclick="GoPage(@(Model.PageCounts),@(Model.SysUsers.Count),@(Model.TotalPage),@p)">@p</a></li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </nav>
+                            <a @(Model.CurrentPage < Model.TotalPage ? "" : "style=pointer-events:none;") href="javascript:void(0)" onclick="NextPage(@(Model.PageCounts),@(Model.SysUsers.Count),@(Model.TotalPage))" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script{
+    <script>
+        var CurrentPage = 1;
+        function handleSubmit(e, action) {
+            e.preventDefault();
+            document.getElementById('act').value = action;
+            let formData = null;
+            if (action == 'delete') {
+                formData = $('#deleteForm').serializeArray();
+                if (formData.findIndex(d => d.name === 'DeleteIDs[]') < 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '請先選擇預刪除項次'
+                    });
+                    return;
+                }
+                Swal.fire({
+                    icon: 'info',
+                    title: '確定刪除?',
+                    confirmButtonText: '確定',
+                    showCancelButton: true,
+                    cancelButtonText: '取消'
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        document.getElementById('deleteForm').submit();
+                    }
+                })
+            } else {
+                formData = $('#queryForm').serializeArray();
+                document.getElementById('queryForm').submit();
+            }
+        }
+
+        function NextPage(PageCounts, VW_Members, TotalPage) {
+            if (CurrentPage + 1 > TotalPage) {
+                return;
+            }
+            CurrentPage += 1;
+            for (let i = 1; i <= VW_Members; i++) {
+                if (i <= PageCounts * (CurrentPage - 1) || i > (PageCounts) * CurrentPage) {
+                    document.getElementById('UserList' + i).style.display = "none";
+                }
+                else {
+                    document.getElementById('UserList' + i).style.display = "";
+                }
+            }
+
+            for (let i = 1; i <= TotalPage; i++) {
+                if (i < CurrentPage - 2 || i > CurrentPage + 2) {
+                    document.getElementById('Page' + i).style = "display:none;";
+                    document.getElementById('BtnPage' + i).style = "display:none;";
+                }
+                else {
+                    if (i != CurrentPage) {
+                        document.getElementById('Page' + i).style = "display:none;";
+                        document.getElementById('BtnPage' + i).style = "display:display;";
+                    }
+                    else {
+                        document.getElementById('Page' + i).style = "display:display;";
+                        document.getElementById('BtnPage' + i).style = "display:none;";
+                    }
+                }
+            }
+        }
+
+        function PrePage(PageCounts, VW_Members, TotalPage) {
+            if (CurrentPage - 1 < 1) {
+                return;
+            }
+            CurrentPage -= 1;
+            for (let i = 1; i <= VW_Members; i++) {
+                if (i <= PageCounts * (CurrentPage - 1) || i > (PageCounts) * CurrentPage) {
+                    document.getElementById('UserList' + i).style.display = "none";
+                }
+                else {
+                    document.getElementById('UserList' + i).style.display = "";
+                }
+            }
+
+            for (let i = 1; i <= TotalPage; i++) {
+                if (i < CurrentPage - 2 || i > CurrentPage + 2) {
+                    document.getElementById('Page' + i).style = "display:none;";
+                    document.getElementById('BtnPage' + i).style = "display:none;";
+                }
+                else {
+                    if (i != CurrentPage) {
+                        document.getElementById('Page' + i).style = "display:none;";
+                        document.getElementById('BtnPage' + i).style = "display:display;";
+                    }
+                    else {
+                        document.getElementById('Page' + i).style = "display:display;";
+                        document.getElementById('BtnPage' + i).style = "display:none;";
+                    }
+                }
+            }
+        }
+
+        function GoPage(PageCounts, VW_Members, TotalPage, GoPage) {
+            CurrentPage = GoPage;
+            for (let i = 1; i <= VW_Members; i++) {
+                if (i <= PageCounts * (CurrentPage - 1) || i > (PageCounts) * CurrentPage) {
+                    document.getElementById('UserList' + i).style.display = "none";
+                }
+                else {
+                    document.getElementById('UserList' + i).style.display = "";
+                }
+            }
+
+            for (let i = 1; i <= TotalPage; i++) {
+                if (i < CurrentPage - 2 || i > CurrentPage + 2) {
+                    document.getElementById('Page' + i).style = "display:none;";
+                    document.getElementById('BtnPage' + i).style = "display:none;";
+                }
+                else {
+                    if (i != CurrentPage) {
+                        document.getElementById('Page' + i).style = "display:none;";
+                        document.getElementById('BtnPage' + i).style = "display:display;";
+                    }
+                    else {
+                        document.getElementById('Page' + i).style = "display:display;";
+                        document.getElementById('BtnPage' + i).style = "display:none;";
+                    }
+                }
+            }
+        }
+
+        function NameEach(UserName, UserNameREAL) {
+            document.getElementById(UserName).innerHTML = document.getElementById(UserNameREAL).title;
+        }
+    </script>
+}

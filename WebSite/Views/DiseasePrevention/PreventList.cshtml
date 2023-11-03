@@ -1,0 +1,71 @@
+﻿@model IEnumerable<IGrouping<string, ICCModule.Entity.Tables.Platform.controlHistory>>
+@{
+    ViewBag.Title = "PreventList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/DiseasePrevention/Preventlist">病蟲害防治</a></li>
+            <li><a href="~/DiseasePrevention/Map">農藥販賣業者地圖</a></li>
+            <li><a href="~/DiseasePrevention/Dashboard">病蟲害即時動態儀表板</a></li>
+            <li><a href="~/DiseasePrevention/PesticidesInfo">農藥資訊查詢</a></li>
+            <li><a href="~/Event/AllEvent">活動資訊</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3 style="display:inline-block">
+                        <span class="line">病蟲害防治作業曆與防治曆</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/DiseasePrevention/Preventlist">植物防疫</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">病蟲害防治作業曆與防治曆</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mt-2">
+                            <table class="table rwd-table">
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <th><i class="fas fa-location-arrow mr-2"></i>@item.Key</th>
+                                        </tr>
+                                        <tr>
+                                            @{
+                                                var data = item.ToArray();
+                                                for (int i = 0; i < item.Count(); i = i + 5)
+                                                {
+                                                    int lastCount = (i + 5) > item.Count() ? item.Count() : (i + 5);
+                                                    <td style="text-align:center">
+                                                        @foreach (var itemData in item.Skip(i).Take(5))
+                                                        {
+                                                            <button type="button" class="btn btn-primary" onclick="location.href='/DiseasePrevention/PreventInfo?Id=@itemData.ID'">@itemData.Name</button>
+                                                        }
+                                                    </td>
+                                                }
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>

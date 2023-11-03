@@ -1,0 +1,141 @@
+﻿@model InformationSystem.ViewModel.AddBroadcastModel
+@{
+    ViewBag.Title = "AddBroadcast";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">Line 新增推播</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <form id="form" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <span class="important">類別名稱</span>
+                                            </td>
+                                            <td>
+                                                <select class="form-control" name="MessageType">
+                                                    @foreach (var item in Model.MessageTypes)
+                                                    {
+                                                        <option value="@item.Code" @(item.Code == Model.Data.MessageType ? "selected" : "")>@item.Name</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="important">推播內容</span>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" name="Contents" value="@Model.Data.Contents" required title="推播內容為必填欄位" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="important">推播對象</span>
+                                            </td>
+                                            <td>
+                                                <select class="form-control" name="MessageTarget" id="ddlMessageTarget">
+                                                    <option value="all" @("all" == Model.Data.MessageTarget ? "selected" : "")>全部追蹤者</option>
+                                                    <option value="assign" @("assign" == Model.Data.MessageTarget ? "selected" : "")>指定對象</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr id="targetUsr" @(Model.Data.MessageTarget != "assign" ? "style=display:none":"")>
+                                            <td>
+                                                <span class="important">選擇推播對象</span>
+                                            </td>
+                                            <td>
+                                                @foreach (var item in Model.Members)
+                                                {
+                                                    <div class="form-check form-check-inline col-2">
+                                                        <input class="form-check-input" type="checkbox" name="TargetUserList[]" id="chb@(item.Value)" value="@item.Value" required title="請選擇對象">
+                                                        <label for="chb@(item.Value)" class="form-check-label">@item.Text</label>
+                                                    </div>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <div class="form-inline" style="justify-content:center">
+                                                    <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                                                    <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script{
+    <script>
+        $(document).ready(function () {
+            $('#ddlMessageTarget').on("change", function () {
+                if ($('#ddlMessageTarget').val() == 'all') $('#targetUsr').hide();
+                else $('#targetUsr').show();
+            });
+        });
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>

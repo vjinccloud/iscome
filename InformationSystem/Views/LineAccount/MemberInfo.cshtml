@@ -1,0 +1,209 @@
+﻿@model InformationSystem.ViewModel.LineModel
+@{
+    ViewBag.Title = "MemberInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">Line Message紀錄</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        @using (Html.BeginForm("MemberInfo", "LineAccount", FormMethod.Post, new { id = "queryForm" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>日期起訖：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <input type="hidden" value="1" name="Page" id="setPage" />
+                                                <input type="hidden" name="Action" id="Action" />
+                                                <input type="date" name="StartDate" class="form-control mr-2" value="@(Model.QueryReq.StartDate.HasValue ? Model.QueryReq.StartDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                                <span>～</span>
+                                                <input type="date" name="EndDate" class="form-control ml-2" value="@(Model.QueryReq.EndDate.HasValue ? Model.QueryReq.EndDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                            </div>
+                                        </td>
+                                        <th style="width:50%"></th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="submit" class="btn btn-primary m-2" onclick="doSubmit('')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        }
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-export m-2" onclick="doSubmit('export')">匯出</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="overflow-x:auto">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">項次</th>
+                                        <th scope="col">時間</th>
+                                        <th scope="col">姓名</th>
+                                        <th scope="col">會員帳號</th>
+                                        <th scope="col">使用者訊息</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listbody">
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model.Data)
+                                        {
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@item.CreateDate</td>
+                                                <td id="tr_@i" class="firstName">
+                                                    <div class="form-inline">
+                                                        <input type="hidden" id="idShowName" value="0" />
+                                                        <input type="hidden" id="idNameValue" value="@item.Name" />
+                                                        <span id="pName">@item.Name</span>
+                                                        <button type="button" class="btn btn-default" onclick="ChangeShow(@i)"><i class="far fa-eye"></i></button>
+                                                    </div>
+                                                </td>
+                                                <td>@item.MemberAccount</td>
+                                                <td>@item.UserMessage</td>
+                                            </tr>
+
+                                            i++;
+                                        }
+
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-end align-items-baseline">
+                            <a @(Model.QueryReq.Page > 1 ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.QueryReq.Page-1)')" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                            &nbsp
+                            <nav aria-label="...">
+                                <ul class="pagination">
+                                    @{
+                                        int sPage = 1, endPage = Model.TotalPage;
+                                        if (Model.TotalPage > 5)
+                                        {
+                                            if (Model.TotalPage < (Model.QueryReq.Page + 2))
+                                            {
+                                                sPage = Model.TotalPage - 4;
+                                            }
+                                            else if ((Model.QueryReq.Page - 2) <= 0)
+                                            {
+                                                endPage = 5;
+                                            }
+                                            else
+                                            {
+                                                sPage = Model.QueryReq.Page - 2;
+                                                endPage = Model.QueryReq.Page + 2;
+                                            }
+                                        }
+
+                                        for (int p = sPage; p <= endPage; p++)
+                                        {
+
+                                            if (p == Model.QueryReq.Page)
+                                            {
+                                                <li class="page-item active" aria-current="page">
+                                                    <span class="page-link">@p<span class="sr-only"></span></span>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="page-item"><a class="page-link" onclick="SetPage('@(p)')">@p</a></li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </nav>
+                            &nbsp
+                            <a @(Model.QueryReq.Page < Model.TotalPage ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.QueryReq.Page+1)')" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#listbody').find('.firstName').each(function () {
+                var tr = $(this);
+                var _val = tr.find('#idShowName');
+                var _name = tr.find('#idNameValue');
+                var showPlace = tr.find('#pName');
+
+                var checkVal = _val.val();
+                if (checkVal == "0") {
+                    var _nameValue = "";
+                    for (let i = 0; i < _name.val().length; i++) {
+                        if (i == 0 || i == (_name.val().length - 1)) {
+                            _nameValue += _name.val()[i];
+                        }
+                        else {
+                            _nameValue += "O";
+                        }
+                    }
+                    showPlace.html(_nameValue);
+                    _val.val("1");
+                }
+                else {
+                    showPlace.html(_name.val());
+                    _val.val("0");
+                }
+            });
+        });
+        function SetPage(page) {
+            $('#setPage').val(page);
+            $('#queryForm').submit();
+        }
+        function doSubmit(action) {
+            $('#Action').val(action);
+            $('#queryForm').submit();
+        }
+        function ChangeShow(a) {
+            var tr = $('#tr_' + a);
+            var _val = tr.find('#idShowName');
+            var _name = tr.find('#idNameValue');
+            var showPlace = tr.find('#pName');
+
+            if (_val.val() == "0") {
+                var _nameValue = "";
+                for (let i = 0; i < _name.val().length; i++) {
+                    if (i == 0 || i == (_name.val().length - 1)) {
+                        _nameValue += _name.val()[i];
+                    }
+                    else {
+                        _nameValue += "O";
+                    }
+                }
+                showPlace.html(_nameValue);
+                _val.val("1");
+            }
+            else {
+                showPlace.html(_name.val());
+                _val.val("0");
+            }
+        }
+    </script>
+}

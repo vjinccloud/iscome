@@ -1,0 +1,297 @@
+﻿@model Website.ViewModel.PlantDoctor.CalendarModel
+@using Newtonsoft.Json;
+
+@{
+    ViewBag.Title = "Calender";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+<style>
+    .table > thead > tr th {
+        background-color: #7cb841;
+    }
+
+    .thead-color > th {
+        background-color: white !important;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img" id="Calendar" v-cloak>
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">預約行事曆</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#">首頁</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">預約行事曆</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 row">
+                            <div class="col-5 col-md-3 col-lg-2 p-2 d-flex align-items-center">
+                                <span class="important font-weight-bold">植物醫師</span>
+                            </div>
+                            <div class="col-7 col-md-9 col-lg-10 p-2 position-relative form-inline">
+                                <select name="LoginID" class="form-control" style="width: 180px;" v-model="LoginID" @@change="changeDistrict">
+                                    <option value="">請選擇</option>
+                                    <option v-for="(s, i) in DoctorList" v-bind:key="s.LoginID" v-bind:value="s.LoginID">{{ s.UserName }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered ca text-center">
+                            <thead>
+                                <tr class="thead-darkblue">
+
+                                    <th colspan="2" class="text-left arrow-btn border-0">
+                                        <a v-on:click.prev.stop="addMonth(-1)" style="cursor: pointer;"><i class="fas fa-chevron-circle-left"></i></a>
+                                    </th>
+                                    <th class="border-0" scope="col" colspan="4">
+                                        {{ MonthText }}
+                                    </th>
+                                    <th colspan="2" class="text-right arrow-btn border-0">
+                                        <a v-on:click.prev.stop="addMonth(1)" style="cursor: pointer;"><i class="fas fa-chevron-circle-right"></i></a>
+                                    </th>
+                                </tr>
+                                <tr class="thead-color boder-bottom-0">
+                                    <th scope="col" style="width: 16%;"></th>
+                                    <th scope="col" style="width: 12%;">日</th>
+                                    <th scope="col" style="width: 12%;">一</th>
+                                    <th scope="col" style="width: 12%;">二</th>
+                                    <th scope="col" style="width: 12%;">三</th>
+                                    <th scope="col" style="width: 12%;">四</th>
+                                    <th scope="col" style="width: 12%;">五</th>
+                                    <th scope="col" style="width: 12%;">六</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-for="w in Weeks">
+                                    <tr class="table-secondary boder-bottom-0 font-family-bold" v-bind:key="'week-' + w">
+                                        <td scope="col" class="vertical-mid thead-darkblue border-0">場次</td>
+                                        <td v-for="(s, i) in WeekNums[w - 1]" v-bind:key="'day-' + i">
+                                            {{ s }}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="vertical-mid">上午場<br>9:00~12:00</td>
+                                        <td v-for="(s, i) in WeekNums[w - 1]" v-bind:key="'am-' + i" v-bind:class="!hasSchedule(s, 'am') ? 'table-gray' : '' ">
+                                            <div v-if="s">
+                                                <button type="button" class="btn color-white"
+                                                        v-bind:class="hasSchedule(s, 'am') ? 'btn-warning Reserve' : (scheduleFull(s, 'am') ? 'btn-secondary' : '') "
+                                                        v-bind:disabled="!hasSchedule(s, 'am')"
+                                                        v-on:click.stop="handleReserve(s, 'am')">
+                                                    <span v-if="hasSchedule(s, 'am')">
+                                                        預約名額<br>{{ getNums(s, 'am') }}名
+                                                    </span>
+                                                    <span v-else-if="scheduleFull(s, 'am')">
+                                                        已額滿
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="vertical-mid">下午場<br>14:00~17:00</td>
+                                        <td v-for="(s, i) in WeekNums[w - 1]" v-bind:key="'am-' + i" v-bind:class="!hasSchedule(s, 'pm') ? 'table-gray' : '' ">
+                                            <div v-if="s">
+                                                <button type="button" class="btn color-white"
+                                                        v-bind:class="hasSchedule(s, 'pm') ? 'btn-warning Reserve' : (scheduleFull(s, 'pm') ? 'btn-secondary' : '') "
+                                                        v-bind:disabled="!hasSchedule(s, 'pm')"
+                                                        v-on:click.stop="handleReserve(s, 'pm')">
+                                                    <span v-if="hasSchedule(s, 'pm')">
+                                                        預約名額<br>{{ getNums(s, 'pm') }}名
+                                                    </span>
+                                                    <span v-else-if="scheduleFull(s, 'pm')">
+                                                        已額滿
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+</section>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const Calendar = new Vue({
+                el: '#Calendar',
+                data: {
+                    error: '@(TempData["error"])',
+                    month: moment(),
+                    monthFirst: '',
+                    monthLast: '',
+                    MonthText: '',
+                    Weeks: 4,
+                    WeekNums: [],
+                    Schedules: {},
+                    OrgType: @(new HtmlString(JsonConvert.SerializeObject(Model.OrgType))),
+                    OrgName: @(new HtmlString(JsonConvert.SerializeObject(Model.OrgName))),
+                    OrgDistrict: @(new HtmlString(JsonConvert.SerializeObject(Model.OrgDistrict))),
+                    LoginID: '',
+                    DoctorList: @(new HtmlString(JsonConvert.SerializeObject(Model.DoctorList)))
+                },
+                watch: {
+                    month: {
+                        handler(val) {
+                            let year = parseInt(this.month.format('YYYY')) - 1911;
+                            let month = this.month.format('MM');
+                            this.MonthText = `${year}年${month}月`;
+                            let startOfMonth = moment(this.month).startOf('month');
+                            let endOfMonth = moment(this.month).endOf('month');
+                            this.monthFirst = startOfMonth.format('YYYY-MM-DD');
+                            this.monthLast = endOfMonth.format('YYYY-MM-DD');
+                            let startOfMonthDay = startOfMonth.day();
+                            //startOfMonthDay = startOfMonthDay == 0 ? 7 : startOfMonthDay;
+                            let arr = [];
+                            for (let i = 0; i < (startOfMonthDay ); i++) {
+                                arr.push("");
+                            }
+                            for (let j = 1; j <= parseInt(endOfMonth.format('DD')); j++) {
+                                arr.push(j);
+                            }
+                            this.Weeks = Math.ceil(arr.length / 7);
+                            let originArrLen = arr.length;
+                            for (let l = this.Weeks * 7; l > originArrLen; l--) {
+                                arr.push('');
+                            }
+                            console.log(this.Weeks, arr.length)
+                            this.WeekNums = [];
+                            for (let k = 0; k < this.Weeks; k++) {
+                                this.WeekNums.push(arr.slice((k * 7), (k + 1) * 7));
+                            }
+                            this.$nextTick(() => {
+                                this.getSchedules();
+                            });
+                        },
+                        immediate: true
+                    }
+                },
+                methods: {
+                    changeDistrict(val) {
+                        this.getSchedules();
+                    },
+                    addMonth(val) {
+                        this.month = moment(this.month).add(val, 'months');
+                    },
+                    hasSchedule(s, period) {
+                        if (!s || !this.Schedules[s] || !this.Schedules[s][period]) {
+                            return false;
+                        }
+                        return this.Schedules[s][period].canReserve > this.Schedules[s][period].reserved;
+                    },
+                    getNums(s, period) {
+                        if (!s || !this.Schedules[s] || !this.Schedules[s][period]) {
+                            return 0;
+                        }
+                        return this.Schedules[s][period].canReserve - this.Schedules[s][period].reserved;
+                    },
+                    scheduleFull(s, period) {
+                        if (!s || !this.Schedules[s] || !this.Schedules[s][period] || !this.Schedules[s][period].canReserve) {
+                            return false;
+                        }
+                        return this.Schedules[s][period].canReserve == this.Schedules[s][period].reserved;
+                    },
+                    getSchedules() {
+                        const self = this;
+                        $.ajax({
+                            url: '/PlantDoctor/GetSchedules',
+                            data: {
+                                monthFirst: self.monthFirst,
+                                monthLast: self.monthLast,
+                                docId: self.LoginID,
+                                district: self.OrgDistrict
+                            },
+                            type: 'GET',
+                            cache: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                const tomorrow = moment().add(1, 'days');
+                                let schedules = {};
+                                if (Array.isArray(data) && data.length > 0) {
+                                    data.forEach((d) => {
+                                        let day = moment(d.DateStr).format('D');
+                                        if (moment(d.DateStr) > tomorrow) {
+                                            if (!schedules[day]) {
+                                                schedules[day] = {
+                                                    am: {
+                                                        canReserve: 0,
+                                                        reserved: 0
+                                                    },
+                                                    pm: {
+                                                        canReserve: 0,
+                                                        reserved: 0
+                                                    }
+                                                }
+                                            }
+                                            schedules[day][d.Period].canReserve++;
+                                            if (d.DoctorScheduleID > 0) {
+                                                schedules[day][d.Period].reserved++;
+                                            }
+                                        }
+                                    });
+                                }
+                                self.Schedules = schedules;
+                            }
+                        });
+                    },
+                    handleReserve(s, period) {
+                        if (!s || !period) {
+                            return false;
+                        }
+                        let Date = moment(this.monthFirst).add(parseInt(s) - 1, 'days').format('YYYY-MM-DD');
+                        window.location.assign(`/PlantDoctor/Ticket?Date=${Date}&Period=${period}&od=${this.OrgDistrict}&on=${this.OrgName}&ot=${this.OrgType}&li=${this.LoginID}`);
+                    }
+                },
+            });
+        });
+    </script>
+}

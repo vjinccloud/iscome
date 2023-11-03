@@ -1,0 +1,181 @@
+﻿@model ICCModule.Entity.Tables.sysNews
+@{
+    ViewBag.Title = "SysNewsInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdn.ckeditor.com/ckeditor5/30.0.0/classic/ckeditor.js"></script>
+}
+@section Style {
+    <style>
+        .ck.ck-editor__editable_inline {
+            min-height: 500px;
+        }
+
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">後台管理-@(Model.Id>0 ? "編輯":"新增")</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form id="form" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@Model.Id" />
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-white">
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th>
+                                            <label class="important" for="Title">主旨：</label>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">日期起訖：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                @{
+                                                    var startDate = Model.Id > 0 ? Model.StartDate.ToString("yyyy-MM-dd") : DateTime.Today.ToString("yyyy-MM-dd");
+                                                    var endDate = Model.Id > 0 ? Model.EndDate.ToString("yyyy-MM-dd") : "";
+                                                }
+                                                <input type="date" class="form-control mr-2" name="StartDate" value="@startDate" required />
+                                                <span>～</span>
+                                                <input type="date" class="form-control ml-2" name="EndDate" value="@endDate" required />
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label class="important" for="Title">置頂：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="IsTop" value="true" checked="@(Model.IsTop == true)" />是</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" name="IsTop" value="false" checked="@(Model.IsTop == false)" />否</label>
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th style="vertical-align: text-top !important;">
+                                            <span class="important">內容：</span>
+                                        </th>
+                                        <td>
+                                            <div style="display: flex; flex-direction: column;">
+                                                <div>
+                                                    <textarea name="Contents" id="editor" required>
+                                                        @Model.Contents
+                                                    </textarea>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="submit" class="btn btn-primary m-2">儲存</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script src="~/js/ckeditor-upload-adapter.js"></script>
+    <script>
+        function MyCustomUploadAdapterPlugin(editor) {
+            editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                // Configure the URL to the upload script in your back-end here!
+                return new MyUploadAdapter(loader, '/File/UploadImage?catalog=news');
+            };
+        }
+        ClassicEditor.defaultConfig = {
+            toolbar: {
+                items: [
+                    'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList','|','blockQuote','insertTable','|','undo','redo'
+                ]
+            },
+            table: {
+                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+            },
+            language: 'zh-TW'
+        };
+
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                extraPlugins: [MyCustomUploadAdapterPlugin],
+            })
+            .then(editor => {
+                window.editor = editor;
+                $("div.ck-content").change(function () {
+                    let content = $("div.ck-content").text();
+                    if (content) {
+                        $("#Context-error").css("display", "block");
+                        $("div.ck-editor").removeClass("error-border");
+                    }
+                });
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        $(document).ready(function () {
+            $('#form').validate({
+                rules: {
+                    "Title": "required",
+                    "Show": "required",
+                    "StartDate": "required",
+                    "EndDateStr": "required",
+                    "Title": "required",
+                    "Context": "required",
+                },
+                messages: {
+                    "Title": "請輸入主旨",
+                    "StartDate": "請選擇日期",
+                    "EndDateStr": "請選擇日期",
+                    "Contents": "請輸入內容",
+                },
+                submitHandler: function (form) {
+                    form.submit();
+                }
+            });
+        });
+    </script>
+}

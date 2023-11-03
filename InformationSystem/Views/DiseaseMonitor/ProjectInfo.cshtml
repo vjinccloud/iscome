@@ -1,0 +1,345 @@
+﻿@model InformationSystem.ViewModel.MonitorProjectsEditModel
+@{
+    ViewBag.Title = "ProjectInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">疫病蟲害監測數據登錄 - 年度</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <form id="form" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <input type="hidden" name="ID" value="@Model.DataModel.ID" />
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th>
+                                            <span class="important">專案年度</span>
+                                        </th>
+                                        <td>
+                                            <input type="number" class="form-control" name="Year" value="@Model.DataModel.Year.ToString()" required title="此為必填欄位" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">專案名稱</span>
+                                        </th>
+                                        <td>
+                                            <select class="form-control" name="Name">
+                                                <option selected="@(Model.DataModel.Name == "小黃薊馬" || string.IsNullOrEmpty(Model.DataModel.Name))">小黃薊馬</option> <!-- 1 -->
+                                                <option selected="@(Model.DataModel.Name == "瓜實蠅")">瓜實蠅</option><!-- 2 -->
+                                                <option selected="@(Model.DataModel.Name == "東方果實蠅")">東方果實蠅</option> <!-- 3 -->
+                                                <option selected="@(Model.DataModel.Name == "秋行軍蟲田間巡查")">秋行軍蟲田間巡查</option><!-- 4 -->
+                                                <option selected="@(Model.DataModel.Name == "葉稻熱病")">葉稻熱病</option><!-- 5 -->
+                                                <option selected="@(Model.DataModel.Name == "穗稻熱病")">穗稻熱病</option><!-- 6 -->
+                                                <option selected="@(Model.DataModel.Name == "琉璃蟻")">琉璃蟻</option><!-- 7 -->
+                                                <option selected="@(Model.DataModel.Name == "荔枝椿象")">荔枝椿象</option><!-- 7 -->
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">調查起訖</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="date" class="form-control mr-2" name="StartDate" value="@Model.DataModel.StartDate.ToString("yyyy-MM-dd")" required title="此為必填欄位" />
+                                                <span>～</span>
+                                                <input type="date" class="form-control ml-2" name="EndDate" value="@Model.DataModel.EndDate.ToString("yyyy-MM-dd")" required title="此為必填欄位" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">調查頻率</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                @{
+                                                    bool _first = true;
+                                                    foreach (var item in Model.MonitoeFrequery.OrderBy(x => x.Sort))
+                                                    {
+                                                        <label class="mr-2"><input type="radio" class="form-control mr-2" name="Frequency" @((item.Code == Model.DataModel.Frequency || (_first && string.IsNullOrEmpty(Model.DataModel.Frequency))) ? "checked" : "") value="@item.Code"/>@item.Name</label>
+                                                        _first = false;
+                                                    }
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>顯示狀態</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" @(Model.DataModel.Show ? "checked" : "") name="Show" value="true" />上架</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" @(!Model.DataModel.Show ? "checked" : "") name="Show" value="false" />下架</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+
+                            <div style="display:flex">
+                                <div>
+                                    <button type="button" class="btn btn-danger m-2" onclick="CloneRows();"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">調查對象類型</th>
+                                            <th scope="col">行政區</th>
+                                            <th scope="col">調查點位數量</th>
+                                            <th scope="col">調查人員</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="AreaDataBody">
+                                        @foreach (var item in Model.DataModel.AreaData)
+                                        {
+                                            <tr class="contextRow">
+                                                <td>
+                                                    <input id="AreaID" type="hidden" value="@item.ID" />
+                                                    <select class="form-control" id="AreaSurveyType">
+                                                        @foreach (var items in Model.SurveyType)
+                                                        {
+                                                            <option value="@items.Code" selected="@(items.Code == item.Type)">@items.Name</option>
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select class="form-control" id="AreaDistrict">
+                                                        @foreach (var items in Model.Districts)
+                                                        {
+                                                            <option value="@items" selected="@(items == item.Distist)">@items</option>
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td><input id="AreaPoints" type="number" class="form-control" value="@item.Points" /></td>
+                                                <td><input id="AreaInspectors" type="text" class="form-control" value="@item.Inspectors" /></td>
+                                            </tr>
+                                        }
+                                        <tr id="cloneFlag" style="display:none;"></tr>
+                                        <tr style="display:none;" class="contextCloneRow">
+                                            <td>
+                                                <input id="AreaID" type="hidden"/>
+                                                <select class="form-control" id="AreaSurveyType">
+                                                    @foreach (var items in Model.SurveyType)
+                                                    {
+                                                        <option value="@items.Code">@items.Name</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select class="form-control" id="AreaDistrict">
+                                                    @foreach (var items in Model.Districts)
+                                                    {
+                                                        <option value="@items">@items</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td><input id="AreaPoints" type="number" class="form-control" value="0" /></td>
+                                            <td><input id="AreaInspectors" type="text" class="form-control" /></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="form-inline" style="justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                                <button type="button" class="btn btn-danger m-2" onclick="handleSubmit(event)">儲存</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--新增Modal -->
+<div class="modal fade" id="Add" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">新增</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table no-border">
+                    <tr>
+                        <th>
+                            <span class="important">調查對象</span>
+                        </th>
+                        <td>
+                            <select class="form-control">
+                                <option>請選擇</option>
+                                <option>農業局</option>
+                                <option>公所</option>
+                                <option>農會</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span class="important">地區</span>
+                        </th>
+                        <td>
+                            <select class="form-control">
+                                <option>請選擇</option>
+                                <option>大寮區</option>
+                                <option>大社區</option>
+                                <option>美濃區</option>
+                                <option>六龜區</option>
+                                <option>各行政區</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span class="important">調查點位</span>
+                        </th>
+                        <td>
+                            <input type="text" class="form-control" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <button type="button" class="btn btn-primary">確認</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--編輯Modal -->
+<div class="modal fade" id="Edit" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">編輯</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table no-border">
+                    <tr>
+                        <th>
+                            <span class="important">調查對象</span>
+                        </th>
+                        <td>
+                            <select class="form-control">
+                                <option>請選擇</option>
+                                <option>農業局</option>
+                                <option>公所</option>
+                                <option>農會</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span class="important">地區</span>
+                        </th>
+                        <td>
+                            <select class="form-control">
+                                <option>請選擇</option>
+                                <option>大寮區</option>
+                                <option>大社區</option>
+                                <option>美濃區</option>
+                                <option>六龜區</option>
+                                <option>各行政區</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span class="important">調查點位</span>
+                        </th>
+                        <td>
+                            <input type="text" class="form-control" value="8" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <button type="button" class="btn btn-primary">確認</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                var adCount = 0;
+                $('#AreaDataBody').find('.contextRow').each(function () {
+                    $(this).find('#AreaID').attr('name', 'AreaData[' + adCount + '].ID');
+                    $(this).find('#AreaSurveyType').attr('name', 'AreaData[' + adCount + '].Type');
+                    $(this).find('#AreaDistrict').attr('name', 'AreaData[' + adCount + '].Distist');
+                    $(this).find('#AreaPoints').attr('name', 'AreaData[' + adCount + '].Points');
+                    $(this).find('#AreaInspectors').attr('name', 'AreaData[' + adCount + '].Inspectors');
+                    adCount++;
+                });
+
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+
+        function CloneRows() {
+            $('.contextCloneRow').clone().insertBefore($('#cloneFlag')).removeClass('contextCloneRow').addClass('contextRow').show();
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>

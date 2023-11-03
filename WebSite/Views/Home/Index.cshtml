@@ -1,0 +1,542 @@
+﻿@model Website.ViewModel.Home.IndexViewModel
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var disabled = Model.Tags.Count == 0 ? true : false;
+}
+
+<style>
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .link-card > a, .link-card > a > img {
+        height: 100%;
+    }
+</style>
+
+@*麵包屑區塊*@
+@*@section breadcrumb {
+        <ol class="breadcrumb">
+            <li>首頁</li>
+            <li>公告列表</li>
+        </ol>
+    }*@
+@*主要的內容頁面*@
+<section class="system bg-img">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="system-btn">
+                    <div class="row">
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="btn-box color01">
+                                <a href="~/PreventionInfo/Detail">
+                                    <div class="img-box">
+                                        <img src="~/images/color1.png" class="img-fluid">
+                                    </div>
+                                    <p>疫情預警</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="btn-box color02">
+                                <a href="~/DiseasePrevention/PreventList">
+                                    <div class="img-box">
+                                        <img src="~/images/color2.png" class="img-fluid">
+                                    </div>
+                                    <p>病蟲害防治</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="btn-box color03">
+                                <a href="~/DiseasePrevention/PesticidesInfo">
+                                    <div class="img-box">
+                                        <img src="~/images/color3.png" class="img-fluid">
+                                    </div>
+                                    <p>農藥資訊</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="btn-box color04">
+                                <a href="~/PlantDoctor/Introduce">
+                                    <div class="img-box">
+                                        <img src="~/images/color4.png" class="img-fluid">
+                                    </div>
+                                    <p>植醫掛號</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="btn-box color05">
+                                <a href="~/Event/AllEvent">
+                                    <div class="img-box">
+                                        <img src="~/images/color5.png" class="img-fluid">
+                                    </div>
+                                    <p>活動資訊</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="btn-box color06">
+                                <a href="~/DiseasePrevention/Dashboard">
+                                    <div class="img-box">
+                                        <img src="~/images/color6.png" class="img-fluid">
+                                    </div>
+                                    <p>儀表板</p>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                @if (string.IsNullOrEmpty(Model.MemberInfo))
+                {
+                    <div class="login">
+                        <h3 class="title"><span class="line">馬上登入</span><span class="tips">Login</span></h3>
+                        @using (Html.BeginForm())
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="form-group">
+                                <span class="text-p">帳號</span>
+                                @Html.TextBox("Account", Model.RememberAcc, new { @class = "form-control form-p" })
+                            </div>
+                            <div class="form-group position-relative">
+                                <span class="text-p">密碼</span>
+                                @Html.Password("LoginPass", "", new { @class = "form-control form-p" })
+                                <div class="position-absolute" style="cursor: pointer; padding: 4px 10px; top: 0; right: 0;">
+                                    <i class="far fa-eye" id="font-awesome" onclick="showpwd('LoginPass')"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-6 col-md-7">
+                                        <span class="text-p">驗證碼</span>
+                                        @Html.TextBox("VerifyCode", "", new { @class = "form-control form-p", @autocomplete = "off" })
+                                    </div>
+                                    <div class="col-6 col-md-5">
+                                        <img id="verifyimage" src="/Home/GetValidateCodeImage" href="#" onclick="Refresh_ValidateCode()" title="刷新驗證碼" class="img-fluid">
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="hidLoginType" name="LoginType" value="0" />
+                            <input type="hidden" id="hidLoginId" name="LoginId" />
+                            <div class="form-group">
+                                <button type="button" class="btn btn-warning btn-block" onclick="DoSubmit()">登入</button>
+                            </div>
+                        }
+                        <div class="form-group no-hover" style="text-align:center;border-top:0px">
+                            <div class="row">
+                                <div class="col-4 col-md-4">
+                                    <button id="customBtn" class="btn btn-primary btn-block"><i class="fab fa-google mr-2"></i>登入</button>
+                                </div>
+                                <div class="col-4 col-md-4">
+                                    <button class="btn btn-primary btn-block" onclick="checkLoginState();"><i class="fab fa-facebook-square mr-2"></i>登入</button>
+                                </div>
+                                <div class="col-4 col-md-4">
+                                    <button class="btn btn-primary btn-block" onclick="LineAuth();"><i class="fab fa-line mr-2"></i>登入</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex" style="align-items: center;">
+                                <input id="remember" type="checkbox">
+                                <label class="form-check-label ml-2">記住我</label>
+                            </div>
+                            <ul class="login-list">
+                                <li><a href="~/Member/SignUp">註冊會員</a></li>
+                                <li><a href="~/Member/Forgot">忘記密碼？</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="login">
+                        <h3 class="title"><span class="line">已登入</span><span class="tips">Login</span></h3>
+                        <div class="form-group">
+                            <span class="text-p">歡迎</span>
+                            <div class="form-control form-p">@Model.MemberInfo</div>
+                        </div>
+                        <div>
+                            <a class="btn btn-warning btn-block" href="/Home/Logout">登出</a>
+                        </div>
+                    </div>
+                }
+                <div class="tag">
+                    <h3 class="title"><span class="line">熱門標籤</span><span class="tips">Hot tags</span></h3>
+                    <ul class="tag-list">
+                        @{
+                            foreach (var Tag in Model.Tags)
+                            {
+                                <li><a href="/Home/Search?KeyName=@Tag.KeyName" class="b">#@Tag.KeyName</a></li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="chart01">
+        <img src="~/images/act-1.png" class="img-fluid">
+    </div>
+</section>
+<section class="news bg-img02">
+    <div class="container">
+        <div class="news-box position-relative" style="padding-top: 44px;">
+            <h3 class="title d-flex justify-content-between border-0 align-items-end position-absolute" style="top: 0; width: 100%; z-index: 3;">
+                <div><span>最新消息</span><span class="tips">News</span></div>
+
+            </h3>
+            <div class="card" style="z-index: 3;">
+                <div class="card-body">
+                    <nav>
+                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                            @{
+                                var i = 0;
+                                foreach (var item in Model.NewsType.OrderBy(x => x.Sort))
+                                {
+                                    <a class="nav-link @(i == 0 ? "active":"")" id="nav-@(item.Code)-tab" data-toggle="tab" href="#nav-@(item.Code)" role="tab" aria-controls="nav-@(item.Code)" aria-selected="true">@item.Name</a>
+                                    i++;
+                                }
+                            }
+                            <a class="nav-link" id="nav-PestNotices-tab" data-toggle="tab" href="#nav-PestNotices" role="tab" aria-controls="nav-PestNotices" aria-selected="true">植物疫情</a>
+                            @*<a class="nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">系統公告</a>
+                                <a class="nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">病蟲害防治</a>*@
+                        </div>
+                    </nav>
+                    <div class="tab-content" id="nav-tabContent">
+                        @{
+                            i = 0;
+                            foreach (var item in Model.NewsType.OrderBy(x => x.Sort))
+                            {
+                                <div class="tab-pane fade @(i == 0 ? "show active":"")" id="nav-@(item.Code)" role="tabpanel" aria-labelledby="nav-@(item.Code)-tab" style="overflow-x:auto">
+                                    <table class="table rwd-table">
+                                        <tbody>
+                                            @{
+                                                foreach (var New in Model.News.Where(x => x.Code == item.Code).OrderByDescending(x => x.StartDate).Take(7))
+                                                {
+                                                    <tr>
+                                                        <th class="table-w-10" scope="row"><i class="fas fa-chevron-right"></i></th>
+                                                        <td class="table-w-20"><a href="/Home/News_Detail?ID=@New.ID">@IscomG2C.Utility.Utility_DateTime.ToFormat_inTaiwanYear(New.StartDate, "yyy/MM/dd")</a></td>
+                                                        <td class="table-w-20"><span class="tip-g"><a class="tip-g" href="/Home/News_Detail?ID=@New.ID">@item.Name</a></span></td>
+                                                        <td class="ellipsis"><a class="ellipsis" href="/Home/News_Detail?ID=@New.ID">@New.Title</a></td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                    <div class="text-right">
+                                        <a href="/Home/News" class="more-btn">查看更多<i class="fas fa-long-arrow-alt-right ml-2"></i></a>
+                                    </div>
+                                </div>
+                                i++;
+                            }
+                            <div class="tab-pane fade" id="nav-PestNotices" role="tabpanel" aria-labelledby="nav-PestNotices-tab" style="overflow-x:auto">
+                                <table class="table rwd-table">
+                                    <tbody>
+                                        @{
+                                            foreach (var notice in Model.PestNotices)
+                                            {
+                                                var _dateStr = notice.CreatedAt;
+                                                var _date = DateTime.Now;
+                                                if (DateTime.TryParse(notice.CreatedAt, out _date))
+                                                {
+                                                    _dateStr = $"{(_date.Year - 1911)}/{_date.ToString("MM/dd")}";
+                                                }
+                                                <tr>
+                                                    <th class="table-w-10" scope="row"><i class="fas fa-chevron-right"></i></th>
+                                                    <td class="table-w-20"><a href="/PreventionInfo/Detail">@_dateStr</a></td>
+                                                    <td class="table-w-20"><span class="tip-g"><a class="tip-g" href="/PreventionInfo/Detail">植物疫情</a></span></td>
+                                                    <td class="ellipsis"><a class="ellipsis" href="/PreventionInfo/Detail">@notice.Title</a></td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                                <div class="text-right">
+                                    <a href="/PreventionInfo/Detail" class="more-btn">查看更多<i class="fas fa-long-arrow-alt-right ml-2"></i></a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chart02" style="z-index: 2;">
+            <img src="~/images/act-2.png" class="img-fluid">
+        </div>
+
+    </div>
+</section>
+@*<section class="tree py-5">
+        <div class="container">
+            <h3 class="title d-flex justify-content-between align-items-end">
+                <div><span class="line">植物疫情</span><span class="tips">資料來源：動植物防疫檢疫局</span></div>
+                <a href="/PreventionInfo/Detail" class="more-btn">查看更多<i class="fas fa-long-arrow-alt-right ml-2"></i></a>
+            </h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <tbody>
+                        @foreach (var notice in Model.PestNotices)
+                        {
+                            var _dateStr = notice.CreatedAt;
+                            var _date = DateTime.Now;
+                            if (DateTime.TryParse(notice.CreatedAt, out _date))
+                            {
+                                _dateStr = $"{(_date.Year - 1911)}/{_date.ToString("MM/dd")}";
+                            }
+                            <tr>
+                                <th scope="row"><i class="fas fa-chevron-right"></i></th>
+                                <td>@_dateStr</td>
+                                <td>@notice.Title</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>*@
+<section class="link bg-img py-5">
+    <div class="container">
+        <h3 class="title d-flex justify-content-between align-items-end mb-3">
+            <div><span class="line">相關網站</span><span class="tips">Links</span></div>
+            <a href="/Home/Links" class="more-btn">查看更多<i class="fas fa-long-arrow-alt-right ml-2"></i></a>
+        </h3>
+        <div class="row">
+            @foreach (var link in Model.Links)
+            {
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="link-card">
+                        <a href="@link.Url" target="_blank"><img src="@link.ImagePath" class="img-fluid"></a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (Model.PopupNews != null)
+{
+    @* 彈窗公告 *@
+    <section>
+        @* 跳窗按鈕 *@
+        <button id="popupBtn" type="button" style="display:none" data-toggle="modal" data-target="#modal-media1">顯示跳窗</button>
+        <div class="modal fade show" id="modal-media1">
+            <div class="modal-dialog modal-static">
+                <div class="modal-content">
+                    @* 跳窗關閉列 *@
+                    <div class="modal-header">
+                        <h3>@Model.PopupNews.Title</h3>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            <span class="sr-only">Close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-t-2">
+                        <div class="">
+                            @* 跳窗內容 *@
+                            <div class="col-md-12 window-line">
+                                <div class="form-group">
+                                    @Html.Raw(Model.PopupNews.Context.Replace("<a href=", "<a target='_blank' href="))
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+}
+
+
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<meta name="google-signin-client_id" content="@(ICCModule.Helper.AppSettingHelper.GetAppSetting("GoogleLoginId"))">
+<script src="https://apis.google.com/js/api:client.js"></script>
+@*刷新驗證碼*@
+<script>
+
+    //重新整理驗證碼
+    function Refresh_ValidateCode() {
+        document.getElementById('verifyimage').src = '/Home/GetValidateCodeImage?' + Math.random();
+    }
+    //偵測Enter事件 提交
+    function submitenter(myfield, e) {
+        var keycode;
+        if (window.event) keycode = window.event.keyCode;
+        else if (e) keycode = e.which;
+        else return true;
+        if (keycode == 13) {
+            DoSubmit();
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    //提交
+    function DoSubmit() {
+        //如果有勾選"記住我"
+        if ($('#remember').is(":checked") == true) {
+            // 設定一個 MemberAcc cookie ，儲存一個月
+            var MemberAcc = $('#Account').val();
+            document.cookie = 'MemberAcc=' + MemberAcc + '; max-age=2592000; path=/';
+        }
+
+        document.forms[0].submit();
+    }
+
+    //秀密碼
+    function showpwd() {
+        var id = $('#LoginPass');
+        var btn = $('#font-awesome');
+        if (id[0].type == 'password') {
+            id[0].type = 'text';
+            btn.removeClass('far fa-eye');
+            btn.addClass('far fa-eye-slash');
+        }
+        else {
+            id[0].type = 'password';
+            btn.removeClass('far fa-eye-slash');
+            btn.addClass('far fa-eye');
+        }
+    }
+
+    $(document).ready(function () {
+        if (QueryString("loginType") == '3') {
+            $('#hidLoginId').val(QueryString("loginKey"));
+            $('#hidLoginType').val('3');
+            document.forms[0].submit();
+        }
+    });
+
+    function QueryString(name) {
+        var AllVars = window.location.search.substring(1);
+        var Vars = AllVars.split("&");
+        for (i = 0; i < Vars.length; i++) {
+            var Var = Vars[i].split("=");
+            if (Var[0] == name) return Var[1];
+        }
+        return "";
+    }
+
+    //google登入
+    var googleUser = {};
+    var startApp = function () {
+        gapi.load('auth2', function () {
+            // Retrieve the singleton for the GoogleAuth library and set up the client.
+            auth2 = gapi.auth2.init({
+                client_id: '@(ICCModule.Helper.AppSettingHelper.GetAppSetting("GoogleLoginId"))',
+                cookiepolicy: 'single_host_origin',
+                // Request scopes in addition to 'profile' and 'email'
+                //scope: 'additional_scope'
+            });
+            attachSignin(document.getElementById('customBtn'));
+        });
+    };
+
+    function attachSignin(element) {
+        console.log(element.id);
+        auth2.attachClickHandler(element, {},
+            function (googleUser) {
+                var profile = googleUser.getBasicProfile();
+                //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+                //console.log('Name: ' + profile.getName());
+                //console.log('Image URL: ' + profile.getImageUrl());
+                //console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+                $('#hidLoginId').val(profile.getId());
+                $('#hidLoginType').val("1");
+                document.forms[0].submit();
+            }, function (error) {
+                //alert(JSON.stringify(error, undefined, 2));
+            });
+    }
+
+    //FB登入
+    function statusChangeCallback(response) {
+        console.log('statusChangeCallback');
+        console.log(response);
+        if (response.status === 'connected') {
+            //location.href = "fbLogin.aspx?fbid=" + response.authResponse.userID;
+            console.log(response.authResponse.userID);
+            $('#hidLoginId').val(response.authResponse.userID);
+            $('#hidLoginType').val("2");
+            document.forms[0].submit();
+        }
+        else {
+            FB.login(function (response) {
+                if (response.status === 'connected') {
+                    //location.href = "fbLogin.aspx?fbid=" + response.authResponse.userID;
+                    console.log(response.authResponse.userID);
+                    $('#hidLoginId').val(response.authResponse.userID);
+                    $('#hidLoginType').val("2");
+                    document.forms[0].submit();
+                }
+            });
+        }
+    }
+
+    function checkLoginState() {
+        FB.getLoginStatus(function (response) {
+            statusChangeCallback(response);
+        });
+    }
+
+    window.fbAsyncInit = function () {
+        FB.init({
+            appId: '@(ICCModule.Helper.AppSettingHelper.GetAppSetting("FbAppId"))',
+            cookie: true,
+            xfbml: true,
+            version: 'v7.0'
+        });
+    };
+
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v3.2';
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    function LineAuth() {
+        var q = window.location.search;
+
+        var URL = 'https://access.line.me/oauth2/v2.1/authorize?';
+        URL += 'response_type=code';
+        URL += '&client_id=@(ICCModule.Helper.AppSettingHelper.GetAppSetting("ChannelId"))';
+        URL += '&redirect_uri=@(Request.Url.Scheme)://@(Request.Url.Authority)/LineRegist/LineCallBack';
+        URL += '&state=lfhin';
+        URL += '&scope=openid%20profile';
+        window.location.href = URL;
+    }
+</script>
+<script>startApp();</script>
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+
+@if (Model.PopupNews != null)
+{
+    <script>
+        if (QueryString("loginType") != '3') {
+            $('#popupBtn').click();
+        }
+    </script>
+}

@@ -1,0 +1,60 @@
+﻿@model InformationSystem.ViewModel.Management.PlantListViewModel
+@{
+    ViewBag.Title = "PlantData";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">作物類別資料-作物設定</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href='/PlantManager/PlantEdit?tid=' + @Model.TypeId"><i class="fas fa-plus-circle mr-2"></i>新增作物</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">作物名稱</th>
+                                        <th scope="col">類別排序</th>
+                                        <th scope="col">狀態</th>
+                                        <th scope="col">動作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.crops)
+                                    {
+                                        <tr>
+                                            <td>@item.Name</td>
+                                            <td>@item.Sort</td>
+                                            <td>@(item.Enable?"啟用":"停用")</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <button type="button" class="btn btn-danger m-2" onclick="location.href='/PlantManager/PlantEdit?id=' + @item.ID + '&tid=' + @Model.TypeId">編輯</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <td colspan="4">
+                                            <div style="display:flex;justify-content:center">
+                                                <a class="btn btn-primary m-2" href="/PlantManager/Category">回上一頁</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

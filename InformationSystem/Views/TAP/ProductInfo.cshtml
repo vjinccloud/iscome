@@ -1,0 +1,304 @@
+﻿@model InformationSystem.ViewModel.TAP.resumeProductEditModel
+@{
+    ViewBag.Title = "ProductInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">產銷履歷產品-@(Model.ID>0? "編輯":"新增")</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <form id="form" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <input type="hidden" name="ID" value="@Model.ID" />
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <span class="important">組織代碼：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <input type="text" class="form-control" name="OrganizationCode" value="@Model.OrganizationCode" required title="組織代碼為必填欄位" />
+                                        </td>
+                                        <th style="width:15%">
+                                            <span class="important">經營業者名稱：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <input type="text" class="form-control" name="VendorName" value="@Model.VendorName" required title="業者名稱為必填欄位" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">生產者名稱：</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <input type="text" class="form-control" name="ProducerName" value="@Model.ProducerName" required title="生產者名稱為必填欄位" />
+                                        </td>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">負責人：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input id="hidPrincipal" type="hidden" name="Principal" value="@Model.Principal" />
+                                                <input id="plShow" type="hidden" value="0" />
+                                                <input id="idPrincipal" type="text" onchange="EditPrincipal();" class="form-control mr-2" style="flex:80%" required title="負責人為必填欄位" />
+                                                <button type="button" class="btn btn-default" onclick="SetplShow();"><i class="far fa-eye"></i></button>
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <span class="important">聯絡人：</span>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input id="hidContactPerson" type="hidden" name="ContactPerson" value="@Model.ContactPerson" />
+                                                <input id="cpShow" type="hidden" value="0" />
+                                                <input id="idContactPerson" type="text" onchange="EditContactPerson();" class="form-control mr-2" style="flex:80%" required title="聯絡人為必填欄位" />
+                                                <button type="button" class="btn btn-default" onclick="SetcpShow();"><i class="far fa-eye"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>經營業者地址：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="Address" value="@Model.Address" />
+                                        </td>
+                                        <th>
+                                            <span>公開電話：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="Phone" value="@Model.Phone" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>驗證機構：</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <input type="text" class="form-control" name="VerificationAgency" value="@Model.VerificationAgency" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>驗證類別：</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <input type="text" class="form-control" name="VerificationTypes" value="@Model.VerificationTypes" maxlength="150" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>驗證品項：</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <input type="text" class="form-control" name="VerificationItems" value="@Model.VerificationItems" maxlength="150" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>驗證面積：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="VerificationArea" value="@Model.VerificationArea" onchange="validationNumbers($(this),6)" />
+                                        </td>
+                                        <th>
+                                            <span class="important">地段：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="Lot" value="@Model.Lot" required title="地段為必填欄位" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">地號：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="LandNum" value="@Model.LandNum" required title="地號為必填欄位" />
+                                        </td>
+                                        <th>
+                                            <span>驗證到期日：</span>
+                                        </th>
+                                        <td>
+                                            <input type="date" class="form-control" name="ExpirationDate" value="@(Model.ExpirationDate.HasValue ? Model.ExpirationDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <input id="hidActionName" type="hidden" name="ActionName" value="@Model.ActionName" />
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event,'')">儲存</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event,'Add')">檢查紀錄</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        $(document).ready(function () {
+            ShowContactPerson();
+            ShowPrincipal();
+        });
+        function SetcpShow() {
+            if ($("#cpShow").val() == "0") $("#cpShow").val("1");
+            else $("#cpShow").val("0");
+            ShowContactPerson();
+        }
+        function SetplShow() {
+            if ($("#plShow").val() == "0") $("#plShow").val("1");
+            else $("#plShow").val("0");
+            ShowPrincipal();
+        }
+        function validationNumbers(e, num) {
+            var regu = /^\d+(\.\d+)?$/;
+            var txtNum = e.val();
+            if (txtNum != "") {
+                if (!regu.test(e.val())) {
+                    alert("請輸入正確的數字");
+                    e.val('');
+                    e.focus();
+                } else {
+                    if (num == 0) {
+                        if (e.val().indexOf('.') > -1) {
+                            e.val(e.val().substring(0, e.val().length - 1));
+                            e.focus();
+                        }
+                    }
+                    if (e.val().indexOf('.') > -1) {
+                        if (e.val().split('.')[1].length > num) {
+                            e.val(e.val().substring(0, e.val().length - (e.val().split('.')[1].length - num)));
+                            e.focus();
+                        }
+                    }
+                }
+            }
+        }
+        function ShowContactPerson() {
+            var _name = $("#hidContactPerson").val();
+            if ($("#cpShow").val() == "0") {
+                var _nameValue = "";
+                for (let i = 0; i < _name.length; i++) {
+                    if (i == 0 || i == (_name.length - 1)) {
+                        _nameValue += _name[i];
+                    }
+                    else {
+                        _nameValue += "O";
+                    }
+                }
+                $("#idContactPerson").val(_nameValue);
+            }
+            else {
+                $("#idContactPerson").val(_name);
+            }
+        }
+        function EditContactPerson() {
+            var _name = $("#hidContactPerson").val();
+            var _nameValue = $("#idContactPerson").val();
+            if (_name.length < _nameValue.length) {
+                _name += _nameValue.substring(_name.length, (_nameValue.length));
+            }
+            if (_name.length > _nameValue.length) {
+                _name = _name.substring(0, (_nameValue.length))
+            }
+            $("#hidContactPerson").val(_name);
+            ShowContactPerson();
+        }
+        function EditPrincipal() {
+            var _name = $("#hidPrincipal").val();
+            var _nameValue = $("#idPrincipal").val();
+            if (_name.length < _nameValue.length) {
+                _name += _nameValue.substring(_name.length, (_nameValue.length));
+            }
+            if (_name.length > _nameValue.length) {
+                _name = _name.substring(0, (_nameValue.length))
+            }
+            $("#hidPrincipal").val(_name);
+            ShowPrincipal();
+        }
+        function ShowPrincipal() {
+            var _name = $("#hidPrincipal").val();
+            if ($("#plShow").val() == "0") {
+                var _nameValue = "";
+                for (let i = 0; i < _name.length; i++) {
+                    if (i == 0 || i == (_name.length - 1)) {
+                        _nameValue += _name[i];
+                    }
+                    else {
+                        _nameValue += "O";
+                    }
+                }
+                $("#idPrincipal").val(_nameValue);
+            }
+            else {
+                $("#idPrincipal").val(_name);
+            }
+        }
+        function handleSubmit(e, action) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                if (!$('#idContactPerson').val()) {
+                    alert('聯絡人為必填欄位');
+                    $('#idContactPerson').focus();
+                    return;
+                }
+                if (action) $('#hidActionName').val(action);
+
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>

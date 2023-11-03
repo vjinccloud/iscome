@@ -1,0 +1,118 @@
+﻿@*
+    作物類別與服務面積
+*@
+@model InformationSystem.ViewModel.ServiceAreaStatisticModel
+@{
+    Layout = null;
+}
+
+
+<div id="CropsAndServiceArea" class="table-responsive mt-4">
+    <table class="table mb-0 no-border" style="min-width:700px;">
+        <tbody>
+            <tr>
+                <th>作物類別與服務面積</th>
+            </tr>
+            <tr>
+                <td>
+                    <canvas id="CropsAndServiceAreaCvs"></canvas>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+
+    /**
+    * 作物類別與服務面積繪製模組
+    */
+    class CropsAndServiceArea {
+
+        static chart;
+
+        /**
+        * 繪製統計報表
+        */
+        static Draw() {
+            CropsAndServiceArea.ApiGetStatData().then(statData => {
+                CropsAndServiceArea.DrawChart(statData);
+            });
+        }
+
+        /**
+        * 將統計資料繪製成圖表
+        * @@param statData 統計資料
+        */
+        static DrawChart(statData) {
+            var ctx = $('#CropsAndServiceAreaCvs');
+
+            if (CropsAndServiceArea.chart) {
+                CropsAndServiceArea.chart.destroy();
+            }
+
+            CropsAndServiceArea.chart = new Chart(ctx, {
+                data: {
+                    datasets: [{
+                        type: 'bar',
+                        label: '總面積',
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        data: statData.map(data => data.TotalArea)
+                    }, {
+                        type: 'line',
+                        label: '診斷次數',
+                        borderColor: '#36a2eb',
+                        data: statData.map(data => data.TotalCount)
+                    }],
+                    labels: statData.map(data => data.CropName)
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 16
+                                }
+                            }
+                        }
+
+                    }
+                }
+            });
+
+
+        }
+
+        /**
+         * 取得統計資料
+         */
+        static ApiGetStatData() {
+
+            let url = `/StatisticApi/GetCropsAndServiceArea`;
+
+            let headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+
+            let body = {
+                startDate: document.querySelector("#MonthlyStartDate").value,
+                endDate: document.querySelector("#MonthlyEndDate").value
+            }
+
+            return fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(body)
+            }).then(response => response.json());
+
+        }
+
+    }
+
+
+</script>
+
+

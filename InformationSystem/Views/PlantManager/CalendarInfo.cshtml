@@ -1,0 +1,212 @@
+﻿@model InformationSystem.ViewModel.Management.CalendarEditModel
+@{
+    ViewBag.Title = "CalendarInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.0.1/classic/ckeditor.js"></script>
+}
+@section Style {
+    <style>
+        .ck.ck-editor__editable_inline {
+            min-height: 500px;
+        }
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">防治曆-編輯</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <form id="form" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="card-header py-3 bg-white ">
+
+                        <div class="card mb-3">
+                            <div class="table-responsive">
+                                <table class="table mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width:10%">
+                                                <span class="important">名稱</span>
+                                            </th>
+                                            <td style="width:40%">
+                                                <input type="hidden" name="ID" value="@Model.ID" />
+                                                <input type="text" class="form-control input-validation-error" value="@Model.Name" name="Name" required title="名稱為必填欄位" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>類型</span>
+                                            </th>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <label class="mr-2"><input type="radio" class="form-control mr-2" @((Model.Type == "作物" || string.IsNullOrEmpty(Model.Type)) ? "checked" : "") name="Type" value="作物" />作物</label>
+                                                    <label class="mr-2"><input type="radio" class="form-control mr-2" @(Model.Type == "害物" ? "checked" : "") name="Type" value="害物" />害物</label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>狀態</span>
+                                            </th>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <label class="mr-2"><input type="radio" class="form-control mr-2" @(Model.Enable ? "checked" : "") name="Enable" value="true" />啟用</label>
+                                                    <label class="mr-2"><input type="radio" class="form-control mr-2" @(!Model.Enable ? "checked" : "") name="Enable" value="false" />停用</label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+
+                        <ul class="nav nav-pills mb-3 nav nav-pills nav-justified" id="pills-tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link active" id="pills-info-tab" data-toggle="pill" href="#pills-info" role="tab" aria-controls="pills-info" aria-selected="true">基本資料</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="pills-description-tab" data-toggle="pill" href="#pills-description" role="tab" aria-controls="pills-description" aria-selected="false">防治說明</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="pills-calendar-tab" data-toggle="pill" href="#pills-calendar" role="tab" aria-controls="pills-calendar" aria-selected="false">防治曆</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent">
+                            <div class="tab-pane fade show active" id="pills-info" role="tabpanel" aria-labelledby="pills-info-tab">
+                                <div class="card-body">
+                                    <textarea class="form-control" rows="6" name="Information" id="editorInformation"></textarea>
+                                    <div>
+                                        <button type="button" class="btn btn-primary mt-2" onclick="handleSubmit(event,'','')">儲存</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-description" role="tabpanel" aria-labelledby="pills-description-tab">
+                                <div class="card-body">
+                                    <textarea class="form-control" rows="6" name="Explanation" id="editorExplanation"></textarea>
+                                    <div>
+                                        <button type="button" class="btn btn-primary mt-2" onclick="handleSubmit(event,'','')">儲存</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <input id="hidActionName" type="hidden" name="ActionName" value="@Model.ActionName" />
+                            <input id="hidControlHistoryCropId" type="hidden" name="ControlHistoryCropId" value="@Model.ControlHistoryCropId" />
+                            <div class="tab-pane fade" id="pills-calendar" role="tabpanel" aria-labelledby="pills-calendar-tab">
+                                <div class="card-body">
+                                    <div style="display:flex;justify-content:flex-end">
+                                        @*<button type="button" class="btn btn-primary" onclick="location.href='/PlantManager/CalendarAdd'">新增</button>*@
+                                        <button type="button" class="btn btn-primary" onclick="handleSubmit(event,'Add','')">新增</button>
+                                    </div>
+                                    <div class="table-responsive mt-2">
+                                        <table class="table mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>項次</th>
+                                                    <th>防治曆名稱</th>
+                                                    <th>排序值</th>
+                                                    <th>前台顯示</th>
+                                                    <th>動作</th>
+                                                </tr>
+                                                @{
+                                                    int i = 1;
+                                                    foreach (var item in Model.ControlHistoryCrops)
+                                                    {
+                                                        <tr>
+                                                            <td>@i</td>
+                                                            <td>@item.Name</td>
+                                                            <td>@item.Sort</td>
+                                                            <td>@(item.Show ? "是" : "否")</td>
+                                                            <td>
+                                                                @*<button type="button" class="btn btn-danger" onclick="location.href='/PlantManager/CalendarAdd?cid='+@Model.ID + '&id=' +@item.ID">編輯</button>*@
+                                                                <button type="button" class="btn btn-danger" onclick="handleSubmit(event,'Update','@item.ID')">編輯</button>
+                                                            </td>
+                                                        </tr>
+                                                        i++;
+                                                    }
+                                                }
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script src="~/js/ckeditor-upload-adapter.js"></script>
+    <script>
+        function MyCustomUploadAdapterPlugin(editor) {
+            editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                // Configure the URL to the upload script in your back-end here!
+                return new MyUploadAdapter(loader, '/File/UploadImage?catalog=calendar');
+            };
+        }
+
+        ClassicEditor
+            .create(document.querySelector('#editorInformation'), {
+                extraPlugins: [MyCustomUploadAdapterPlugin],
+            })
+            .then(editor => {
+                window.editor = editor;
+                window.editor.setData('@(new HtmlString(Model.Information ?? ""))');
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        ClassicEditor
+            .create(document.querySelector('#editorExplanation'), {
+                extraPlugins: [MyCustomUploadAdapterPlugin],
+            })
+            .then(editor => {
+                window.editor = editor;
+                window.editor.setData('@(new HtmlString(Model.Explanation ?? ""))');
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        function handleSubmit(e,action,id) {
+            e.preventDefault();
+
+            var validate = $("form").valid();
+            if (validate) {
+                if (action) $('#hidActionName').val(action);
+                if (id) $('#hidControlHistoryCropId').val(id);
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}
+

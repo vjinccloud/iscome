@@ -1,0 +1,78 @@
+﻿
+@{
+    ViewBag.Title = "Achievement";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table > tbody > tr td {
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">活動報名管理-辦理成果</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive" style="overflow-x:auto">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">項次</th>
+                                        <th scope="col">場次名稱</th>
+                                        <th scope="col">日期</th>
+                                        <th scope="col">時間</th>
+                                        <th scope="col">名額上限</th>
+                                        <th scope="col">實際出席人數</th>
+                                        <th scope="col">簽到表</th>
+                                        <th scope="col">照片</th>
+                                        <th scope="col">動作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                        foreach (var openTimeModel in Model)
+                                        {
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@openTimeModel.Name</td>
+                                                <td>@openTimeModel.ChineseDateStr</td>
+                                                <td>@openTimeModel.TimeBetween</td>
+                                                <td>@(openTimeModel.Nums == 0 ? "無限制" : openTimeModel.Nums)</td>
+                                                <td>@openTimeModel.Attendance</td>
+                                                <td>@(String.IsNullOrEmpty(openTimeModel.SignInResult) ? "無" : "有")</td>
+                                                <td>@(String.IsNullOrEmpty(openTimeModel.Pictures) ? "無" : "有")</td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <button type="button" class="btn btn-success" onclick="location.href = '/Event/AchievementEdit?ID=@openTimeModel.ID'">編輯成果</button>
+                                                        @using (Html.BeginForm("OutputSignExcel", "Event", FormMethod.Post))
+                                                        {
+                                                            <input type="hidden" name="Id" value="@(openTimeModel.ID)" />
+                                                            <button id="outputExcel" type="submit" class="btn btn-export m-2">匯出簽到表</button>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="display:flex;justify-content:center">
+                            <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

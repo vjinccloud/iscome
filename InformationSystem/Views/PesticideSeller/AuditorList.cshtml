@@ -1,0 +1,89 @@
+﻿@model InformationSystem.ViewModel.PesticideAuditModel
+@{
+    ViewBag.Title = "AuditorList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">農藥販售業者資料-檢查紀錄列表</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <table class="table mb-0 no-border">
+                                <tr>
+                                    <th>
+                                        <span>執照號碼</span>
+                                    </th>
+                                    <td>
+                                        <span>@Model.LicenseNum</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span>業者名稱</span>
+                                    </th>
+                                    <td>@Model.VendorName</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="display:flex">
+                            <div style="margin-left:auto">
+                                <button type="button" class="btn btn-primary m-2" onclick="location.href = '/PesticideSeller/AuditorList_Add?ln=@Model.LicenseNum'"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">項次</th>
+                                        <th scope="col">檢查日期</th>
+                                        <th scope="col">檢查結果說明</th>
+                                        <th scope="col">檢查結果</th>
+                                        <th scope="col">功能</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model.PesticideAudits)
+                                        {
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@item.Date.ToString("yyyy/MM/dd")</td>
+                                                <td>@item.Instructions</td>
+                                                <td>@(item.Result ?"合格":"不合格")</td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <button type="button" class="btn btn-danger m-2" onclick="location.href='/PesticideSeller/AuditorList_Add?ln=@Model.LicenseNum&Id=@item.ID'">編輯</button>
+                                                        @using (Html.BeginForm("AuditorDelete", "PesticideSeller", FormMethod.Post, new { onclick = "return confirm('確定刪除?');" }))
+                                                        {
+                                                            @Html.Hidden("Id", item.ID)
+                                                            @Html.Hidden("ln", Model.LicenseNum)
+                                                            <button type="submit" class="btn btn-secondary m-2">刪除</button>
+                                                            @*<button type="button" class="btn btn-secondary m-2">刪除</button>*@
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="form-inline" style="justify-content:center">
+                            <button type="button" class="btn btn-primary m-2" onclick="location.href='/PesticideSeller/Sellerlist'">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

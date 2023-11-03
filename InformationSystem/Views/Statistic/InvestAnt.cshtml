@@ -1,0 +1,153 @@
+﻿@model InformationSystem.ViewModel.InvestAntStatisticShowModel
+@{
+    ViewBag.Title = "InvestAnt";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">監測數據統計-琉璃蟻</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="form" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>查詢區間：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <input type="date" class="form-control" name="StartDate" value="@(Model.StartDate.HasValue? Model.StartDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                                <span>～</span>
+                                                <input type="date" class="form-control" name="EndDate" value="@(Model.EndDate.HasValue? Model.EndDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                                <input type="hidden" name="ActionName" id="act" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>地區</label>
+                                        </th>
+                                        <td class="checkboxBody">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input id="checkAll" type="checkbox" class="form-control mr-2" onchange="CheckboxAll();" />全選</label>
+                                            </div>
+                                            <div class="form-inline">
+                                                @foreach (var item in Model.DistictAll)
+                                                {
+                                                    <label class="mr-2"><input type="checkbox" class="form-control mr-2 chbFilter" onchange="CheckboxSingle();" @(Model.Distict.Any(x => x == item) ? "checked" : "") value="@item" name="Distict[]" />@item</label>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="submit" class="btn btn-primary m-2" onclick="handleSubmit(event,'')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                            <button type="submit" class="btn btn-export m-2" onclick="handleSubmit(event,'export')">匯出</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>地區</th>
+                                        <th>1月(琉璃蟻/其他)</th>
+                                        <th>2月</th>
+                                        <th>3月</th>
+                                        <th>4月</th>
+                                        <th>5月</th>
+                                        <th>6月</th>
+                                        <th>7月</th>
+                                        <th>8月</th>
+                                        <th>9月</th>
+                                        <th>10月</th>
+                                        <th>11月</th>
+                                        <th>12月</th>
+                                    </tr>
+                                    @foreach (var item in Model.Data)
+                                    {
+                                        <tr>
+                                            <td>@item.Title</td>
+                                            <td>@(item.Jan)/@(item.JanOther)</td>
+                                            <td>@(item.Feb)/@(item.FebOther)</td>
+                                            <td>@(item.Mar)/@(item.MarOther)</td>
+                                            <td>@(item.Apr)/@(item.AprOther)</td>
+                                            <td>@(item.May)/@(item.MayOther)</td>
+                                            <td>@(item.Jun)/@(item.JunOther)</td>
+                                            <td>@(item.Jul)/@(item.JulOther)</td>
+                                            <td>@(item.Aug)/@(item.AugOther)</td>
+                                            <td>@(item.Sep)/@(item.SepOther)</td>
+                                            <td>@(item.Oct)/@(item.OctOther)</td>
+                                            <td>@(item.Nov)/@(item.NovOther)</td>
+                                            <td>@(item.Dec)/@(item.DecOther)</td>
+                                        </tr>
+                                    }
+                                    @*<tr>
+                                        <th>總計</th>
+                                        <th>@Model.Data.Sum(x => x.Jan + x.JanOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Feb + x.FebOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Mar + x.MarOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Apr + x.AprOther)</th>
+                                        <th>@Model.Data.Sum(x => x.May + x.MayOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Jun + x.JunOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Jul + x.JulOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Aug + x.AugOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Sep + x.SepOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Oct + x.OctOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Nov + x.NovOther)</th>
+                                        <th>@Model.Data.Sum(x => x.Dec + x.DecOther)</th>
+                                    </tr>*@
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        $(document).ready(function () {
+            CheckboxSingle();
+        });
+        function CheckboxAll() {
+            if ($('#checkAll').prop("checked")) {
+                $('.checkboxBody').find('.chbFilter').each(function () {
+                    $(this).prop("checked", true);
+                });
+            }
+            else {
+                $('.checkboxBody').find('.chbFilter').each(function () {
+                    $(this).prop("checked", false);
+                });
+            }
+        }
+        function CheckboxSingle() {
+            var allCheck = true;
+            $('.checkboxBody').find('.chbFilter').each(function () {
+                if ($(this).prop("checked") == false) allCheck = false;
+            });
+            $('#checkAll').prop("checked", allCheck);
+        }
+        function handleSubmit(e, act) {
+            e.preventDefault();
+
+            $('#act').val(act);
+
+            console.log($('form').serializeArray())
+            document.getElementById('form').submit();
+        }
+    </script>
+}
+
+

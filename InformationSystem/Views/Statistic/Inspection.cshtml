@@ -1,0 +1,142 @@
+﻿@model InformationSystem.ViewModel.InspectionStatisticShowModel
+@{
+    ViewBag.Title = "Inspection";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">檢測次數統計</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="form" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>採樣日期：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <input type="date" class="form-control" name="StartDate" value="@(Model.QueryReq.StartDate.HasValue ? Model.QueryReq.StartDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                                <span>～</span>
+                                                <input type="date" class="form-control" name="EndDate" value="@(Model.QueryReq.EndDate.HasValue ? Model.QueryReq.EndDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>計畫別：</label>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline checkboxBody">
+                                                <label class="mr-2"><input id="checkAll" type="checkbox" class="form-control mr-2" onchange="CheckboxAll();" />全部</label>
+                                                @foreach (var item in Model.PlanTypeCode.OrderBy(x => x.Sort))
+                                                {
+                                                    <label class="mr-2"><input type="checkbox" class="form-control mr-2 chbFilter" onchange="CheckboxSingle();" @(Model.QueryReq.PlanType.Any(x => x == item.Code) ? "checked" : "") value="@item.Code" name="PlanType[]" />@item.Name</label>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" style="text-align:right">
+                                            <input type="hidden" name="act" id="act" />
+                                            <button type="submit" class="btn btn-primary m-2" onclick="handleSubmit(event,'')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                            <button type="submit" class="btn btn-export m-2" onclick="handleSubmit(event,'export')">匯出</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>採樣來源</th>
+                                        <th>檢驗件數</th>
+                                        <th>合格件數</th>
+                                        <th>未檢出件數</th>
+                                        <th>不合格件數</th>
+                                        <th>超量核准</th>
+                                        <th>未核准</th>
+                                        <th>同時超量未核准</th>
+                                        <th>禁用</th>
+                                    </tr>
+                                    @foreach (var item in Model.Data)
+                                    {
+                                        <tr>
+                                            <td>@item.KeyName</td>
+                                            <td>@item.TotalCount</td>
+                                            <td>@item.PassCount</td>
+                                            <td>@item.NoCheckCount</td>
+                                            <td>@item.UnPassCount</td>
+                                            <td>@item.OverApproved</td>
+                                            <td>@item.UnApproved</td>
+                                            <td>@item.SameOverUnApproved</td>
+                                            <td>@item.DisableCount</td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <th>合計</th>
+                                        <th>@Model.Data.Sum(x => x.TotalCount)</th>
+                                        <th>@Model.Data.Sum(x => x.PassCount)</th>
+                                        <th>@Model.Data.Sum(x => x.NoCheckCount)</th>
+                                        <th>@Model.Data.Sum(x => x.UnPassCount)</th>
+                                        <th>@Model.Data.Sum(x => x.OverApproved)</th>
+                                        <th>@Model.Data.Sum(x => x.UnApproved)</th>
+                                        <th>@Model.Data.Sum(x => x.SameOverUnApproved)</th>
+                                        <th>@Model.Data.Sum(x => x.DisableCount)</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        $(document).ready(function () {
+            CheckboxSingle();
+        });
+        function CheckboxAll() {
+            if ($('#checkAll').prop("checked")) {
+                $('.checkboxBody').find('.chbFilter').each(function () {
+                    $(this).prop("checked", true);
+                });
+            }
+            else {
+                $('.checkboxBody').find('.chbFilter').each(function () {
+                    $(this).prop("checked", false);
+                });
+            }
+        }
+        function CheckboxSingle() {
+            var allCheck = true;
+            $('.checkboxBody').find('.chbFilter').each(function () {
+                if ($(this).prop("checked") == false) allCheck = false;
+            });
+            $('#checkAll').prop("checked", allCheck);
+        }
+        function handleSubmit(e, act) {
+            e.preventDefault();
+
+                $('#act').val(act);
+
+            var validate = $("form").valid();
+            if (validate) {
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+    </script>
+}
+
+

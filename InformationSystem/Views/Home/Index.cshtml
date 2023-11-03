@@ -1,0 +1,670 @@
+﻿@using Newtonsoft.Json;
+@using System.Linq;
+@model InformationSystem.ViewModel.Home.IndexViewModel
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    @*<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>*@
+}
+
+<style>
+    .schedule-card {
+        cursor: pointer;
+        font-family: 'Arial Negreta', 'Arial Normal', 'Arial';
+        font-weight: 700;
+        font-size: 28px;
+        width: 28rem;
+    }
+
+    .schedule-title, .schedule-status {
+        text-align: center;
+    }
+
+    .schedule_Appointment {
+        background-color: rgba(22, 155, 213, 1);
+        color: white;
+    }
+
+    .schedule_Processing {
+        background-color: grey;
+        color: black;
+    }
+
+    .schedule_ToBeTracked {
+        background-color: lightgoldenrodyellow;
+        color: black;
+    }
+
+    .schedule_Overtime {
+        background-color: hotpink;
+        color: white;
+    }
+
+    .schedule_ {
+        background-color: azure;
+        color: red;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+</style>
+
+<div class="container-fluid" id="HomeIndex">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">首頁</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <form id="form" method="POST">
+                    @Html.AntiForgeryToken()
+                    <div class="card-header py-3 bg-white ">
+                        <ul class="nav nav-pills mb-3 nav nav-pills nav-justified" id="pills-tab" role="tablist">
+                            @if (Model.RoleCode == "R05" || Model.RoleCode == "R08")
+                            {
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link @((Model.TabName != "2" && Model.TabName != "3") ? "active" : "")" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">今日植醫掛號</a>
+                                </li>
+                            }
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link form-inline @((Model.TabName == "2" || (Model.TabName == null && Model.RoleCode != "R05" && Model.RoleCode != "R08")) ? "active" : "")" id="pills-sysnews-tab" data-toggle="pill" href="#pills-sysnews" role="tab" aria-controls="pills-sysnews" aria-selected="false" @(Model.sysNewsList.Any(x => x.StartDate > Model.ReadDate) ? "onclick=SetRead()" : "")>
+                                    系統公告@{if (Model.sysNewsList.Any(x => x.StartDate > Model.ReadDate))
+                                        { <span style='color:red'>●</span>} }
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link @((Model.TabName =="3") ? "active":"")" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">常用表單下載</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent">
+                            @if (Model.RoleCode == "R05" || Model.RoleCode == "R08")
+                            {
+                                <div class="tab-pane fade @((Model.TabName!= "2" &&Model.TabName !="3" && (Model.RoleCode == "R05" || Model.RoleCode == "R08")) ? "active show":"")" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                                    <div class="card-body">
+                                        <div class="form-inline">
+                                            <div class="form-inline col-3">
+                                                <label>行政區：</label>
+                                                <select id="filterDistrict" name="District" class="form-control" @@change="changeDistrict">
+                                                    <option value="">全部</option>
+                                                    @foreach (var item in Model.Districts)
+                                                    {
+                                                        <option value="@item.Zip" @(item.Zip == Model.District ? "selected=selected" : "")>
+                                                            @item.Name
+                                                        </option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="form-inline col-3">
+                                                <label>看診植醫：</label>
+                                                <select id="filterDoctorId" name="DoctorId" class="form-control">
+                                                    @{
+                                                        var roleCode = SessionHelper.Get("UserRoleCode");
+                                                        if (roleCode != "R08")
+                                                        {
+                                                            <option value="">全部</option>
+                                                        }
+                                                    }
+                                                    <option v-for="(s, i) in AllDoctors" v-bind:key="s.LoginID" v-bind:value="s.LoginID">
+                                                        {{ s.UserName }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div class="form-inline col-3">
+                                                <label>預約看診日期：</label>
+                                                @{
+                                                    string rDate = "";
+                                                    if (Model.ReserveDatetime.HasValue) { rDate = Model.ReserveDatetime.Value.ToString("yyyy-MM-dd"); }
+                                                }
+                                                <input name="ReserveDatetime" type="date" class="form-control" value="@rDate" />
+                                            </div>
+                                            <div class="form-inline col-3">
+                                                <button type="button" class="btn btn-primary m-2" onclick="SetPage('','')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <table class="table">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>
+                                                            <span id="Claire_Text">目前看診號碼：{{ ShowEndDiagnosis ? choiceIndex + "號，" : "-" }}</span>
+                                                            <button type="button" id="Fin-Btn"
+                                                                    class="btn btn-secondary"
+                                                                    v-show="ShowEndDiagnosis"
+                                                                    v-on:click="ChangeRecordStatus(choiceId)">
+                                                                結束看診
+                                                            </button>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tr>
+                                                    <td>
+                                                        <div class="card mx-2 schedule-card" v-bind:class="'schedule_' + schedule.Status" v-for="(schedule, s) in doctorSchedules" v-bind:key="schedule.ID" v-on:click="clickScheduleCard(s + 1, schedule)">
+                                                            <div class="schedule-title">{{ schedule.title }}</div>
+                                                            <div class="schedule-status">{{ getLevel(schedule.Status) }}</div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div style="display:flex; justify-content:flex-end">
+                                            <button type="button" class="btn btn-warning m-2"
+                                                    onclick="window.open('/PlantDoctor/BackAdd')">
+                                                <i class="fas fa-plus-circle mr-2"></i>新增掛號
+                                            </button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table mb-0 table-striped" style="min-width:700px;">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th scope="col">案號</th>
+                                                        <th scope="col">預約看診日期</th>
+                                                        <th scope="col">行政區</th>
+                                                        <th scope="col">植物醫師</th>
+                                                        <th scope="col">姓名</th>
+                                                        <th scope="col">行動電話</th>
+                                                        <th scope="col">作物名稱</th>
+                                                        <th scope="col">來源</th>
+                                                        <th scope="col">狀態</th>
+                                                        <th scope="col">功能</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="(record, r) in doctorScheduleList" v-bind:key="'record_' + r">
+                                                        <td>{{ record.CaseNo }}</td>
+                                                        <td>{{ getDate(record.ReserveDatetimeStr, 'YYYY-MM-DD') }}</td>
+                                                        <td>{{ record.District }}</td>
+                                                        <td>{{ getDoctorName(record.LoginID) }}</td>
+                                                        <td>
+                                                            <div class="form-inline">
+                                                                <span>{{ getMemberInfoName(record.Name, record.hideName) }}</span>
+                                                                <button type="button" class="btn btn-default"
+                                                                        v-on:click="changeHideName(r)">
+                                                                    <i class="far fa-eye" v-show="record.hideName"></i>
+                                                                    <i class="fas fa-eye-slash" v-show="!record.hideName"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                        <td>{{ record.Mobile }}</td>
+                                                        <td>{{ record.CropName }}</td>
+                                                        <td>{{ record.OriginName }}</td>
+                                                        <td>{{ getStatus(record.Status) }}</td>
+                                                        <td><button type="button" class="btn btn-danger" v-on:click="openRecord(record)">診斷</button></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="tab-pane fade @((Model.TabName== "2") ? "active show":"")" id="pills-sysnews" role="tabpanel" aria-labelledby="pills-sysnews-tab">
+                                <!-- Card Header - Dropdown -->
+                                <div class="table-responsive card">
+                                    <input type="hidden" id="hidTabName" name="TabName" />
+                                    <input type="hidden" value="@Model.sysNewsPage" name="sysNewsPage" id="setNewsPage" />
+                                    <input type="hidden" value="@Model.FormPage" name="FormPage" id="setFormPage" />
+                                    <table class="table mb-0 no-border">
+                                        <tr>
+                                            <th style="width:10%">
+                                                <label>查詢日期：</label>
+                                            </th>
+                                            <td style="width:45%">
+                                                <div class="form-inline">
+                                                    @{
+                                                        string sDate = "", eDate = "";
+                                                        if (Model.StartDate.HasValue) { sDate = Model.StartDate.Value.ToString("yyyy-MM-dd"); }
+                                                        if (Model.EndDate.HasValue) { eDate = Model.EndDate.Value.ToString("yyyy-MM-dd"); }
+                                                    }
+                                                    <select name="QueryDateType" class="form-control mr-2">
+                                                        <option value="">請選擇</option>
+                                                        <option value="Created" @(Model.QueryDateType == "Created" ? "selected" : "")>建立日期</option>
+                                                        <option value="Start" @(Model.QueryDateType == "Start" ? "selected" : "")>公告日期</option>
+                                                    </select>
+                                                    <input type="date" name="StartDate" class="form-control" style="width: 150px;" value="@sDate" />
+                                                    <span style="margin:auto">～</span>
+                                                    <input type="date" name="EndDate" class="form-control" style="width: 150px;" value="@eDate" />
+                                                </div>
+                                            </td>
+                                            <th style="width:10%">
+                                            </th>
+                                            <td style="width:35%">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <label>關鍵字：</label>
+                                            </th>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <input type="text" name="KeyWord" class="form-control" value="@Model.KeyWord" />
+                                                </div>
+                                            </td>
+                                            <th>
+                                            </th>
+                                            <td>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" style="text-align:right">
+                                                <button type="submit" class="btn btn-primary m-2" onclick="SetPage('2','1')"><i class="fas fa-search mr-2"></i>查詢</button>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table mb-0 table-striped" style="min-width:700px;">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th scope="col" style="width:30%;">主旨</th>
+                                                    <th scope="col" style="width:30%;">公告日期</th>
+                                                    <th scope="col" style="width:30%;">修改日期</th>
+                                                    <th scope="col" class="text-center" style="width: auto;">操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    var totalPage = (Model.sysNewsList.Count() / 20) + 1;
+                                                    var sysNewsList = Model.sysNewsList.OrderByDescending(x => x.IsTop ? 1 : 0).ThenByDescending(x => x.IsTop ? (x.ModifyDate ?? x.CreateDate) : x.StartDate).Skip((Model.sysNewsPage - 1) * 20).Take(20);
+                                                    foreach (var item in sysNewsList)
+                                                    {
+                                                        <tr>
+                                                            <td>@item.Title</td>
+                                                            <td>@(item.StartDate.ToString("yyyy/MM/dd"))</td>
+                                                            <td>@((item.ModifyDate?? item.CreateDate).ToString("yyyy/MM/dd"))</td>
+                                                            <td class="text-center">
+                                                                <a class="btn btn-info" onclick="CheckNews('@item.Id')">查看</a>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a @(Model.sysNewsPage > 1 ? "" : "style=pointer-events:none;") onclick="SetPage('2','@(Model.sysNewsPage-1)')" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                                        <nav aria-label="...">
+                                            <ul class="pagination">
+                                                @{
+                                                    int sPage = 1, endPage = totalPage;
+                                                    if (totalPage > 5)
+                                                    {
+                                                        if (totalPage < (Model.sysNewsPage + 2))
+                                                        {
+                                                            sPage = totalPage - 4;
+                                                        }
+                                                        else if ((Model.sysNewsPage - 2) <= 0)
+                                                        {
+                                                            endPage = 5;
+                                                        }
+                                                        else
+                                                        {
+                                                            sPage = Model.sysNewsPage - 2;
+                                                            endPage = Model.sysNewsPage + 2;
+                                                        }
+                                                    }
+
+                                                    for (int p = sPage; p <= endPage; p++)
+                                                    {
+
+                                                        if (p == Model.sysNewsPage)
+                                                        {
+                                                            <li class="page-item active" aria-current="page">
+                                                                <span class="page-link">@p<span class="sr-only"></span></span>
+                                                            </li>
+                                                        }
+                                                        else
+                                                        {
+                                                            <li class="page-item"><a class="page-link" onclick="SetPage('2','@(p)')">@p</a></li>
+                                                        }
+                                                    }
+                                                }
+                                            </ul>
+                                        </nav>
+                                        <a @(Model.sysNewsPage < totalPage ? "" : "style=pointer-events:none;") onclick="SetPage('2','@(Model.sysNewsPage+1)')" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade @((Model.TabName== "3") ? "active show":"")" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+                                <!-- Card Header - Dropdown -->
+                                @*<div class="card-header py-2 d-flex flex-row align-items-center justify-content-between bg-white">
+                <h6 class="my-2 font-weight-bold">常用表單下載</h6>
+            </div>*@
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table mb-0 table-striped" style="min-width:700px;">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th scope="col" style="width: 80px;">項次</th>
+                                                    <th scope="col" style="width: 200px;">更新日期</th>
+                                                    <th scope="col" class="text-center" style="width: auto;">檔案名稱</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    var totalFormPage = (Model.Forms.Count() / 20) + 1;
+                                                    int i = 0;
+                                                    foreach (var FormModel in Model.Forms.Skip((Model.FormPage - 1) * 20).Take(20))
+                                                    {
+                                                        i++;
+                                                        <tr>
+                                                            <td>@i</td>
+                                                            <td>@(FormModel.UpdatedAt == null ? FormModel.CreatedAtStr : FormModel.UpdatedAtStr)</td>
+                                                            <td class="text-center">
+                                                                <a style="text-decoration: underline;" href="@FormModel.FilePath" download>@FormModel.FileName</a>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a @(Model.FormPage > 1 ? "" : "style=pointer-events:none;") onclick="SetPage('3','@(Model.FormPage-1)')" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                                        <nav aria-label="...">
+                                            <ul class="pagination">
+                                                @{
+                                                    int sFormPage = 1, endFormPage = totalFormPage;
+                                                    if (totalFormPage > 5)
+                                                    {
+                                                        if (totalFormPage < (Model.FormPage + 2))
+                                                        {
+                                                            sFormPage = totalFormPage - 4;
+                                                        }
+                                                        else if ((Model.FormPage - 2) <= 0)
+                                                        {
+                                                            endFormPage = 5;
+                                                        }
+                                                        else
+                                                        {
+                                                            sFormPage = Model.FormPage - 2;
+                                                            endFormPage = Model.FormPage + 2;
+                                                        }
+                                                    }
+
+                                                    for (int p = sFormPage; p <= endFormPage; p++)
+                                                    {
+
+                                                        if (p == Model.FormPage)
+                                                        {
+                                                            <li class="page-item active" aria-current="page">
+                                                                <span class="page-link">@p<span class="sr-only"></span></span>
+                                                            </li>
+                                                        }
+                                                        else
+                                                        {
+                                                            <li class="page-item"><a class="page-link" onclick="SetPage('3','@(p)')">@p</a></li>
+                                                        }
+                                                    }
+                                                }
+                                            </ul>
+                                        </nav>
+                                        <a @(Model.FormPage < totalFormPage ? "" : "style=pointer-events:none;") onclick="SetPage('3','@(Model.FormPage+1)')" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="modal fade" id="SysNews" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">公告</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table no-border">
+                    <tr>
+                        <th>主旨</th>
+                        <td id="sysNewsTitle"></td>
+                    </tr>
+                    <tr>
+                        <th>公告日期</th>
+                        <td id="sysNewsDate"></td>
+                    </tr>
+                    <tr>
+                        <th>公告內容</th>
+                        <td id="sysNewsContent"></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const HomeIndex = new Vue({
+                el: "#HomeIndex",
+                data: {
+                    token: $('input[name="__RequestVerificationToken"]').val(),
+                    // List
+                    Districts: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
+                    StatusList: @(new HtmlString(JsonConvert.SerializeObject(Model.StatusList))),
+                    doctorSchedules: @(new HtmlString(JsonConvert.SerializeObject(Model.doctorSchedules))),
+                    AllDoctors: @(new HtmlString(JsonConvert.SerializeObject(Model.AllDoctors))),
+                    doctorScheduleList: [],
+                    //
+                    ShowEndDiagnosis: false,
+                    currentPage: 1,
+                    pageCount: 30,
+                    choiceIndex: "",
+                    choiceSchedule: null,
+                    choiceId: 0,
+                },
+                watch: {
+                    doctorSchedules: {
+                        handler: function (data, old) {
+                            if (!data) {
+                                return [];
+                            }
+                            this.doctorScheduleList = this.doctorSchedules.map(d => {
+                                if (d.hideName == undefined) {
+                                    d.hideName = true;
+                                }
+                                d.title = d.ReserveTime + "-" + (d.CropName || "") + "-" + d.District;
+                                return d;
+                            });
+                        },
+                        immediate: true,
+                        deep: true
+                    }
+                },
+                computed: {
+                    CropTypeList() {
+                        if (!this.CropTypes) {
+                            return [];
+                        }
+                        return this.CropTypes.map(c => {
+                            return {
+                                ID: c.ID,
+                                Name: c.Name
+                            };
+                        });
+                    },
+                },
+                methods: {
+                    async changeDistrict(val) {
+                        const params = {
+                            __RequestVerificationToken: this.token,
+                            Zip: $('#filterDistrict').val(),
+                            filterAll: true
+                        }
+                        const data = await $.ajax({ url: '/PlantDoctor/GetDistrictDoctor', data: params, type: 'GET', cache: false, dataType: 'json' });
+                        this.AllDoctors = data;
+                    },
+                    getMemberInfoName(name, hide) {
+                        if (hide) {
+                            let nameArr = name.split('');
+                            if (nameArr.length > 1) {
+                                nameArr.splice(1, 1, '○')
+                                return nameArr.join('');
+                            }
+                        }
+                        return name;
+                    },
+                    getStatus(status) {
+                        let s = this.StatusList.find(s => s.Code == status);
+                        return s ? s.Name : '';
+                    },
+                    getDoctorName(doctorId) {
+                        let _doctor = this.AllDoctors.find(s => s.LoginID == doctorId);
+                        return _doctor ? _doctor.UserName : '';
+                    },
+                    getLevel(status) {
+                        switch (status) {
+                            case 'Appointment':
+                                return '看診';
+                            case 'Processing':
+                                return '看診中';
+                            case 'ToBeTracked':
+                            case 'Close':
+                                return '完成看診';
+                            case 'Overtime':
+                                return '超時未看診';
+                            default:
+                                return '';
+                        }
+                    },
+                    changeHideName(index) {
+                        let record = this.doctorSchedules[index];
+                        record.hideName = !record.hideName;
+                        this.doctorSchedules.splice(index, 1, record);
+                    },
+                    getDate(datetime, format) {
+                        return moment(datetime).format(format);
+                    },
+                    clickScheduleCard(index, schedule) {
+                        this.choiceIndex = index;
+                        this.choiceSchedule = schedule;
+                        this.choiceId = schedule.ID;
+                        if (schedule.Status == 'Appointment') {
+                            this.confirmStartDiagnosis(schedule.ID);
+                        } else if (schedule.Status == "Processing") {
+                            this.ShowEndDiagnosis = true;
+                        }
+                    },
+                    // 確認看診
+                    confirmStartDiagnosis(ID) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: '變更狀態為診斷處理中?',
+                            confirmButtonText: "確認",
+                            showCancelButton: true,
+                            cancelButtonText: "取消"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.changeStatus("Processing", ID);
+                                this.ShowEndDiagnosis = true;
+                            }
+                        })
+                    },
+                    // 結束看診
+                    ChangeRecordStatus(ID) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: '變更狀態為後續待追蹤?',
+                            confirmButtonText: "確認",
+                            showCancelButton: true,
+                            cancelButtonText: "取消"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.changeStatus("ToBeTracked", ID);
+                                this.ShowEndDiagnosis = false;
+                            }
+                        })
+                    },
+                    changeStatus(status, ID) {
+                        const self = this;
+                        $.ajax({
+                            url: '/PlantDoctor/ChangeTicketStatus',
+                            data:{
+                                __RequestVerificationToken: this.token,
+                                ID: ID,
+                                Status: status
+                            },
+                            type: 'POST',
+                            cache: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                Swal.fire({
+                                    icon: data.result ? "info" : "error",
+                                    title: data.result ? "更新成功" : "更新失敗"
+                                })
+                                // 變更狀態
+                                let r = self.doctorSchedules.findIndex(d => d.ID == ID);
+                                console.log('changeStatus', r, data)
+                                if (data.result && r > -1) {
+                                    let record = self.doctorSchedules[r];
+                                    record.Status = status;
+                                    self.doctorSchedules.splice(r, 1, record);
+                                }
+                            }
+                        });
+                    },
+                    openRecord(record) {
+                        window.open('/PlantDoctor/TicketInfo?ID=' + record.ID);
+                    }
+                },
+            });
+        });
+        function SetPage(sType, page) {
+            $('#hidTabName').val(sType);
+            if (sType == '2')$('#setNewsPage').val(page);
+            if (sType == '3') $('#setFormPage').val(page);
+
+            $('#form').submit();
+        }
+        function SetRead() {
+            $.ajax({
+                url: "/Home/SetSysNewsRead",
+                method: "Post",
+                dataType: "json",
+                success: function (result) {
+
+                }
+            })
+        }
+        function CheckNews(id) {
+            $.ajax({
+                url: "/Home/SysNewsDetail",
+                data: {
+                    Id: id
+                },
+                method: "Get",
+                dataType: "json",
+                success: function (result) {
+                    if (result.Title) {
+                        $('#sysNewsTitle').text(result.Title);
+                        $('#sysNewsDate').text(result.NewsDate);
+                        $('#sysNewsContent').html(result.Contents);
+                        $('#SysNews').modal('toggle');
+                    }
+                },
+                error: function (xhr) {
+                    alert(xhr);
+                }
+            })
+        }
+    </script>
+}

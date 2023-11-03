@@ -1,0 +1,689 @@
+﻿@using Newtonsoft.Json;
+@model InformationSystem.ViewModel.PlantDoctor.RecordListViewModel
+@{
+    ViewBag.Title = "TicketList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+<div class="container-fluid" id="TicketList">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">植醫掛號</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <div class="table-responsive card">
+                            <form id="form" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" id="hidActionName" name="ActionName" />
+                                <input type="hidden" value="1" name="Page" id="setPage" />
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:10%">
+                                            <label>查詢日期：</label>
+                                        </th>
+                                        <td style="width:45%">
+                                            <div class="form-inline">
+                                                <select name="QueryDateType" class="form-control mr-2" v-model="QueryDateType">
+                                                    <option value="CreatedAt">建立日期</option>
+                                                    <option value="ReserveDatetime">預約看診日期</option>
+                                                    <option value="DateDiagnosis">實際診斷日期</option>
+                                                </select>
+                                                <input type="date" name="StartDate" class="form-control" style="width: 150px;" v-model="StartDate" />
+                                                <span style="margin:auto">～</span>
+                                                <input type="date" name="EndDate" class="form-control" style="width: 150px;" v-model="EndDate" />
+                                            </div>
+                                        </td>
+                                        <th style="width:10%">
+                                            <label>狀態：</label>
+                                        </th>
+                                        <td style="width:35%">
+                                            <select name="Status" class="form-control" style="width: 150px;" v-model="Status">
+                                                <option value="">請選擇</option>
+                                                <option v-for="(s, i) in StatusList" v-bind:key="s.Code" v-bind:value="s.Code">
+                                                    {{ s.Name }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>行政區：</label>
+                                        </th>
+                                        <td>
+                                            <select name="District" class="form-control" style="width: 150px;" v-model="District" @@change="changeDistrict">
+                                                <option value="">全部</option>
+                                                <option v-for="(s, i) in Districts" v-bind:key="s.Zip" v-bind:value="s.Zip">
+                                                    {{ s.Name }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                        <th>
+                                            <label>植物醫師：</label>
+                                        </th>
+                                        <td>
+                                            <select name="DoctorId" class="form-control" style="width: 150px;" v-model="DoctorId">
+                                                <option value="">請選擇</option>
+                                                <option v-for="(s, i) in AllDoctors" v-bind:key="s.LoginID" v-bind:value="s.LoginID">
+                                                    {{ s.UserName }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>作物類別：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <select name="CropType" class="form-control mr-2" style="width: 150px;" v-model="CropType">
+                                                    <option value="" selected>請選擇</option>
+                                                    <option v-for="(s, i) in CropTypeList" v-bind:key="'Crop_' + s.ID" v-bind:value="s.Name">
+                                                        {{ s.Name }}
+                                                    </option>
+                                                    <option value="Other">其他</option>
+                                                </select>
+                                                <input type="text" name="Crop" class="form-control" style="flex:auto" v-show="CropType == 'Other'" />
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <label>作物名稱：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <select name="CropType" class="form-control mr-2" style="width: 150px;" v-model="CropType">
+                                                    <option value="" selected>請選擇</option>
+                                                    <option v-for="(s, i) in CropTypeList" v-bind:key="'Crop_' + s.ID" v-bind:value="s.Name">
+                                                    </option>
+                                                    <option value="Other">其他</option>
+                                                </select>
+                                                <input type="text" name="Crop" class="form-control" style="flex:auto" v-show="CropType == 'Other'" />
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <label>害物種類：</label>
+                                        </th>
+                                        <td>
+                                            <select name="PestType" class="form-control" style="width: 150px;" v-model="PestType">
+                                                <option value="" selected>請選擇</option>
+                                                <option v-for="(s, i) in PestTypeList" v-bind:key="s.Code" v-bind:value="s.Code">
+                                                    {{ s.Name }}
+                                                </option>
+                                                <option value="Other">其他</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>關鍵字：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="text" name="KeyWord" class="form-control" v-model="KeyWord" />
+                                            </div>
+                                        </td>
+                                        <th>
+                                            <label>來源：</label>
+                                        </th>
+                                        <td>
+                                            <select name="Origin" class="form-control" style="width: 150px;" v-model="Origin">
+                                                <option value="">全部</option>
+                                                <option v-for="(s, i) in OriginList" v-bind:key="s.Code" v-bind:value="s.Code">
+                                                    {{ s.Name }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>後送診斷：</label>
+                                        </th>
+                                        <td>
+                                            <select name="TransferDiagnosis" class="form-control" style="width: 150px;" v-model="TransferDiagnosis">
+                                                <option value="">全部</option>
+                                                <option v-for="(s, i) in TransferList" v-bind:key="s.Code" v-bind:value="s.Code">
+                                                    {{ s.Name }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                        <th>
+                                            <label>案號：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="text" name="CaseNo" class="form-control" v-model="CaseNo" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>農友姓名：</label>
+                                        </th>
+                                        <td>
+                                            <div class="form-inline">
+                                                <input type="text" name="KeyWord" class="form-control" v-model="KeyWord" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            <button type="submit" class="btn btn-primary m-2" v-on:click="querySubmit($event)"><i class="fas fa-search mr-2"></i>查詢</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                        <div style="display:none">
+                            @using (Html.BeginForm("ExportWord", "PlantDoctor", FormMethod.Post, new { id = "exportForm" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input name="id" id="wordId" />
+                            }
+                        </div>
+                        <form id="delForm" method="post">
+                            @Html.AntiForgeryToken()
+                            <div style="display:flex">
+                                <button type="button" class="btn btn-primary m-2" v-on:click="exportSubmit()"><i class="fas fa-download mr-2"></i>匯出彙總表</button>
+                                @*<button type="button" class="btn btn-primary m-2"><i class="fas fa-download mr-2"></i>匯出Word</button>*@
+                                <div style="margin-left:auto">
+                                    <button type="button" class="btn btn-primary m-2" onclick="window.open('/PlantDoctor/BackAdd')"><i class="fas fa-plus-circle mr-2"></i>新增</button>
+                                    <button type="button" class="btn btn-secondary m-2" v-on:click="handleSubmit($event, 'delete')"><i class="fas fa-minus-circle mr-2"></i>刪除</button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col" style="width: 50px;"></th>
+                                            <th scope="col">案號</th>
+                                            <th scope="col">建立日期</th>
+                                            <th scope="col">預約看診日期</th>
+                                            <th scope="col">行政區</th>
+                                            <th scope="col">植物醫師</th>
+                                            <th scope="col">姓名</th>
+                                            <th scope="col">作物種類</th>
+                                            <th scope="col">作物名稱</th>
+                                            <th scope="col">來源</th>
+                                            <th scope="col">狀態</th>
+                                            <th scope="col">實際診斷日期</th>
+                                            <th scope="col">功能</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(record, r) in doctorScheduleList" v-bind:key="'record_' + r">
+                                            <td>
+                                                <input type="checkbox" name="DeleteIDs[]" v-bind:value="record.ID" />
+                                            </td>
+                                            <td>{{ record.CaseNo }}</td>
+                                            <td>{{ record.CreatedAtStr }}</td>
+                                            <td>{{ getDate(record.ReserveDatetimeStr, 'YYYY-MM-DD') }}</td>
+                                            <td>{{ record.District }}</td>
+                                            <td>{{ getDoctorName(record.LoginID) }}</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <span>{{ getMemberInfoName(record.Name, record.hideName) }}</span>
+                                                    <button type="button" class="btn btn-default"
+                                                            v-on:click="changeHideName(r)"
+                                                            v-show="record.Name.length > 1">
+                                                        <i class="far fa-eye" v-show="record.hideName"></i>
+                                                        <i class="fas fa-eye-slash" v-show="!record.hideName"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td>{{ record.CropType }}</td>
+                                            <td>{{ record.CropName }}</td>
+                                            <td>{{ getOrigin(record.Origin) }}</td>
+                                            <td>{{ getStatus(record.Status) }}</td>
+                                            <td>{{ getDate(record.DateDiagnosisStr, 'YYYY-MM-DD') }}</td>
+                                            <td>
+                                                <div class="form-inline">
+                                                    <button type="button" class="btn btn-danger m-2" v-on:click="openRecord(record)">診斷</button>
+                                                    <button type="button" class="btn btn-primary m-2" v-on:click="exportRecord(record)"><i class="fas fa-download mr-2"></i>匯出Word</button>
+                                                    @if (Model.RoleCode != "R08")
+                                                    {
+                                                        <button type="button" class="btn btn-warning m-2" v-on:click="transDoc(record)">轉案</button>
+                                                    }
+                                                    <button type="button" class="btn btn-info m-2" v-on:click="openCopyRecord(record)">複製</button>
+                                                    <button type="button" class="btn btn-success m-2" v-on:click="openRevisitRecord(record)">回診</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                        <div class="d-flex justify-content-between align-items-center mt-5">
+                            <a @(Model.Page > 1 ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.Page-1)')" class="style-color"><i class="fas fa-arrow-left mr-2"></i>上一頁</a>
+                            &nbsp
+                            <nav aria-label="...">
+                                <ul class="pagination">
+                                    @{
+                                        int sPage = 1, endPage = Model.TotalPage;
+                                        if (Model.TotalPage > 5)
+                                        {
+                                            if (Model.TotalPage < (Model.Page + 2))
+                                            {
+                                                sPage = Model.TotalPage - 4;
+                                            }
+                                            else if ((Model.Page - 2) <= 0)
+                                            {
+                                                endPage = 5;
+                                            }
+                                            else
+                                            {
+                                                sPage = Model.Page - 2;
+                                                endPage = Model.Page + 2;
+                                            }
+                                        }
+
+                                        for (int p = sPage; p <= endPage; p++)
+                                        {
+
+                                            if (p == Model.Page)
+                                            {
+                                                <li class="page-item active" aria-current="page">
+                                                    <span class="page-link">@p<span class="sr-only"></span></span>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="page-item"><a class="page-link" onclick="SetPage('@(p)')">@p</a></li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </nav>
+                            &nbsp
+                            <a @(Model.Page < Model.TotalPage ? "" : "style=pointer-events:none;") onclick="SetPage('@(Model.Page+1)')" class="style-color">下一頁<i class="fas fa-arrow-right ml-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<form id="formTrans" method="post">
+    <!--編輯刪除Modal -->
+    <div class="modal fade" id="Edit" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">跨行政區轉案</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table no-border">
+                        <tr>
+                            <th>
+                                <label class="important">行政區：</label>
+                            </th>
+                            <td>
+                                <select name="District" class="form-control" style="width:200px" v-model="District" @@change="changeDistrictTrans">
+                                    <option value="">全部</option>
+                                    <option v-for="(s, i) in DistrictTrans" v-bind:key="s.Zip" v-bind:value="s.Zip">
+                                        {{ s.Name }}
+                                    </option>
+                                </select>
+                            </td>
+                            <th>
+                                <label class="important">植物醫師：</label>
+                            </th>
+                            <td>
+                                <select name="DoctorId" class="form-control" style="width: 200px" v-model="DoctorId">
+                                    <option value="">請選擇</option>
+                                    <option v-for="(s, i) in DoctorsList" v-bind:key="s.LoginID" v-bind:value="s.LoginID">
+                                        {{ s.UserName }}
+                                    </option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <label class="important">轉案原因：</label>
+                            </th>
+                            <td colspan="3">
+                                <input type="text" name="TransReason" class="form-control" v-model="TransReason" maxlength="50" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <label>轉案備註：</label>
+                            </th>
+                            <td colspan="3">
+                                <textarea name="TransRemark" class="form-control" v-model="TransRemark" rows="5"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer" style="justify-content:center">
+                    <button type="button" class="btn btn-primary" v-on:click="SendTrans">送出</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" v-on:click="Reset">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const TicketList = new Vue({
+                el: "#TicketList",
+                data: {
+                    token: $('input[name="__RequestVerificationToken"]').val(),
+                    QueryDateType: @(new HtmlString(JsonConvert.SerializeObject(Model.QueryDateType))),
+                    StartDate: @(new HtmlString(JsonConvert.SerializeObject(Model.StartDateStr))),
+                    EndDate: @(new HtmlString(JsonConvert.SerializeObject(Model.EndDateStr))),
+                    District: @(new HtmlString(JsonConvert.SerializeObject(Model.District??""))),
+                    CropType: @(new HtmlString(JsonConvert.SerializeObject(Model.CropType ?? ""))),
+                    Crop: @(new HtmlString(JsonConvert.SerializeObject(Model.Crop))),
+                    Status: @(new HtmlString(JsonConvert.SerializeObject(Model.Status ?? ""))),
+                    Origin: @(new HtmlString(JsonConvert.SerializeObject(Model.Origin ?? ""))),
+                    TransferDiagnosis: @(new HtmlString(JsonConvert.SerializeObject(Model.TransferDiagnosis ?? ""))),
+                    CaseNo: @(new HtmlString(JsonConvert.SerializeObject(Model.CaseNo ?? ""))),
+                    PestType: @(new HtmlString(JsonConvert.SerializeObject(Model.PestType ?? ""))),
+                    KeyWord: @(new HtmlString(JsonConvert.SerializeObject(Model.KeyWord ?? ""))),
+                    DoctorId: @(new HtmlString(JsonConvert.SerializeObject(Model.DoctorId ?? ""))),
+                    ActionName: "",
+                    // List
+                    Districts: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
+                    CropTypes: @(new HtmlString(JsonConvert.SerializeObject(Model.CropTypes))),
+                    StatusList: @(new HtmlString(JsonConvert.SerializeObject(Model.StatusList))),
+                    OriginList: @(new HtmlString(JsonConvert.SerializeObject(Model.OriginList))),
+                    TransferList: @(new HtmlString(JsonConvert.SerializeObject(Model.TransferList))),
+                    PestTypeList: @(new HtmlString(JsonConvert.SerializeObject(Model.PestTypeList))),
+                    doctorSchedules: @(new HtmlString(JsonConvert.SerializeObject(Model.doctorSchedules))),
+                    AllDoctors: @(new HtmlString(JsonConvert.SerializeObject(Model.AllDoctors))),
+                    currentPage: 1,
+                    pageCount: 30,
+                    choiceIndex: "",
+                    choiceSchedule: null,
+                },
+                computed: {
+                    doctorScheduleList() {
+                        if (!this.doctorSchedules) {
+                            return [];
+                        }
+                        return this.doctorSchedules.map(d => {
+                            if (d.hideName == undefined) {
+                                d.hideName = true;
+                            }
+                            return d;
+                        });
+                    },
+                    CropTypeList() {
+                        if (!this.CropTypes) {
+                            return [];
+                        }
+                        return this.CropTypes.map(c => {
+                            return {
+                                ID: c.ID,
+                                Name: c.Name
+                            };
+                        });
+                    },
+                },
+                methods: {
+                    async changeDistrict(val) {
+                        if (val) {
+                            const params = {
+                                __RequestVerificationToken: this.token,
+                                Zip: this.District
+                            }
+                            const data = await $.ajax({ url: '/PlantDoctor/GetDistrictDoctor', data: params, type: 'GET', cache: false, dataType: 'json' });
+                            this.AllDoctors = data;
+                        } else {
+                            this.AllDoctors =@(new HtmlString(JsonConvert.SerializeObject(Model.RoleCode == "R08" ? Model.AllDoctors : new List<ICCModule.ViewModel.sysUserSelect>())));
+                        }
+                    },
+                    getMemberInfoName(name, hide) {
+                        if (hide) {
+                            let nameArr = name.split('');
+                            if (nameArr.length > 1) {
+                                nameArr.splice(1, 1, '○')
+                                return nameArr.join('');
+                            }
+                        }
+                        return name;
+                    },
+                    getDoctorName(doctorId) {
+                        let _doctor = this.AllDoctors.find(s => s.LoginID == doctorId);
+                        return _doctor ? _doctor.UserName : '';
+                    },
+                    getDistrict(district) {
+                        let d = this.Districts.find(d => d.Zip == district);
+                        return d ? d.Name : '';
+                    },
+                    getOrigin(origin) {
+                        let o = this.OriginList.find(o => o.Code.toString().toLowerCase() == origin.toString().toLowerCase());
+                        return o ? o.Name : '';
+                    },
+                    getStatus(status) {
+                        let s = this.StatusList.find(s => s.Code == status);
+                        return s ? s.Name : '';
+                    },
+                    changeHideName(index) {
+                        let record = this.doctorSchedules[index];
+                        record.hideName = !record.hideName;
+                        this.doctorSchedules.splice(index, 1, record);
+                    },
+                    getDate(datetime, format) {
+                        if (!datetime) {
+                            return '--';
+                        }
+                        return moment(datetime).format(format);
+                    },
+                    openRecord(record) {
+                        window.open('/PlantDoctor/TicketInfo?ID=' + record.ID);
+                    },
+                    openCopyRecord(record) {
+                        window.open('/PlantDoctor/BackAdd?cID=' + record.ID);
+                    },
+                    openRevisitRecord(record) {
+                        window.open('/PlantDoctor/BackAdd?cID=' + record.ID + '&revisit=true');
+                    },
+                    transDoc(record) {
+                        EditModal.SetDetail(record);
+                        $('#Edit').modal('show');
+                    },
+                    exportRecord(record) {
+                        //$('#wordId').val(record.ID);
+                        //document.getElementById('exportForm').submit();
+                        $.ajax({
+                            type: "POST",
+                            url: "ExportWord",
+                            dataType: "json",
+                            data:
+                            {
+                                id: record.ID
+                            },
+                            success: function (data, status, xhr) {
+                                if (data.result) {
+                                    window.open('/' + data.Msg);
+                                }
+                                else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: '匯出失敗' + data.Msg
+                                    });
+                                }
+                            },
+                            error: function (xhr, status, errorThrown) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: '匯出失敗' + xhr.statusText
+                                });
+                            }
+                        });
+                    },
+                    handleSubmit(e, action) {
+                        e.preventDefault();
+                        let formData = $('#delForm').serializeArray();
+                        console.log(action, formData)
+                        if (action == 'delete') {
+                            if (formData.findIndex(d => d.name === 'DeleteIDs[]') < 0) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: '請先選擇預刪除項次'
+                                });
+                                return;
+                            }
+                            document.getElementById('delForm').submit();
+                        }
+                    },
+                    querySubmit(e) {
+                        e.preventDefault();
+                        $('#hidActionName').val('');
+                        document.getElementById('form').submit();
+                    },
+                    exportSubmit() {
+                        $('#hidActionName').val('export');
+                        document.getElementById('form').submit();
+                    }
+                },
+            });
+
+
+            const EditModal = new Vue({
+                el: '#Edit',
+                data: {
+                    token: $('input[name="__RequestVerificationToken"]').val(),
+
+                    DistrictTrans: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
+                    DoctorsList: @(new HtmlString(JsonConvert.SerializeObject(Model.AllDoctors.Where(x => x.RoleID == "R05")))),
+                    OriginDocId: '',
+                    ScheduleId: '',
+                    DoctorId: '',
+                    District: '',
+                    TransReason: '',
+                    TransRemark: '',
+                },
+                methods: {
+                    async changeDistrictTrans(val) {
+                        if (val) {
+                            const params = {
+                                __RequestVerificationToken: this.token,
+                                Zip: this.District
+                            }
+                            const data = await $.ajax({ url: '/PlantDoctor/GetDistrictDoctor', data: params, type: 'GET', cache: false, dataType: 'json' });
+                            this.DoctorsList = data.filter(item => {
+                                return item.LoginID != this.OriginDocId;
+                            });
+                        } else {
+                            const params = {
+                                __RequestVerificationToken: this.token,
+                                Zip: this.District,
+                                filterAll: true
+                            }
+                            const data = await $.ajax({ url: '/PlantDoctor/GetDistrictDoctor', data: params, type: 'GET', cache: false, dataType: 'json' });
+                            this.DoctorsList = this.DoctorsList.filter(item => {
+                                return item.LoginID != this.OriginDocId;
+                            });
+                        }
+                    },
+                    SetDetail(ScheduleData) {
+                        this.ScheduleId = ScheduleData.ID;
+                        this.OriginDocId = ScheduleData.LoginID;
+                        this.DoctorsList = this.DoctorsList.filter(item => {
+                            return item.LoginID != this.OriginDocId;
+                        });
+                    },
+                    Reset() {
+                        this.ScheduleId = '';
+                        this.OriginDocId = '';
+                        this.DoctorId = '';
+                        this.District = '';
+                        this.TransReason = '';
+                        this.TransRemark = '';
+                    },
+                    SendTrans() {
+                        if (!this.ScheduleId) {
+                            return Swal.fire({
+                                icon: 'error',
+                                title: '異常錯誤，請重新整理頁面'
+                            }).then(res => {
+                                if (res.isConfirmed) {
+                                    location.reload();
+                                }
+                            });
+                        }
+                        if (!this.District) {
+                            return Swal.fire({
+                                icon: 'error',
+                                title: '行政區域未選擇'
+                            });
+                        }
+                        if (!this.DoctorId) {
+                            return Swal.fire({
+                                icon: 'error',
+                                title: '植物醫師未選擇'
+                            });
+                        }
+                        if (!this.TransReason) {
+                            return Swal.fire({
+                                icon: 'error',
+                                title: '轉案原因未填寫'
+                            });
+                        }
+                        if (confirm("是否確認進行轉案？")) {
+                            const self = this;
+                            $.ajax({
+                                url: '/PlantDoctor/ScheduleTrans',
+                                data: {
+                                    __RequestVerificationToken: this.token,
+                                    ScheduleId: self.ScheduleId,
+                                    DoctorId: self.DoctorId,
+                                    District: self.District,
+                                    TransReason: self.TransReason,
+                                    TransRemark: self.TransRemark
+                                },
+                                type: 'POST',
+                                cache: false,
+                                dataType: 'json',
+                                success: function (data) {
+                                    Swal.fire({
+                                        icon: data.result ? "info" : "error",
+                                        title: data.result ? "轉案成功" : "轉案失敗"
+                                    }).then(res => {
+                                        if (res.isConfirmed && data.result) {
+                                            location.reload();
+                                        }
+                                    })
+                                },
+                                error: function (jqXHR, exception) {
+                                    if (jqXHR.status == 401) {
+                                        location.assign('/');
+                                    }
+                                }
+                            });
+                        }
+                    },
+                },
+                mounted() {
+                    this.Reset();
+                }
+            });
+        });
+        function SetPage(page) {
+            $('#setPage').val(page);
+            $('#form').submit();
+        }
+    </script>
+}

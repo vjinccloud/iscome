@@ -1,0 +1,112 @@
+﻿@model InformationSystem.ViewModel.ProjectListShowModel
+@{
+    ViewBag.Title = "ProjectList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">疫病蟲害監測管理-@(Model.Year > 1911 ? Model.Year - 1911 : Model.Year)年度</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <div class="card-body">
+                        <form id="form" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" id="hidAction" name="ActionName" />
+                            <input type="hidden" id="hidYear" name="Years" value="@(Model.Year)" />
+                            <input type="hidden" id="hidMpId" name="MpId" />
+                            <div style="display:flex">
+                                @if (Model.ShowBtn)
+                                {
+                                    <div>
+                                        <button type="button" class="btn btn-danger m-2" onclick="location.href='/DiseaseMonitor/ProjectInfo'"><i class="fas fa-plus-circle mr-2"></i>新增專案</button>
+                                    </div>
+                                }
+                                <div>
+                                    <button type="button" class="btn btn-export m-2" onclick="handleSubmit(event,'exportYear','')"><i class="fas fa-plus-circle mr-2"></i>匯出年度彙整表</button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table mb-0 table-striped" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">專案監測名稱</th>
+                                            <th scope="col">行政區</th>
+                                            <th scope="col">調查起訖</th>
+                                            <th scope="col">頻率</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.DataModel)
+                                        {
+                                            <tr>
+                                                <td>@item.Name</td>
+                                                <td>@item.District</td>
+                                                <td>@(item.StartDate.ToString("MM/dd"))~@(item.EndDate.ToString("MM/dd"))</td>
+                                                <td>@item.Frequency</td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        @if (item.ShowDel)
+                                                        {
+                                                            <button type="button" class="btn btn-secondary m-2" onclick="handleSubmit(event,'del','@(item.ID)')">刪除</button>
+                                                        }
+                                                        <button type="button" class="btn btn-export m-2" onclick="handleSubmit(event,'exportId','@(item.ID)')">匯出</button>
+                                                        @*<button type="button" class="btn btn-secondary m-2">分布地圖</button>*@
+                                                        @if (Model.ShowBtn)
+                                                        {
+                                                            <button type="button" class="btn btn-primary m-2" onclick="location.href = '/DiseaseMonitor/ProjectInfo?id=@item.ID'">編輯專案</button>
+                                                        }
+                                                        <button type="button" class="btn btn-danger m-2" onclick="location.href='/DiseaseMonitor/InvestItem?mpid=@item.ID'">編輯數據</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                        <div>
+                            <button type="button" class="btn btn-primary m-2" onclick="location.href='/DiseaseMonitor/YearList'">回上一頁</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        function handleSubmit(e, action, id) {
+            e.preventDefault();
+
+            $('#hidAction').val(action);
+            if (id) $('#hidMpId').val(id);
+
+            console.log($('form').serializeArray())
+            document.getElementById('form').submit();
+        }
+
+        function CloneRows() {
+            $('.contextCloneRow').clone().insertBefore($('#cloneFlag')).removeClass('contextCloneRow').addClass('contextRow').show();
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+

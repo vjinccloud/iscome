@@ -1,0 +1,326 @@
+﻿@model InformationSystem.ViewModel.PesticideSellerModel
+@using Newtonsoft.Json;
+@{
+    ViewBag.Title = "SellorAdd";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Style {
+    <style>
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+
+        #vendorAddress {
+            min-width: 300px;
+        }
+
+        #map {
+            height: 600px;
+        }
+    </style>
+}
+
+@Html.Partial("LeafletMapBasic")
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">農藥販售業者資料-@(Model.ActionName != "Add" ? "編輯":"新增")</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <form id="form" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="table-responsive card">
+                                <table class="table mb-0 no-border">
+                                    <tr>
+                                        <th style="width:15%">
+                                            <span class="important">營業狀態：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            <div class="form-inline">
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" @(Model.Status == 1 ? "checked" : "") name="Status" value="1" />營業中</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" @(Model.Status == 2 ? "checked" : "") name="Status" value="2" />停業</label>
+                                                <label class="mr-2"><input type="radio" class="form-control mr-2" @(Model.Status == 3 ? "checked" : "") name="Status" value="3" />歇業</label>
+                                            </div>
+                                        </td>
+                                        <th style="width:10%">
+                                            <span class="important">執照號碼：</span>
+                                        </th>
+                                        <td style="width:40%">
+                                            @Html.Hidden("ActionName", Model.ActionName)
+                                            <input type="text" class="form-control" name="LicenseNum" value="@Model.LicenseNum" required title="執照號碼為必填欄位" @(Model.ActionName != "Add" ? "readonly='readonly'" : "") />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="important">業者名稱：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="VendorName" value="@Model.VendorName" required title="業者名稱為必填欄位" />
+                                        </td>
+                                        <th>
+                                            <span class="important">聯繫電話：</span>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="form-control" name="ContactPhone" value="@Model.ContactPhone" required title="聯繫電話為必填欄位" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>綠色友善資材站：</span>
+                                        </th>
+                                        <td colspan="2">
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">有效期間</label>
+                                                <input type="date" class="form-control mr-2" name="FriendlyStartDate" value="@(Model.FriendlyStartDate.HasValue ? Model.FriendlyStartDate.Value.ToString("yyyy-MM-dd") :"")" />
+                                                <span>～</span>
+                                                <input type="date" class="form-control ml-2" name="FriendlyEndDate" value="@(Model.FriendlyEndDate.HasValue ? Model.FriendlyEndDate.Value.ToString("yyyy-MM-dd") :"")" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="vertical-align:top !important">
+                                            <span class="important">營業地址：</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <div class="form-inline">
+                                                <input type="text" id="vendorAddress" class="form-control" name="VendorAddress" value="@Model.VendorAddress" required title="營業地址為必填欄位" />
+                                                <button type="button" class="btn btn-primary m-2" onclick="SetPoint()">定位</button>
+                                                <span id="LocationStr"></span>
+                                                <input type="hidden" id="Location" name="Location" value="@Model.Location" />
+                                                <div class="mt-2" style="width: 100%;">
+                                                    <div id="map"></div>
+                                                    @*<iframe width="600" height="450" id="gmap_canvas" src="https://maps.google.com/maps?q=@Model.VendorAddress&t=&z=17&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>*@
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="display:flex;justify-content:center">
+                                <button type="button" class="btn btn-primary m-2" onclick="handleSubmit(event)">儲存</button>
+                                <button type="button" class="btn btn-primary m-2" onclick="window.history.back()">回上一頁</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    string Which_MAP = System.Configuration.ConfigurationManager.AppSettings["Which_MAP"];
+    string APIKEY = String.Empty;
+    switch (Which_MAP)
+    {
+        case "Google":
+            APIKEY = System.Configuration.ConfigurationManager.AppSettings["MapApiKey"];
+            break;
+        case "TGOS":
+            APIKEY = System.Configuration.ConfigurationManager.AppSettings["TGOS_Geocoding_APIKEY"];
+            string APPID = System.Configuration.ConfigurationManager.AppSettings["TGOS_Geocoding_APPID"];
+            break;
+        case "ArcGIS":
+            APIKEY = System.Configuration.ConfigurationManager.AppSettings["ArcGIS_APIKEY"];
+            break;
+    }
+}
+
+@section Script{
+    <script>
+        var APIKEY = "@APIKEY", Which_MAP = "@Which_MAP";
+        var map, marker;
+        var MakerIcon = L.icon({
+            iconUrl: @(new HtmlString(JsonConvert.SerializeObject(Url.Content("/Scripts/Leaflet/images/marker-icon-change.png")))),
+            iconSize: [42, 42],
+        });
+
+        $(document).ready(function () {
+            // *** 放置地圖
+            map = L.map('map', {
+                center: [22.6307027, 120.3414354], // 中心點座標
+                zoom: 15, // 0 - 18
+                attributionControl: true, // 是否秀出「leaflet」的貢獻標記
+                zoomControl: true, // 是否秀出 - + 按鈕
+            });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            L.control.locate({
+                initialZoomLevel: 15
+            }).addTo(map);
+
+            var _location = '@Model.Location';
+            let LatLng = _location.split(",");
+            if (LatLng.length == 2) {
+                if (LatLng[0] && LatLng[1]) {
+                    //先把座標轉為WGS84
+                    let X = parseFloat(LatLng[0]);
+                    let Y = parseFloat(LatLng[1]);
+                    //LngLat格式
+                    if (X > 200 && Y > 200) {
+                        let LngLat = proj4("EPSG:3826", "EPSG:4326", [X, Y]);
+                        X = LngLat[0];
+                        Y = LngLat[1];
+                    }
+                    //轉成LatLng格式
+                    LatLng = [Y, X];
+                }
+                let lat = LatLng[0], lng = LatLng[1], promptStr = "";
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                $('#Location').val(`${lng},${lat}`);
+                $('#LocationStr').text(`(${lat},${lng})`);
+                marker = L.marker([lat, lng], {
+                    title: this.promptStr,
+                    opacity: 1.0
+                }).addTo(map);
+                map.setView(LatLng, 17);
+            }
+        });
+        function handleSubmit(e) {
+            e.preventDefault();
+            var validate = $("form").valid();
+            if (validate) {
+                console.log($('form').serializeArray())
+                document.getElementById('form').submit();
+            }
+        }
+        function SetPoint() {
+            //$('#gmap_canvas').attr("src", "https://maps.google.com/maps?q=" + $('#vendorAddress').val() + "&t=&z=17&ie=UTF8&iwloc=&output=embed");
+            let SearchLocation = $('#vendorAddress').val();
+
+            if (Which_MAP == "Google") {
+                $.ajax({
+                    url: 'https://maps.googleapis.com/maps/api/geocode/json?address=' + SearchLocation + '&key=' + APIKEY,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (response) {
+                        //console.log(response);
+                        // equal center
+                        let location = response.results[0].geometry.location;
+                        let lat = location.lat, lng = location.lng, promptStr = `${response.results[0].formatted_address}<br />${location.lat},${location.lng}`;
+
+                        map.panTo(new L.LatLng(lat, lng));
+                        if (marker) {
+                            map.removeLayer(marker);
+                        }
+                        $('#Location').val(`${lat},${lng}`);
+                        $('#LocationStr').text(`(${lat},${lng})`);
+                        marker = L.marker([lat, lng], {
+                            title: this.promptStr,
+                            opacity: 1.0
+                        }).addTo(map);
+                        // 加上 Popup
+                        marker.bindPopup(promptStr).openPopup();
+                        marker.bindTooltip(promptStr, {
+                            direction: 'bottom', // right、left、top、bottom、center。default: auto
+                            sticky: true, // true 跟著滑鼠移動。default: false
+                            permanent: false, // 是滑鼠移過才出現，還是一直出現
+                            opacity: 1.0
+                        });
+
+                    }
+                })
+            } else if (Which_MAP == "TGOS") {
+                $.ajax({
+                    url: '/PesticideSeller/GetAddrLocation',
+                    data: {
+                        addr: $("#vendorAddress").val()
+                    },
+                method: 'GET',
+                dataType: 'json',
+                    success: function (response) {
+                        if (response.result) {
+                            let LatLng = response.Msg.split(",");
+                            if (LatLng.length !=2) {
+                                return;
+                            }
+                            if (LatLng[0] && LatLng[1]) {
+                                //先把座標轉為WGS84
+                                let X = parseFloat(LatLng[0]);
+                                let Y = parseFloat(LatLng[1]);
+                                //LngLat格式
+                                if (X > 200 && Y > 200) {
+                                    let LngLat = proj4("EPSG:3826", "EPSG:4326", [X, Y]);
+                                    X = LngLat[0];
+                                    Y = LngLat[1];
+                                }
+                                //轉成LatLng格式
+                                LatLng = [Y, X];
+                            }
+                            let lat = LatLng[0], lng = LatLng[1], promptStr = "";
+                            if (marker) {
+                                map.removeLayer(marker);
+                            }
+                            $('#Location').val(`${lng},${lat}`);
+                            $('#LocationStr').text(`(${lat},${lng})`);
+                            marker = L.marker([lat, lng], {
+                                title: this.promptStr,
+                                opacity: 1.0
+                            }).addTo(map);
+                            map.setView(LatLng, 17);
+                            // 加上 Popup
+                            //marker.bindPopup(promptStr).openPopup();
+                            //marker.bindTooltip(promptStr, {
+                            //    direction: 'bottom', // right、left、top、bottom、center。default: auto
+                            //    sticky: true, // true 跟著滑鼠移動。default: false
+                            //    permanent: false, // 是滑鼠移過才出現，還是一直出現
+                            //    opacity: 1.0
+                            //});
+                        }
+                        else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: response.Msg
+                            });
+                        }
+                },
+                complete: function () {
+                    $('#syncLocation').attr('disabled', false).removeClass('disabled');
+                }
+            })
+            }
+        }
+
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+
+

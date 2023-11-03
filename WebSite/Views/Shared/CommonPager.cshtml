@@ -1,0 +1,158 @@
+﻿@model ICCModule.PagerInfo
+
+<script type="text/javascript">
+    function ChangeCurrentPage(page) {
+        document.getElementById("hiddenCurrentPage").value = page;
+
+        var form = document.forms[0];
+        if (form != null) {
+            $('#hiddenSearchSource').val('2');
+            form.submit();
+        }
+    }
+
+    function ChangePageSize(page) {
+        var _pageCount = $(page).val();
+        document.getElementById("hiddenPageCount").value = _pageCount;
+        var form = document.forms[0];
+        if (form != null) {
+            $('#hiddenSearchSource').val('2');
+            form.submit();
+        }
+
+        //        var _pageCount = document.getElementById("selectPageCount").value;
+        //        document.getElementById("hiddenPageCount").value = _pageCount;
+        //        var form = document.forms[0];
+        //        if (form != null) {
+        //            $('#hiddenSearchSource').val('2');
+        //            form.submit();
+        //        }
+    }
+
+    function Search() {
+        document.getElementById("hiddenCurrentPage").value = 1;
+        document.forms[0].submit();
+    }
+
+</script>
+
+<ul class="pagination">
+    @if (Model.m_iPageIndex != 1 && Model.m_iDataCount > 0)
+    {
+        <li class="page-item">
+            <a href="#" class="page" title="首頁" onclick="ChangeCurrentPage(1)">首頁</a>
+        </li>
+    }
+
+    @if (Model.m_iPageIndex - 1 > 0 && Model.m_iDataCount > 0)
+    {
+        <li class="page-item">
+            <a href="#" class="page" title="上一頁" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex - 1).ToString() + ")")">上一頁</a>
+        </li>
+    }
+
+    @if (Model.m_iPageIndex - 4 > 0 && Model.m_iDataCount > 0)
+    {
+        <li class="page-item">
+            <a href="#" class="number" title="@Html.Raw("第" + (Model.m_iPageIndex - 4).ToString() + "頁")" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex - 4).ToString() + ")")">@Html.Raw((Model.m_iPageIndex - 4).ToString())</a>
+        </li>
+    }
+
+    @if (Model.m_iPageIndex - 3 > 0 && Model.m_iDataCount > 0)
+    {
+        <li class="page-item">
+            <a href="#" class="number" title="@Html.Raw("第" + (Model.m_iPageIndex - 3).ToString() + "頁")" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex - 3).ToString() + ")")">@Html.Raw((Model.m_iPageIndex - 3).ToString())</a>
+        </li>
+    }
+
+    @if (Model.m_iPageIndex - 2 > 0 && Model.m_iDataCount > 0)
+    {
+
+        <li class="page-item">
+            <a href="#" class="number" title="@Html.Raw("第" + (Model.m_iPageIndex - 2).ToString() + "頁")" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex - 2).ToString() + ")")">@Html.Raw((Model.m_iPageIndex - 2).ToString())</a>
+        </li>
+    }
+
+    @if (Model.m_iPageIndex - 1 > 0 && Model.m_iDataCount > 0)
+    {
+        <li class="page-item">
+            <a href="#" class="number" title="@Html.Raw("第" + (Model.m_iPageIndex - 1).ToString() + "頁")" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex - 1).ToString() + ")")">@Html.Raw((Model.m_iPageIndex - 1).ToString())</a>
+        </li>
+    }
+
+    @if (Model.m_iDataCount > 0)
+    {
+        <li class="page-item">
+            <a href="#" class="number current" title="@Html.Raw("第" + (Model.m_iPageIndex).ToString() + "頁")">@Html.Raw(Model.m_iPageIndex.ToString())</a>
+        </li>
+    }
+    else
+    {
+        <li class="page-item"><a href="#" class="number" title="第1頁" onclick="ChangeCurrentPage(1)">1</a></li>
+    }
+
+    @if (Model.m_iPageIndex + 1 <= Model.m_iPageTotal && Model.m_iDataCount > 0)
+    {
+        <li class="page-item"><a href="#" class="number" title="@Html.Raw("第" + (Model.m_iPageIndex + 1).ToString() + "頁")" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex + 1).ToString() + ")")">@Html.Raw((Model.m_iPageIndex + 1).ToString())</a></li>
+    }
+
+    @if (Model.m_iPageIndex + 2 <= Model.m_iPageTotal && Model.m_iDataCount > 0)
+    {
+        <li class="page-item"><a href="#" class="number" title="@Html.Raw("第" + (Model.m_iPageIndex + 2).ToString() + "頁")" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex + 2).ToString() + ")")">@Html.Raw((Model.m_iPageIndex + 2).ToString())</a></li>
+    }
+
+    @if (Model.m_iPageIndex + 3 <= Model.m_iPageTotal && Model.m_iDataCount > 0)
+    {
+        <li class="page-item"><a href="#" class="number" title="@Html.Raw("第" + (Model.m_iPageIndex + 3).ToString() + "頁")" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex + 3).ToString() + ")")">@Html.Raw((Model.m_iPageIndex + 3).ToString())</a></li>
+    }
+
+    @if (Model.m_iPageIndex + 4 <= Model.m_iPageTotal && Model.m_iDataCount > 0)
+    {
+        <li class="page-item"><a href="#" class="number" title="@Html.Raw("第" + (Model.m_iPageIndex + 4).ToString() + "頁")" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex + 4).ToString() + ")")">@Html.Raw((Model.m_iPageIndex + 4).ToString())</a></li>
+    }
+
+    @if (Model.m_iPageIndex + 1 <= Model.m_iPageTotal && Model.m_iDataCount > 0)
+    {
+        <li class="page-item"><a href="#" class="page" title="下一頁" onclick="@Html.Raw("ChangeCurrentPage(" + (Model.m_iPageIndex + 1).ToString() + ")")">下一頁</a></li>
+    }
+
+    @if (Model.m_iPageIndex != Model.m_iPageTotal && Model.m_iDataCount > 0)
+    {
+
+        <li class="page-item"><a href="#" class="page" title="末頁" onclick="ChangeCurrentPage(@Model.m_iPageTotal)">末頁</a></li>
+    }
+    <li>
+        <br />
+        <br />
+        每頁
+        <select name="dropdown" id="selectPageCount" onchange="ChangePageSize(this)">
+            @foreach (var item in Model.m_iPageCountList)
+            {
+                string _sSelected = "";
+                if (item == Model.m_iPageCount)
+                {
+                    _sSelected = "selected=\"selected\"";
+                }
+                <option value="@item" @_sSelected>@item</option>
+            }
+        </select>
+        筆&nbsp;
+        [資料：@(Model.m_iDataCount)筆，共@(Model.m_iPageTotal)頁]
+    </li>
+</ul>
+<script type="text/javascript">
+
+         //    $("#selectPageCount").selectmenu({
+         //        change: function (event, ui) {
+         //            //寫在這
+         //            var _pageCount = document.getElementById("selectPageCount").value;
+         //            document.getElementById("hiddenPageCount").value = _pageCount;
+         //            var form = document.forms[0];
+         //            if (form != null) {
+         //                $('#hiddenSearchSource').val('2');
+         //                form.submit();
+         //            }
+         //        }
+         //    });
+
+</script>

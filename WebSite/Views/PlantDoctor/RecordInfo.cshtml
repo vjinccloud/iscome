@@ -1,0 +1,234 @@
+﻿@model ICCModule.Entity.Tables.Platform.doctorSchedule
+@{
+    ViewBag.Title = "RecordInfo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .important:before {
+        content: "*";
+        color: red;
+    }
+
+    table > tbody > tr th {
+        text-align: right !important;
+        background-color: #ccffff;
+    }
+
+    .no-hover:hover {
+        background-color: white !important;
+    }
+
+    .text-red {
+        color: red;
+        text-decoration: underline;
+    }
+
+    img {
+        width: 10vw;
+        height: 17vh;
+    }
+</style>
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/Member/SignUp">會員註冊</a></li>
+            <li><a href="~/PlantDoctor/Introduce">植醫掛號</a></li>
+            <li><a href="~/Member/Manage">個人資料管理</a></li>
+            <li><a href="~/PlantDoctor/RecordList">植醫輔導紀錄</a></li>
+            <li><a href="~/Member/InventoryList">資材使用狀況</a></li>
+            <li><a href="~/Member/Notify">疫情資訊訂閱</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">植醫輔導紀錄</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/Member/SignUp">會員專區</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">植醫輔導紀錄</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <table class="table table-hover">
+                                <tbody>
+                                    <tr>
+                                        <th style="width:20%">
+                                            <span>預約日期</span>
+                                        </th>
+                                        <td style="width:30%">
+                                            <span>@(ICCModule.Helper.Extention.ToMinDateString(Model.ReserveDatetime))</span>
+                                        </td>
+                                        <th style="width:20%">
+                                            <span>作物種類</span>
+                                        </th>
+                                        <td style="width:30%">
+                                            <div class="form-inline">
+                                                <select class="form-control mr-2" style="flex:40%" disabled="disabled">
+                                                    <option>@Model.CropType</option>
+                                                </select>
+                                                <select class="form-control mr-2" style="flex:40%" disabled="disabled">
+                                                    <option>@Model.CropName</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>時段</span>
+                                        </th>
+                                        <td>
+                                            <span>@(ICCModule.Helper.Extention.ToTimeapString(Model.ReserveDatetime))</span>
+                                        </td>
+                                        <th>
+                                            <span>栽種面積</span>
+                                        </th>
+                                        <td>
+                                            <span>@Model.PlantingArea 公頃</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>耕作方式</span>
+                                        </th>
+                                        <td>
+                                            <span>@Model.FarmingMethodStr</span>
+                                        </td>
+                                        <th>
+                                            <span>聯繫管道</span>
+                                        </th>
+                                        <td>
+                                            <span>@Model.ContactMethodStr</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>發病位置</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <div class="form-inline">
+                                                @foreach (var item in ICCModule.EntityService.Service.Service_defCode.GetList("OnsetLocation"))
+                                                {
+                                                    <label class="mr-2">
+                                                        <input type="checkbox" class="form-control mr-2" @(Model.OnsetLocationArr.Contains(item.Code) ? "checked" : "") disabled="disabled" />@item.Name
+                                                    </label>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>諮詢內容</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <span>@Model.Context</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>作物病徵<br />圖/影片</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <div class="form-inline">
+                                                @{
+                                                    if (!String.IsNullOrEmpty(Model.CropSymptoms))
+                                                    {
+                                                        foreach (var item in Model.CropSymptoms.Split(','))
+                                                        {
+                                                            <img src="@item" />
+                                                        }
+                                                    }
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>
+                                                最近使用農藥/肥料<br />圖/影片
+                                            </span>
+                                        </th>
+                                        <td colspan="3">
+                                            <div class="form-inline">
+                                                @{
+                                                    if (!String.IsNullOrEmpty(Model.RecentlyFertilizer))
+                                                    {
+                                                        foreach (var item in Model.RecentlyFertilizer.Split(','))
+                                                        {
+                                                            <img src="@item" />
+                                                        }
+                                                    }
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>診斷結果</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <span>@Model.ResultDiagnosis</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>防治建議</span>
+                                        </th>
+                                        <td colspan="3">
+                                            <span>@Model.RecommendationCategory</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span>植物醫師</span>
+                                        </th>
+                                        <td>
+                                            <span>@Model.DoctorDiagnosis</span>
+                                        </td>
+                                        <th>
+                                            <span>診斷日期</span>
+                                        </th>
+                                        <td>
+                                            <span>@(ICCModule.Helper.Extention.ToMinDateString(Model.DateDiagnosis))</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"><div class="m-3"></div></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="border:1px black solid">
+                                            <span>
+                                                1、本輔導記錄非經高雄市政府農業局和植物醫師同意，不得公開。
+                                                <br />
+                                                2、本診察記錄僅供教學和研究使用，不對外提供任何證明文書。
+                                                <br />
+                                                3、本紀錄僅對本次會員所提供的諮詢內容(文字、照片)負責，並不可作為商業推銷、訴訟、公證之用。
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4" style="text-align:center">
+                    <button type="button" class="btn btn-primary" onclick="window.history.back()"><i class="fas fa-hand-point-left mr-2"></i>回上一頁</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>

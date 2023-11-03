@@ -1,0 +1,501 @@
+﻿
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title -->
+    <title>高雄市政府農業局線上植物防疫平台</title>
+
+
+    <!-- Core Stylesheet -->
+    <link href="../css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="../icon/css/all.min.css" rel="stylesheet" />
+    <link href="../css/vnstyle.css" rel="stylesheet" />
+    <link href="../css/anstyle.css" rel="stylesheet" />
+
+    <link href="../css/bootstrap/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="../packages/core/main.css" rel="stylesheet" />
+    <link href="../packages/daygrid/main.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+    <link href="../Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="../css/pesticidesInventoryInfo.css" rel="stylesheet" />
+    <!-- jQuery-->
+    <script src="../Scripts/jquery-3.6.3.min.js"></script>
+    <script src="../Scripts/jquery.validate.min.js"></script>
+    <script src="../Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="../Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="../Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="../js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="../js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="../Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Moment -->
+    <script src="../Scripts/moment.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="../js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="../js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <script src="../packages/core/main.js"></script>
+    <script src="../packages/core/locales-all.js"></script>
+    <script src="../packages/daygrid/main.js"></script>
+    <script src="../packages/interaction/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <style>
+        body {
+            font-size: 14px;
+            font-size: 1rem;
+        }
+    </style>
+    <style>
+        .important:before {
+            content: "*";
+            color: red;
+        }
+
+        table > tbody > tr th {
+            text-align: right !important;
+        }
+
+        .no-hover:hover {
+            background-color: white !important;
+        }
+
+        .form-control.error {
+            border-color: red;
+            border-width: 2px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-inline .form-control.error {
+            width: auto;
+        }
+
+        label.error {
+            bottom: -30px;
+            color: red;
+            font-size: 14px;
+            position: absolute;
+        }
+
+        .form-inline label.error {
+            bottom: -20px;
+        }
+
+        .error-border {
+            border-color: red;
+            border-width: 2px;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        /* form css */
+
+
+        .formList {
+            position: relative;
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            transition: all .3s;
+            border-bottom: 1px solid rgba(0, 0, 0, .125)
+        }
+
+            .formList > div > span {
+                font-weight: bold;
+                min-width: 100px;
+                text-align: right;
+                margin-right: 10px;
+            }
+
+            .formList:hover {
+                background: rgba(0, 0, 0, .075);
+            }
+
+        .btn-primary2 {
+            background-color: #169bd5;
+            border-color: #169bd5;
+            border-bottom: 3px #0f6990 solid;
+            color: white;
+        }
+
+
+
+        .row {
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+            margin: 0 auto;
+        }
+
+        .card-body {
+            -ms-flex: 1 1 auto;
+            flex: 1 1 auto;
+            min-height: 1px;
+            padding: 10px;
+        }
+
+        .btn-orange {
+            background-color: #f57d31;
+            border-color: #f57d31;
+            color: white;
+            border-bottom: 3px #cf570a solid;
+        }
+    </style>
+</head>
+
+<body class="bg-img">
+
+    <div class="container2">
+
+        <div class="text-center">
+            <a href="../Home/Index">
+                <img src="../images/logo2.png" style="width:200px; margin:40px 0;">
+            </a>
+        </div>
+
+        <!-- 步驟條 -->
+        <div style="width:80%; margin:0px auto">
+            <ol class="ui-step ui-step-3" id="liudaxia">
+
+                <li class="step-none-done">
+                    <div class="ui-step-line"></div>
+                    <div class="ui-step-cont">
+                        <span class="ui-step-cont-number">1</span>
+                        <span class="ui-step-cont-text">會員註冊</span>
+                    </div>
+                </li>
+
+                <li class="step-active">
+                    <div class="ui-step-line"></div>
+                    <div class="ui-step-cont">
+                        <span class="ui-step-cont-number">2</span>
+                        <span class="ui-step-cont-text">快速註冊</span>
+                    </div>
+                </li>
+
+
+                <li class="step-end step-none-done">
+                    <div class="ui-step-line"></div>
+                    <div class="ui-step-cont">
+                        <span class="ui-step-cont-number">3</span>
+                        <span class="ui-step-cont-text">註冊完成</span>
+                    </div>
+                </li>
+            </ol>
+
+
+        </div>
+
+        <!-- 內頁 -->
+        <section id="SignUp" class="content">
+            <div class="con-box">
+                <div class="con-head">
+                    <div class="title d-flex justify-content-between pb-0 align-items-end">
+                        <h5><span class="line">快速註冊（<span class="important">為必填</span>）</span></h3>
+
+                    </div>
+                </div>
+                <div class="con-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="form" method="post" class="row">
+                                <input name="__RequestVerificationToken"
+                                       type="hidden"
+                                       value="nmeHIlOM8oLfDExGAJ1iRMh7VWjTh9h4HNJlVl5s9tHxNUyRBsPDtW_MOZ_QfwHgg_0k-lI7V8jCHu8kQ2npfUf8b4ywLTjuP35AHu-9hHc1">
+                                <!-- <div class="formList">
+                                    <div class="col-12 d-flex align-items-center"><span class="important">帳號驗證方式：</span>
+                                        <div class="d-flex flex-column position-relative">
+                                            <div class="form-inline">
+                                                <div class="d-flex align-items-center"><input type="radio"
+                                                        name="Info.VerifyMethod" id="Message" value="SMS"
+                                                        required="required" class="m-2"> <label for="Message"
+                                                        class="mr-2">傳送簡訊</label></div>
+                                                <div class="d-flex align-items-center"><input type="radio"
+                                                        name="Info.VerifyMethod" id="Mail" value="Email" class="m-2">
+                                                    <label for="Mail">寄送Email</label>
+                                                </div> <input type="hidden" id="hidGoogleId" name="Info.GoogleId">
+                                                <input type="hidden" id="hidFacebookId" name="Info.FacebookId">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                                <div class="formList row">
+                                    <div class="col-12 col-lg-12 d-flex align-items-center">
+                                        <span class="important">姓名：</span>
+                                        <div class="d-flex flex-column position-relative">
+                                            <input type="text"
+                                                   id="UserName" name="Info.Name" required="required" autocomplete="off"
+                                                   class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- <div class="formList row">
+
+                                    <div class="col-12 col-lg-12 d-flex align-items-center"><span
+                                            class="important">使用者帳號：</span>
+                                        <div class="input-group">
+                                            <div class="d-flex flex-column mr-2 position-relative"
+                                                style="flex: 1 1 auto; min-width: 100px; width: 1%;">
+                                                <input type="text" id="UserAccount" name="Info.LoginID"
+                                                    required="required" autocomplete="off" class="form-control">
+                                            </div>
+                                            <div class="" style="height: 38px;">
+                                                <button class="btn btn-primary">檢查</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                                <div class="formList row">
+                                    <div class="col-12 col-lg-12 d-flex align-items-center">
+                                        <span class="important">所在區域：</span>
+                                        <div class="form-inline">
+                                            <select name="Info.City" class="form-control mr-2" style="flex: 1 1 100%;">
+                                                <option value="高雄市">高雄市</option>
+                                            </select> <select name="Info.District" class="form-control ml-2"
+                                                              style="flex: 1 1 100%;">
+                                                <option value="">請選擇</option>
+                                                <option value="新興區">
+                                                    新興區
+                                                </option>
+                                                <option value="前金區">
+                                                    前金區
+                                                </option>
+                                                <option value="苓雅區">
+                                                    苓雅區
+                                                </option>
+                                                <option value="鹽埕區">
+                                                    鹽埕區
+                                                </option>
+                                                <option value="鼓山區">
+                                                    鼓山區
+                                                </option>
+                                                <option value="旗津區">
+                                                    旗津區
+                                                </option>
+                                                <option value="前鎮區">
+                                                    前鎮區
+                                                </option>
+                                                <option value="三民區">
+                                                    三民區
+                                                </option>
+                                                <option value="楠梓區">
+                                                    楠梓區
+                                                </option>
+                                                <option value="小港區">
+                                                    小港區
+                                                </option>
+                                                <option value="左營區">
+                                                    左營區
+                                                </option>
+                                                <option value="仁武區">
+                                                    仁武區
+                                                </option>
+                                                <option value="大社區">
+                                                    大社區
+                                                </option>
+                                                <option value="東沙群島">
+                                                    東沙群島
+                                                </option>
+                                                <option value="南沙群島">
+                                                    南沙群島
+                                                </option>
+                                                <option value="岡山區">
+                                                    岡山區
+                                                </option>
+                                                <option value="路竹區">
+                                                    路竹區
+                                                </option>
+                                                <option value="阿蓮區">
+                                                    阿蓮區
+                                                </option>
+                                                <option value="田寮區">
+                                                    田寮區
+                                                </option>
+                                                <option value="燕巢區">
+                                                    燕巢區
+                                                </option>
+                                                <option value="橋頭區">
+                                                    橋頭區
+                                                </option>
+                                                <option value="梓官區">
+                                                    梓官區
+                                                </option>
+                                                <option value="彌陀區">
+                                                    彌陀區
+                                                </option>
+                                                <option value="永安區">
+                                                    永安區
+                                                </option>
+                                                <option value="湖內區">
+                                                    湖內區
+                                                </option>
+                                                <option value="鳳山區">
+                                                    鳳山區
+                                                </option>
+                                                <option value="大寮區">
+                                                    大寮區
+                                                </option>
+                                                <option value="林園區">
+                                                    林園區
+                                                </option>
+                                                <option value="鳥松區">
+                                                    鳥松區
+                                                </option>
+                                                <option value="大樹區">
+                                                    大樹區
+                                                </option>
+                                                <option value="旗山區">
+                                                    旗山區
+                                                </option>
+                                                <option value="美濃區">
+                                                    美濃區
+                                                </option>
+                                                <option value="六龜區">
+                                                    六龜區
+                                                </option>
+                                                <option value="內門區">
+                                                    內門區
+                                                </option>
+                                                <option value="杉林區">
+                                                    杉林區
+                                                </option>
+                                                <option value="甲仙區">
+                                                    甲仙區
+                                                </option>
+                                                <option value="桃源區">
+                                                    桃源區
+                                                </option>
+                                                <option value="那瑪夏區">
+                                                    那瑪夏區
+                                                </option>
+                                                <option value="茂林區">
+                                                    茂林區
+                                                </option>
+                                                <option value="茄萣區">
+                                                    茄萣區
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-12 col-lg-6 d-flex align-items-center"><span>性別：</span> <select
+                                            name="Info.Sexy" class="form-control">
+                                            <option value="">請選擇</option>
+                                            <option value="M">男</option>
+                                            <option value="F">女</option>
+                                        </select></div> -->
+                                <!-- </div>
+                                <div class="formList row">
+                                    <div class="col-12 col-lg-12 d-flex align-items-center"><span>申請身分別：</span>
+                                        <select name="Info.Identify" class="form-control">
+                                            <option value="1">農友</option>
+                                            <option value="2">公所</option>
+                                            <option value="3">農會</option>
+                                            <option value="4">農業局承辦</option>
+                                            <option value="5">其他</option>
+                                        </select>
+                                    </div>
+
+                                </div> -->
+
+                                <div class="formList row">
+                                    <!-- <div class="col-12 col-lg-6 d-flex align-items-center"><span class="">Email：</span>
+                                        <div class="d-flex flex-column position-relative"><input type="email"
+                                                id="UserMail" name="Info.Email" autocomplete="off" class="form-control">
+                                        </div>
+                                    </div> -->
+                                    <div class="col-12 col-lg-12 d-flex align-items-center">
+                                        <span class="important">手機號碼：</span>
+                                        <div class="d-flex flex-column position-relative">
+                                            <input type="tel" id="UserPhone" name="Info.Mobile" autocomplete="off"
+                                                   placeholder="請輸入簡訊發送驗證碼" minlength="10" maxlength="10"
+                                                   pattern="[0-9]{10}" required="required" class="form-control">
+                                            <div class="align-items-center" style="height: 38px;　">
+                                                <button class="btn btn-primary2">取得驗證碼</button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+                                <div class="formList row">
+                                    <div class="col-12 col-lg-12 d-flex align-items-center">
+                                        <span class="important">密碼：</span>
+                                        <div class="d-flex flex-column position-relative">
+                                            <input type="password" id="UserName" name="Info.Name" required="required"
+                                                   autocomplete="off" class="form-control" placeholder="8字元以上，包含大小寫、數字、符號">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-12 d-flex align-items-center">
+                                        <span class="important">確認密碼：</span>
+                                        <div class="d-flex flex-column position-relative">
+                                            <input type="password" id="UserName" name="Info.Name" required="required"
+                                                   autocomplete="off" class="form-control" placeholder="請再次輸入密碼">
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-12 d-flex align-items-center justify-content-center py-3 border-bottom">
+                                    <span>
+                                        註冊本網站會員即表示您同意本站的
+                                        <a href="/Member/UserTerms" target="_blank">使用者條款</a>
+                                        與
+                                        <a href="/Member/PrivacyPolicy" target="_blank">隱私權政策</a>
+                                    </span>
+                                </div>
+
+                                <div class="col-12 text-center" style="">
+                                    <button class="btn btn-orange mr-2 mb-3 mt-3">註冊會員</button>
+
+                                </div>
+                            </form>
+
+                            <!-- <span class="font-weight-bold py-2">快速註冊</span>
+                            <div class="w-100 d-flex flex-column flex-md-row justify-content-md-around gap-2">
+                                <div class="col-12">
+                                    <button id="customBtn" class="btn btn-danger "><i class="fab fa-google mr-2"></i>
+                                        登入</button>
+                                    <button id="fbLogin" onclick="checkLoginState();" class="btn btn-primary">
+                                        <i class=" fab fa-facebook-square mr-2"></i>登入</button>
+                                    <button id="customBtn" class="btn btn-success ">
+                                        <i class="fab fa-line mr-2"></i>登入</button>
+                                </div>
+                            </div> -->
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </section>
+
+
+
+
+    </div>
+
+
+
+
+</body>
+
+</html>

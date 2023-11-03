@@ -1,0 +1,600 @@
+﻿@using System.Linq;
+@{
+    var rp = new List<ICCModule.Entity.Tables.Platform.Permission>();
+    if (Session["LoginRole"] != null)
+    {
+        rp = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ICCModule.Entity.Tables.Platform.Permission>>(Session["LoginRole"].ToString());
+    }
+
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        作物病蟲害預警系統暨植物醫師診斷系統管理平台
+    </title>
+    <meta name="description" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Custom fonts for this template-->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+    <!-- Custom styles for this template-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/4.1.4/css/sb-admin-2.min.css" rel="stylesheet" />
+    @*<link href="~/css/vnstyle02.css" rel="stylesheet" />*@
+    <link href="~/css/tablegrow.css" rel="stylesheet" />
+    <link href="~/css/vnstyle.css" rel="stylesheet" />
+
+    <link href="~/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="~/packages/core/main.css" rel="stylesheet" />
+    <link href="~/packages/daygrid/main.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+
+    @RenderSection("Style", required: false)
+
+    <!-- jQuery-->
+    <script src="~/Scripts/jquery-3.6.3.min.js"></script>
+    @*jquery.validate套件 用於前端表單驗證*@
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="~/js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="~/js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="~/Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="~/js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="~/js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <!-- Moment -->
+    <script src="~/Scripts/moment.js"></script>
+    <!-- Other -->
+    <script src="~/packages/core/main.js"></script>
+    <script src="~/packages/core/locales-all.js"></script>
+    <script src="~/packages/daygrid/main.js"></script>
+    <script src="~/packages/interaction/main.js"></script>
+    <!--Duallistbox-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap4-duallistbox/4.0.2/jquery.bootstrap-duallistbox.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap4-duallistbox/4.0.2/bootstrap-duallistbox.min.css" />
+
+    @*Chartjs*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    @*jquery-ui套件 *@
+    <script src="~/Scripts/jquery-ui-1.13.2.custom/jquery-ui.js"></script>
+    @*blockUI-顯示讀取中的區塊*@
+    <script src="http://malsup.github.io/jquery.blockUI.js"></script>
+    @*select2-可搜尋的下拉選單套件*@
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+    @RenderSection("HeadScript", required: false)
+
+
+    <style>
+        .no-border > tbody > tr th, .no-border > tbody > tr td {
+            border-top: none !important;
+        }
+
+        .important:before {
+            content: "*";
+            color: red;
+        }
+
+        .table td, .table th {
+            vertical-align: middle !important;
+        }
+
+        .btn-export {
+            background-color: #1caec5;
+            border-color: #1caec5;
+            color: white;
+        }
+
+            .btn-export:hover {
+                background-color: #199aaf;
+                border-color: #199aaf;
+                color: white;
+            }
+    </style>
+
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-success sidebar sidebar-dark accordion" id="accordionSidebar">
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="~/Home/index">
+                <span class="open-logo"><img src="~/img/Logo.png" class="img-fluid"></span>
+                <span class="small-logo"><img src="~/img/Logo-small.png" class="img-fluid"></span>
+            </a>
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+            <!-- Heading -->
+            <!-- Nav Item - Pages Collapse Menu -->
+            @if (rp.Any(x => x.Code.StartsWith("B_Home")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="~/Home/Index">
+                        <img src="~/img/icon01.png" class="img-fluid mr-1">
+                        <span>首頁功能</span>
+                    </a>
+                    @*<a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse1"
+                           aria-expanded="true" aria-controls="collapse1">
+                            <img src="~/img/icon01.png" class="img-fluid mr-1">
+                            <span>首頁功能</span>
+                        </a>*@
+                    @*<div id="collapse1" class="collapse" aria-labelledby="heading1" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item" href="~/Home/Index"><i class="fas fa-caret-right mr-2"></i>今日植醫掛號</a>
+                                <a class="collapse-item" href="~/Home/Index"><i class="fas fa-caret-right mr-2"></i>表單下載</a>
+                            </div>
+                        </div>*@
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Plant_Doctor")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse2"
+                       aria-expanded="true" aria-controls="collapse2">
+                        <img src="~/img/icon02.png" class="img-fluid mr-1">
+                        <span>植醫診斷</span>
+                    </a>
+                    <div id="collapse2" class="collapse" aria-labelledby="heading2" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Plant_Doctor_Ticket_List"))
+                            {
+                                <a class="collapse-item" href="~/PlantDoctor/TicketList"><i class="fas fa-caret-right mr-2"></i>植醫掛號</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Plant_Doctor_Schedule"))
+                            {
+                                <a class="collapse-item" href="~/PlantDoctor/Schedule"><i class="fas fa-caret-right mr-2"></i>排班表</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Plant_Doctor_TransSchedule"))
+                            {
+                                <a class="collapse-item" href="~/PlantDoctor/TransScheduleList">
+                                    <i class="fas fa-caret-right mr-2"></i>待收轉案
+                                    @if (ICCModule.EntityService.Service.Service_doctorSchedule.GetList(x => x.IsTransCase == true && x.TransDocId == Session["LoginID"].ToString()).Any())
+                                    {
+                                        <span style="color:red">●</span>
+                                    }
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Statistic")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse3"
+                       aria-expanded="true" aria-controls="collapse3">
+                        <img src="~/img/icon03.png" class="img-fluid mr-1">
+                        <span>診斷統計</span>
+                    </a>
+                    <div id="collapse3" class="collapse" aria-labelledby="heading3" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Statistic_Diagnose"))
+                            {
+                                <a class="collapse-item" href="~/Statistic/Diagnose"><i class="fas fa-caret-right mr-2"></i>診斷/作物類別統計</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Statistic_Service_Area"))
+                            {
+                                <a class="collapse-item" href="~/Statistic/ServiceArea"><i class="fas fa-caret-right mr-2"></i>服務面積統計圖表</a>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Disease_Prevention")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse4"
+                       aria-expanded="true" aria-controls="collapse4">
+                        <img src="~/img/icon04.png" class="img-fluid mr-1">
+                        <span>疫情警訊</span>
+                    </a>
+                    <div id="collapse4" class="collapse" aria-labelledby="heading4" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Disease_Prevention_API_Status"))
+                            {
+                                <a class="collapse-item" href="~/DiseasePrevention/APIStatus"><i class="fas fa-caret-right mr-2"></i>介接設定</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Disease_Prevention_Tag_Manage"))
+                            {
+                                <a class="collapse-item" href="~/DiseasePrevention/TagManage"><i class="fas fa-caret-right mr-2"></i>標籤管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Disease_Prevention_Notify_Stat"))
+                            {
+                                <a class="collapse-item" href="~/DiseasePrevention/NotifyStat"><i class="fas fa-caret-right mr-2"></i>訂閱訊息統計</a>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Disease_Monitor")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse5"
+                       aria-expanded="true" aria-controls="collapse5">
+                        <img src="~/img/icon05.png" class="img-fluid mr-1">
+                        <span>疫病蟲害監測管理</span>
+                    </a>
+                    <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Disease_Monitor_Upload"))
+                            {
+                                <a class="collapse-item" href="~/DiseaseMonitor/Upload"><i class="fas fa-caret-right mr-2"></i>監測數據上傳</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Disease_Monitor_Record"))
+                            {
+                                <a class="collapse-item" href="~/DiseaseMonitor/YearList"><i class="fas fa-caret-right mr-2"></i>監測數據登錄</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Disease_Monitor_Statistic_Invest_Count"))
+                            {
+                                <a class="collapse-item" href="~/Statistic/InvestCount"><i class="fas fa-caret-right mr-2"></i>數據統計調查次數/點位</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Disease_Monitor_Statistic_Invest_Ant"))
+                            {
+                                <a class="collapse-item" href="~/Statistic/InvestAnt"><i class="fas fa-caret-right mr-2"></i>數據統計-琉璃蟻</a>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Plant_Manager")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse6"
+                       aria-expanded="true" aria-controls="collapse6">
+                        <img src="~/img/icon06.png" class="img-fluid mr-1">
+                        <span>作物資料管理</span>
+                    </a>
+                    <div id="collapse6" class="collapse" aria-labelledby="heading6" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Plant_Manager_Category"))
+                            {
+                                <a class="collapse-item" href="~/PlantManager/Category"><i class="fas fa-caret-right mr-2"></i>作物類別資料</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Plant_Manager_Calendar"))
+                            {
+                                <a class="collapse-item" href="~/PlantManager/CalendarList"><i class="fas fa-caret-right mr-2"></i>防治曆</a>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Pesticide_Residue")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse7"
+                       aria-expanded="true" aria-controls="collapse7">
+                        <img src="~/img/icon07.png" class="img-fluid mr-1">
+                        <span>農藥殘留檢測</span>
+                    </a>
+                    <div id="collapse7" class="collapse" aria-labelledby="heading7" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Pesticide_Residue_List"))
+                            {
+                                <a class="collapse-item" href="~/PesticideResidue/Inspection"><i class="fas fa-caret-right mr-2"></i>農藥殘留檢測資料</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Pesticide_Residue_Statistic_Inspection"))
+                            {
+                                <a class="collapse-item" href="~/Statistic/Inspection"><i class="fas fa-caret-right mr-2"></i>檢驗次數統計</a>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Pesticide_Seller") && x.Code != "B_Pesticide_Seller_Auditor"))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse8"
+                       aria-expanded="true" aria-controls="collapse8">
+                        <img src="~/img/icon08.png" class="img-fluid mr-1">
+                        <span>農藥販賣業者資料管理</span>
+                    </a>
+                    <div id="collapse8" class="collapse" aria-labelledby="heading8" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Pesticide_Seller_List"))
+                            {
+                                <a class="collapse-item" href="~/PesticideSeller/SellerList"><i class="fas fa-caret-right mr-2"></i>農藥業者資料</a>
+                            }
+                            @*<a class="collapse-item" href="~/PesticideSeller/AuditorList"><i class="fas fa-caret-right mr-2"></i>農藥業者檢查資料</a>*@
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_PAT") && x.Code != "B_PAT_Product_Auditor_List"))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse9"
+                       aria-expanded="true" aria-controls="collapse9">
+                        <img src="~/img/icon09.png" class="img-fluid mr-1">
+                        <span>產銷履歷資料管理</span>
+                    </a>
+                    <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_PAT_Product"))
+                            {
+                                <a class="collapse-item" href="~/TAP/ProductList"><i class="fas fa-caret-right mr-2"></i>履歷產品資料</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_PAT_Map"))
+                            {
+                                <a class="collapse-item" href="~/TAP/Map"><i class="fas fa-caret-right mr-2"></i>履歷業者分布地圖</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_PAT_Product_Auditor_List"))
+                            {
+                                @*<a class="collapse-item" href="~/TAP/AuditorList"><i class="fas fa-caret-right mr-2"></i>履歷產品檢查資料</a>*@
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Management") && x.MainFunctionName.Contains("前台")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse10"
+                       aria-expanded="true" aria-controls="collapse10">
+                        <img src="~/img/icon10.png" class="img-fluid mr-1">
+                        <span>前台管理</span>
+                    </a>
+                    <div id="collapse10" class="collapse" aria-labelledby="heading10" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Management_Member_List"))
+                            {
+                                <a class="collapse-item" href="~/Management/MemberList"><i class="fas fa-caret-right mr-2"></i>會員管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_Introduce"))
+                            {
+                                <a class="collapse-item" href="~/Management/Introduce"><i class="fas fa-caret-right mr-2"></i>簡介資料管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_News_List"))
+                            {
+                                <a class="collapse-item" href="~/Management/NewsList"><i class="fas fa-caret-right mr-2"></i>消息管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_Link_List"))
+                            {
+                                <a class="collapse-item" href="~/Management/LinkList"><i class="fas fa-caret-right mr-2"></i>連結管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_QA_List"))
+                            {
+                                <a class="collapse-item" href="~/Management/QAList"><i class="fas fa-caret-right mr-2"></i>問答管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_Event_List"))
+                            {
+                                <a class="collapse-item" href="~/Event/EventList"><i class="fas fa-caret-right mr-2"></i>活動報名管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_LineMsg_Log"))
+                            {
+                                <a class="collapse-item" href="~/LineAccount/MemberInfo"><i class="fas fa-caret-right mr-2"></i>Line Message紀錄</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_LineSubscribe_SubscribeCount"))
+                            {
+                                <a class="collapse-item" href="~/LineSubscribe/SubscribeCount"><i class="fas fa-caret-right mr-2"></i>Line 推播紀錄</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_LineSubscribe_SolarTermsList"))
+                            {
+                                <a class="collapse-item" href="~/LineSubscribe/SolarTermsList"><i class="fas fa-caret-right mr-2"></i>二十四節氣防疫訊息</a>
+                            }
+                            <a class="collapse-item" href="~/LineImg"><i class="fas fa-caret-right mr-2"></i>Line植物醫師據點</a>
+                        </div>
+                    </div>
+                </li>
+            }
+            @if (rp.Any(x => x.Code.StartsWith("B_Management") && x.MainFunctionName.Contains("系統")))
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse11"
+                       aria-expanded="true" aria-controls="collapse11">
+                        <img src="~/img/icon11.png" class="img-fluid mr-1">
+                        <span>系統管理</span>
+                    </a>
+                    <div id="collapse11" class="collapse" aria-labelledby="heading11" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (rp.Any(x => x.Code == "B_Management_SysUser_List"))
+                            {
+                                <a class="collapse-item" href="~/Management/SysUserList"><i class="fas fa-caret-right mr-2"></i>系統帳號管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_Group"))
+                            {
+                                <a class="collapse-item" href="~/Management/GroupList"><i class="fas fa-caret-right mr-2"></i>群組與權限管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_SysNewsList"))
+                            {
+                                <a class="collapse-item" href="~/Management/SysNewsList"><i class="fas fa-caret-right mr-2"></i>系統公告管理</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_Log"))
+                            {
+                                <a class="collapse-item" href="~/SystemLog/OperateRecord"><i class="fas fa-caret-right mr-2"></i>系統操作歷程log</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_Form_Download"))
+                            {
+                                <a class="collapse-item" href="~/Management/FormList"><i class="fas fa-caret-right mr-2"></i>常用表單下載</a>
+                            }
+                            @if (rp.Any(x => x.Code == "B_Management_User_Info"))
+                            {
+                                <a class="collapse-item" href="~/Management/UserInfo"><i class="fas fa-caret-right mr-2"></i>個人資料管理</a>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+            @*<li class="nav-item">
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapse12"
+                       aria-expanded="true" aria-controls="collapse12">
+                        <img src="~/img/icon12.png" class="img-fluid mr-1">
+                        <span>LINE OA</span>
+                    </a>
+                    <div id="collapse12" class="collapse" aria-labelledby="heading12" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <a class="collapse-item" href="~/LineAccount/MemberInfo"><i class="fas fa-caret-right mr-2"></i>會員帳號綁定</a>
+                            <a class="collapse-item" href="~/LineSubscribe/SubscribeCount"><i class="fas fa-caret-right mr-2"></i>推播資訊設定</a>
+                        </div>
+                    </div>
+                </li>*@
+        </ul>
+        <!-- End of Sidebar -->
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <!-- Main Content -->
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light topbar mb-4 static-top">
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <!-- Topbar Search -->
+                    <h2 class="mb-0 system-title">作物病蟲害預警系統暨植物醫師診斷系統管理平台</h2>
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item no-arrow top-bar d-none d-lg-inline">
+                            <div class="nav-link">
+                                <span class="text-gray-600 small">
+                                    若未切換網頁，將於<span id="timer-minute"></span>:<span id="timer-second"></span>後登出
+                                    <button type="button" class="btn btn-sm btn-dark shadow-sm" onclick="extendTimer(10)">延長<i class="fas fa-hourglass-half ml-2"></i></button>
+                                    @{
+                                        string Account = SessionHelper.Get("LoginID");
+                                        if (String.IsNullOrEmpty(Account))
+                                        {
+                                            Account = "?";
+                                        }
+                                        <span>，@(Account)，您好</span>
+                                    }
+                                    <a href="/Login/Logout" class="btn btn-sm btn-dark shadow-sm">登出 <i class="fas fa-sign-out-alt ml-2"></i></a>
+                                </span>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown no-arrow mx-1 d-lg-none">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="far fa-user"></i>
+                                <!-- Counter - Alerts -->
+                            </a>
+                            <!-- Dropdown - Alerts -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                 aria-labelledby="alertsDropdown">
+                                <a class="dropdown-item d-flex align-items-center" onclick="extendTimer(10)">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-success">
+                                            <i class="fas fa-hourglass-half color-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">將於<span id="mtimer-minute"></span>:<span id="mtimer-second"></span>後登出</div>
+                                        <span class="font-weight-bold">延長</span>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center" href="/Login/Logout">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-success">
+                                            <i class="fas fa-sign-out-alt color-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="font-weight-bold">登出</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- End of Topbar -->
+                <section class="section">
+                    @RenderBody()
+                </section>
+            </div>
+            <!-- End of Main Content -->
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright©2021 作物病蟲害預警系統暨植物醫師診斷系統管理平台  版權所有</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+        </div>
+        <!-- End of Content Wrapper -->
+    </div>
+    <!-- End of Page Wrapper -->
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.min.js"></script>
+
+    <!-- Page level plugins -->
+    <!--<script src="~/vendor/chart.js/Chart.min.js"></script>-->
+    <!-- Page level custom scripts -->
+    <script src="~/js/demo/chart-area-demo.js"></script>
+    <script src="~/js/demo/chart-pie-demo.js"></script>
+    <script src="~/js/demo/chart-bar-demo.js"></script>
+    @section scripts {
+        <script type="text/javascript">
+            var InfoMsg = '@(TempData["InfoMsg"])';
+            function extendTimer(minute) {
+                let timerMinute = parseInt($('#timer-minute').text()) + minute;
+                let timerSecond = parseInt($('#timer-second').text());
+                $('#timer-minute').text(timerMinute > 59 ? 59 : timerMinute.toString().padStart(2, '0'));
+                $('#timer-second').text(timerMinute > 59 ? 59 : timerSecond.toString().padStart(2, '0'));
+                $('#mtimer-minute').text(timerMinute > 59 ? 59 : timerMinute.toString().padStart(2, '0'));
+                $('#mtimer-second').text(timerMinute > 59 ? 59 : timerSecond.toString().padStart(2, '0'));
+            }
+            $(document).ready(function () {
+                $('#timer-minute').text(59);
+                $('#timer-second').text(59);
+                $('#mtimer-minute').text(59);
+                $('#mtimer-second').text(59);
+                setInterval(function () {
+                    let timerMinute = parseInt($('#timer-minute').text());
+                    let timerSecond = parseInt($('#timer-second').text());
+                    if (timerMinute == 0 && timerSecond == 0) {
+                        return location.assign("/Login/TimeOut");
+                    }
+                    if (timerSecond - 1 < 0) {
+                        timerMinute--;
+                        timerSecond = 59;
+                    } else {
+                        timerSecond--;
+                    }
+                    $('#timer-minute').text(timerMinute.toString().padStart(2, '0'));
+                    $('#timer-second').text(timerSecond.toString().padStart(2, '0'));
+                    $('#mtimer-minute').text(timerMinute.toString().padStart(2, '0'));
+                    $('#mtimer-second').text(timerSecond.toString().padStart(2, '0'));
+                }, 1000);
+                if (InfoMsg) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: InfoMsg,
+                        confirmButtonText: "關閉",
+                    });
+                }
+
+                $(".select2").select2();
+            });
+        </script>
+    }
+    @RenderSection("script", required: false)
+</body>
+
+</html>

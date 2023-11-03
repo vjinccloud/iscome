@@ -1,0 +1,171 @@
+﻿@model InformationSystem.ViewModel.InvestCountStatisticShowModel
+@{
+    ViewBag.Title = "InvestCount";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-success">監測數據統計-調查次數/點位</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white ">
+                    <div class="card-body">
+                        <div class="card-body">
+                            <form id="form" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <div class="form-inline mb-3">
+                                    <label>查詢年月：</label>
+                                    <input type="date" class="form-control" name="StartDate" value="@(Model.StartDate.HasValue? Model.StartDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                    <span>～</span>
+                                    <input type="date" class="form-control" name="EndDate" value="@(Model.EndDate.HasValue? Model.EndDate.Value.ToString("yyyy-MM-dd") : "")" />
+                                    <input type="hidden" id="hidAction" name="ActionName" />
+                                    <input type="hidden" id="hidQueryType" name="QueryType" />
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table mb-0 table-striped" style="min-width:700px;">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th scope="col">報表名稱</th>
+                                                <th scope="col">動作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>月份、調查次數統計表</td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <button class="btn btn-primary m-2" onclick="handleSubmit(event,'1','')">查詢預覽</button>
+                                                        <button class="btn btn-primary m-2" onclick="handleSubmit(event,'1','export')">Excel</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>月份、調查點位數統計表</td>
+                                                <td>
+                                                    <div class="form-inline">
+                                                        <button class="btn btn-primary m-2" onclick="handleSubmit(event,'2','')">查詢預覽</button>
+                                                        <button class="btn btn-primary m-2" onclick="handleSubmit(event,'2','export')">Excel</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </form>
+                            <div class="table-responsive mt-4">
+
+                                @if (Model.QueryType == 1)
+                                {
+                                    <h4 class="mb-3">
+                                        月份、調查次數統計表(根據登打調查日期計算調查次數)
+                                    </h4>
+                                }
+                                else
+                                {
+                                    <h4 class="mb-3">
+                                        月份、調查點位數統計表(比對GPS座標至小數點第3位)
+                                    </h4>
+                                }
+
+
+                                <table class="table mb-0 no-border" style="min-width:700px;">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>專案名稱</th>
+                                            <th>1月</th>
+                                            <th>2月</th>
+                                            <th>3月</th>
+                                            <th>4月</th>
+                                            <th>5月</th>
+                                            <th>6月</th>
+                                            <th>7月</th>
+                                            <th>8月</th>
+                                            <th>9月</th>
+                                            <th>10月</th>
+                                            <th>11月</th>
+                                            <th>12月</th>
+                                            <th>合計</th>
+                                        </tr>
+                                        @foreach (var item in Model.Data)
+                                        {
+                                            <tr>
+                                                <td>@item.Title</td>
+                                                <td>@item.Jan</td>
+                                                <td>@item.Feb</td>
+                                                <td>@item.Mar</td>
+                                                <td>@item.Apr</td>
+                                                <td>@item.May</td>
+                                                <td>@item.Jun</td>
+                                                <td>@item.Jul</td>
+                                                <td>@item.Aug</td>
+                                                <td>@item.Sep</td>
+                                                <td>@item.Oct</td>
+                                                <td>@item.Nov</td>
+                                                <td>@item.Dec</td>
+                                                <td>@item.Total</td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <th>總計</th>
+                                            <th>@Model.Data.Sum(x => x.Jan)</th>
+                                            <th>@Model.Data.Sum(x => x.Feb)</th>
+                                            <th>@Model.Data.Sum(x => x.Mar)</th>
+                                            <th>@Model.Data.Sum(x => x.Apr)</th>
+                                            <th>@Model.Data.Sum(x => x.May)</th>
+                                            <th>@Model.Data.Sum(x => x.Jun)</th>
+                                            <th>@Model.Data.Sum(x => x.Jul)</th>
+                                            <th>@Model.Data.Sum(x => x.Aug)</th>
+                                            <th>@Model.Data.Sum(x => x.Sep)</th>
+                                            <th>@Model.Data.Sum(x => x.Oct)</th>
+                                            <th>@Model.Data.Sum(x => x.Nov)</th>
+                                            <th>@Model.Data.Sum(x => x.Dec)</th>
+                                            <th>@Model.Data.Sum(x => x.Total)</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Script {
+    <script>
+        function handleSubmit(e, qType, action) {
+            e.preventDefault();
+
+            $('#hidAction').val(action);
+            $('#hidQueryType').val(qType);
+
+            console.log($('form').serializeArray())
+            document.getElementById('form').submit();
+        }
+
+        function CloneRows() {
+            $('.contextCloneRow').clone().insertBefore($('#cloneFlag')).removeClass('contextCloneRow').addClass('contextRow').show();
+        }
+    </script>
+}
+<!-- 功能執行警示結果 -->
+@{
+    string strTempMsg = (TempData["TempMsg"] == null) ? "" : TempData["TempMsg"].ToString();
+    TempData["TempMsg"] = null;
+    //取代換行
+    strTempMsg = strTempMsg.Replace("\r\n", " ");
+    strTempMsg = strTempMsg.Replace("\n", " ");
+}
+<script type="text/javascript">
+        var sMessage = "@strTempMsg";
+        if (sMessage.length > 0) {
+            setTimeout("alert(sMessage)", 500);
+        }
+</script>
+
+
+

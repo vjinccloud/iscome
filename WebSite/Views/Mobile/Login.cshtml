@@ -1,0 +1,386 @@
+﻿
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title -->
+    <title>高雄市政府農業局線上植物防疫平台</title>
+
+
+    <!-- Core Stylesheet -->
+    <link href="../css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="../icon/css/all.min.css" rel="stylesheet" />
+    <link href="../css/vnstyle.css" rel="stylesheet" />
+    <link href="../css/anstyle.css" rel="stylesheet" />
+    <link href="../css/bootstrap/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="../packages/core/main.css" rel="stylesheet" />
+    <link href="../packages/daygrid/main.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+    <link href="../Scripts/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="../css/pesticidesInventoryInfo.css" rel="stylesheet" />
+    <!-- jQuery-->
+    <script src="../Scripts/jquery-3.6.3.min.js"></script>
+    <script src="../Scripts/jquery.validate.min.js"></script>
+    <script src="../Scripts/jquery.validate-additional-methods.js"></script>
+    <script src="../Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="../Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <!-- Popper js -->
+    <script src="../js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="../js/bootstrap/bootstrap.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="../Scripts/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Moment -->
+    <script src="../Scripts/moment.js"></script>
+    <!-- Bootstrap-datepicker -->
+    <script src="../js/bootstrap/bootstrap-datepicker.js"></script>
+    <script src="../js/bootstrap/locales/bootstrap-datepicker.zh-TW.js"></script>
+    <script src="../packages/core/main.js"></script>
+    <script src="../packages/core/locales-all.js"></script>
+    <script src="../packages/daygrid/main.js"></script>
+    <script src="../packages/interaction/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '@(ICCModule.Helper.AppSettingHelper.GetAppSetting("FbAppId"))',
+                cookie: true,
+                xfbml: true,
+                version: 'v7.0'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = 'https://connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v3.2';
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+    </script>
+    <style>
+        /*  */
+
+        .login-main-other .thirdpart-login-tip[data-v-deb5a5a8]:after,
+        .login-main-other .thirdpart-login-tip[data-v-deb5a5a8]:before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            border: 1px solid #b2b2b2;
+            width: 58px;
+        }
+
+        *,
+        :after,
+        :before {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            background: #f3f3f3;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            border-radius: 3px;
+            background: #d1d1d1;
+        }
+    </style>
+</head>
+
+<body class="bg-img">
+    <div class="container2">
+
+        <div class="text-center">
+            <a href="../Home/Index">
+                <img src="../images/logo2.png" style="width:200px; margin:40px 0;">
+            </a>
+        </div>
+
+        <div class="login">
+            <h3 class="title">
+                <span class="line">馬上登入</span><span class="tips">Login</span></h3>
+                <form action="/Home/Index" method="post">
+                    <div class="form-group">
+                        <span class="text-p">帳號</span>
+                        <input class="form-control form-p" id="Account" name="Account" type="text" value="">
+                    </div>
+                    <div class="form-group position-relative">
+                        <span class="text-p">密碼</span>
+                        <input class="form-control form-p" id="LoginPass" name="LoginPass" type="password" value="">
+                        <div class="position-absolute" style="cursor: pointer; padding: 4px 10px; top: 0; right: 0;">
+                            <i class="far fa-eye" id="font-awesome" onclick="showpwd()"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-6 col-md-7">
+                                <span class="text-p">驗證碼</span>
+                                <input autocomplete="off" class="form-control form-p" id="VerifyCode" name="VerifyCode"
+                                       type="text" value="">
+                            </div>
+                            <div class="col-6 col-md-5">
+                                <img id="verifyimage" src="/mobile/GetValidateCodeImage" href="#"
+                                     onclick="Refresh_ValidateCode()" title="刷新驗證碼" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="hidLoginType" name="LoginType" value="0">
+                    <input type="hidden" id="hidLoginId" name="LoginId">
+                    <div class="form-group">
+                        <button type="button" class="btn btn-warning btn-block" onclick="DoSubmit()">登入</button>
+                    </div>
+
+
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex" style="align-items: center;">
+                            @*<input id="remember" type="checkbox">
+                            <label class="form-check-label ml-2" for="remember">記住我</label>*@
+                        </div>
+                        <ul class="login-list">
+                            <li><a href="#" onclick="Register()">註冊會員</a></li>
+                            @*<li><a href="/Member/Forgot">忘記密碼？</a></li>*@
+                        </ul>
+                    </div>
+                </form>
+
+                <div class="col-12" style="border-top: 3px solid grey; padding-top: 10px; margin-top: 50px;">
+                    <span class="font-weight-bold py-2">快速登入</span>
+                    <div class="w-100 d-flex flex-column flex-md-row justify-content-md-around gap-2">
+                        <div class="col-12">
+                            <button id="customBtn" class="btn btn-danger ">
+                                <i class="fab fa-google mr-2"></i>
+                                登入
+                            </button>
+                            <button id="fbLogin" onclick="checkLoginState();" class="btn btn-primary">
+                                <i class=" fab fa-facebook-square mr-2"></i>登入
+                            </button>
+                            <button id="customBtn" class="btn btn-success " onclick="LineAuth();">
+                                <i class="fab fa-line mr-2"></i>登入
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="@(ICCModule.Helper.AppSettingHelper.GetAppSetting("GoogleLoginId"))">
+    <script src="https://apis.google.com/js/api:client.js"></script>
+
+    <script>
+
+
+        $(document).ready(function () {
+            var localstorageAccount = localStorage.getItem("account");
+            if (localstorageAccount != null && localstorageAccount != '') {
+                $('#Account').val(localstorageAccount);
+                $('#remember').prop('checked', true);
+            }
+
+            if (QueryString("loginType") == '3') {
+                $('#hidLoginId').val(QueryString("loginKey"));
+                $('#hidLoginType').val('3');
+                DoSubmit();
+            }
+        });
+
+
+        //秀密碼
+        function showpwd() {
+            var id = $('#LoginPass');
+            var btn = $('#font-awesome');
+            if (id[0].type == 'password') {
+                id[0].type = 'text';
+                btn.removeClass('far fa-eye');
+                btn.addClass('far fa-eye-slash');
+            }
+            else {
+                id[0].type = 'password';
+                btn.removeClass('far fa-eye-slash');
+                btn.addClass('far fa-eye');
+            }
+        }
+
+        function QueryString(name) {
+            var AllVars = window.location.search.substring(1);
+            var Vars = AllVars.split("&");
+            for (i = 0; i < Vars.length; i++) {
+                var Var = Vars[i].split("=");
+                if (Var[0] == name) return Var[1];
+            }
+            return "";
+        }
+
+        function Register() {
+
+            var q = window.location.search;
+
+            var url = "/LineRegist/NormalRegist" + q;
+            //alert(url);
+            window.location = url;
+        }
+
+
+        function DoSubmit() {
+            if ($('#remember').is(":checked") == true) {
+                localStorage.setItem("account", $('#Account').val());
+                // var MemberAcc = $('#Account').val();
+                //document.cookie = 'MemberAcc=' + MemberAcc + '; max-age=2592000; path=/';
+            }
+            else {
+                localStorage.removeItem("account");
+            }
+
+            $.ajax({
+                url: '/mobile/Login',
+                data: {
+                    // __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(),
+                    // ID: ID,
+                    // Status: status
+                    account: $('#Account').val(),
+                    password: $('#LoginPass').val(),
+                    userid: QueryString("userid"),
+                    VerifyCode: $('#VerifyCode').val(),
+                    LoginId: $('#hidLoginId').val(),
+                    LoginType:$('#hidLoginType').val(),
+                },
+                type: 'POST',
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    //alert(JSON.stringify(data));
+
+                    if (data.error != "") {
+                        alert(data.error);
+                        console.log(data.test);
+                    }
+                    else {
+                        window.location = data.url;
+                    }
+
+                    /*
+                    Swal.fire({
+                        icon: data.result ? "info" : "error",
+                        title: data.result ? "更新成功" : "更新失敗"
+                    })
+                    // 變更狀態
+                    let r = self.doctorSchedules.findIndex(d => d.ID == ID);
+                    console.log('changeStatus', r, data)
+                    if (data.result && r > -1) {
+                        let record = self.doctorSchedules[r];
+                        record.Status = status;
+                        self.doctorSchedules.splice(r, 1, record);
+                    }
+                    */
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(JSON.stringify(xhr));
+                },
+            });
+
+        }
+    </script>
+    <script>
+         //google登入
+        var googleUser = {};
+        var startApp = function () {
+            gapi.load('auth2', function () {
+                // Retrieve the singleton for the GoogleAuth library and set up the client.
+                auth2 = gapi.auth2.init({
+                    client_id: '@(ICCModule.Helper.AppSettingHelper.GetAppSetting("GoogleLoginId"))',
+                    cookiepolicy: 'single_host_origin',
+                    
+                    // Request scopes in addition to 'profile' and 'email'
+                    //scope: 'additional_scope'
+                });
+                attachSignin(document.getElementById('customBtn'));
+            });
+        };
+
+        function attachSignin(element) {
+            //console.log(element.id);
+            auth2.attachClickHandler(element, {},
+                function (googleUser) {
+                    var profile = googleUser.getBasicProfile();
+
+                    $('#hidLoginId').val(profile.getId());
+                    $('#hidLoginType').val('1');
+                    DoSubmit();
+
+                    //location.href = "/LineRegist/FastRegist?loginType=1&loginKey=" + profile.getId();
+                    //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+                    //console.log('Name: ' + profile.getName());
+                    //console.log('Image URL: ' + profile.getImageUrl());
+                    //console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+                }, function (error) {
+                    //alert(JSON.stringify(error, undefined, 2));
+                });
+        }
+
+        //FB登入
+        function statusChangeCallback(response) {
+            console.log('statusChangeCallback');
+            console.log(response);
+            if (response.status === 'connected') {
+                $('#hidLoginId').val(response.authResponse.userID);
+                $('#hidLoginType').val('2');
+                DoSubmit();
+            }
+            else {
+                FB.login(function (response) {
+                    if (response.status === 'connected') {
+                        $('#hidLoginId').val(response.authResponse.userID);
+                        $('#hidLoginType').val('2');
+                        DoSubmit();
+                    }
+                });
+            }
+        }
+
+        function checkLoginState() {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
+        }
+
+        function LineAuth() {
+            var q = QueryString("userid");
+
+            var URL = 'https://access.line.me/oauth2/v2.1/authorize?';
+            URL += 'response_type=code';
+            URL += '&client_id=@(ICCModule.Helper.AppSettingHelper.GetAppSetting("ChannelId"))';
+            URL += '&redirect_uri=@(Request.Url.Scheme)://@(Request.Url.Authority)/LineRegist/LineCallBack?userid=' +q;
+            URL += '&state=qwera';
+            URL += '&scope=openid%20profile';
+            window.location.href = URL;
+        }
+
+    </script>
+    <script>startApp();</script>
+</body>
+
+</html>

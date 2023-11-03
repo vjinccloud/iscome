@@ -1,0 +1,240 @@
+﻿
+@{
+    ViewBag.Title = "Detail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScript {
+    @if (ICCModule.Helper.AppSettingHelper.Get_Debug_Mode())
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    }
+    else
+    {
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    }
+}
+
+@section Style {
+    <style>
+        .font-weight-bolder {
+            font-weight: bolder;
+        }
+
+        .pest-notice-header {
+            background-color: #ffc107 !important;
+            font-size: x-large;
+            padding: 1rem;
+        }
+
+        .pest-notice-title {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .pest-notice-date {
+            min-width: 150px;
+            width: 150px;
+        }
+
+        .page-link {
+            padding: 0.5rem 0;
+            text-align: center;
+        }
+    </style>
+}
+
+<div class="s-menu">
+    <div class="container">
+        <ul>
+            <li><a href="~/PreventionInfo/Detail">疫情預警</a></li>
+            <li><a href="~/PreventionInfo/CropMap">作物防災告警分布地圖</a></li>
+        </ul>
+    </div>
+</div>
+
+<section class="content bg-img">
+    <div class="con-box">
+        <div class="container">
+            <div class="con-head">
+                <div class="title d-flex justify-content-between pb-0 align-items-end">
+                    <h3>
+                        <span class="line">疫情預警</span>
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="~/PreventionInfo/Detail">疫情資訊</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">疫情預警</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="con-body" id="Detail">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="search" style="display:inline-block">
+                            <input id="KeyWord" class="form-control form-control-sm" placeholder="關鍵字搜尋" v-model="KeyWord">
+                            <button type="button" class="btn btn-dark btn-sm" v-on:click="FilterKeyWord"><i class="fas fa-search"></i></button>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex font-weight-bolder pest-notice-header">
+                                <div class="pest-notice-date">
+                                    發布日期
+                                </div>
+                                <div>
+                                    主旨
+                                </div>
+                            </div>
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel panel-default p-3" v-for="(d, i) in ShowData" v-bind:key="'notice_' + i">
+                                    <div class="panel-heading" role="tab" v-bind:id="'PestNotice-' + i">
+                                        <h4 class="panel-title">
+                                            <a class="d-flex pest-notice-title" style="color: black;" role="button"
+                                               data-toggle="collapse"
+                                               data-parent="#accordion"
+                                               v-bind:href="'#collapse-' + i" aria-expanded="false" v-bind:aria-controls="'collapse-' + i">
+                                                <span class="pest-notice-date">
+                                                    {{ d.CreatedAt }}
+                                                </span>
+                                                <span>
+                                                    {{ d.Title }}
+                                                </span>
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div v-bind:id="'collapse-' + i" class="panel-collapse collapse" role="tabpanel" v-bind:aria-labelledby="'PestNotice-' + i">
+                                        <div class="panel-body">
+                                            <div>
+                                                <span class="font-weight-bold">疫情內容:</span>
+                                                <span v-html="d.Content"></span>
+                                            </div>
+                                            <br />
+                                            <div>
+                                                <span class="font-weight-bold">建議用藥:</span>
+                                                <span v-html="d.SuggestedMedication"></span>
+                                            </div>
+                                            <br />
+                                            <div>
+                                                <span class="font-weight-bold">發布單位:</span>
+                                                <span>{{ d.ProvideUnit }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-pagebox">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <li class="page-item" v-if="TotalPage > 1 && CurrentPage > 1">
+                                        <span class="page-link" aria-label="Previous" v-on:click="ChangePage(-1)">
+                                            <i class="fas fa-long-arrow-alt-left"></i>
+                                        </span>
+                                    </li>
+                                    <li class="page-item" v-bind:class="{'active': p === CurrentPage}" v-for="(p, i) in PageIndex" v-bind:key="'page_' + i">
+                                        <span class="page-link" v-on:click="DisplayPage(p)">{{ p }}</span>
+                                    </li>
+                                    <li class="page-item" v-if="TotalPage > 1 && CurrentPage < TotalPage">
+                                        <span class="page-link" aria-label="Next" v-on:click="ChangePage(1)">
+                                            <i class="fas fa-long-arrow-alt-right"></i>
+                                        </span>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <div class="page-n">
+                                <span class="mr-2">每頁</span>
+                                <select class="form-control" v-model="DataPerPage">
+                                    <option v-for="page in PerPages" v-bind:key="'page_' + page" v-bind:value="page">{{ page }}</option>
+                                </select>
+                                <span class="ml-2">筆 資料：{{ FilterData.length }}筆，共 {{ TotalPage }}頁。</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+
+@section Script {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            const Detail = new Vue({
+                el: "#Detail",
+                data: {
+                    SourceData: [],
+                    FilterData: [],
+                    ShowData: [],
+                    KeyWord: '',
+                    PageIndex: [1],
+                    PerPages: [30, 50, 100],
+                    DataPerPage: 30,
+                    CurrentPage: 1,
+                    TotalPage: 0,
+                },
+                watch: {
+                    DataPerPage(val) {
+                        this.TotalPage = Math.ceil(this.SourceData.length / val);
+                        if (this.CurrentPage > this.TotalPage) {
+                            this.DisplayPage(this.TotalPage);
+                        }
+                    }
+                },
+                methods: {
+                    ChangePage(num) {
+                        let current = this.CurrentPage + num;
+                        if (current >= 1 || current <= this.TotalPage) {
+                            this.DisplayPage(current);
+                        }
+                    },
+                    DisplayPage(PageNo) {
+                        if (PageNo > 0 && PageNo <= this.TotalPage) {
+                            this.CurrentPage = PageNo;
+                            this.ShowData = this.FilterData.slice((PageNo - 1) * this.DataPerPage, PageNo * this.DataPerPage);
+                            let pageIndex = [];
+                            if (PageNo - 1 >= 1) {
+                                pageIndex.push(PageNo - 1);
+                            }
+                            pageIndex.push(PageNo);
+                            if (PageNo + 1 < this.TotalPage) {
+                                pageIndex.push(PageNo + 1);
+                            }
+                            if (pageIndex.length === 2 && (PageNo + 2) < this.TotalPage) {
+                                pageIndex.push(PageNo + 2);
+                            }
+
+                            this.PageIndex = pageIndex;
+                        }
+                    },
+                    FilterKeyWord() {
+                        if (this.KeyWord.length === 0) {
+                            this.FilterData = JSON.parse(JSON.stringify(this.SourceData));
+                        } else {
+                            this.FilterData = JSON.parse(JSON.stringify(this.SourceData)).filter((d) => {
+                                return d.Title.includes(this.KeyWord);
+                            });
+                        }
+                        this.TotalPage = Math.ceil(this.FilterData.length / this.DataPerPage);
+                        this.DisplayPage(this.CurrentPage);
+                    },
+                    GetData() {
+                        const self = this;
+                        $.ajax({
+                            url: "/PreventionInfo/List",
+                            success: function (res) {
+                                self.SourceData = res;
+                                self.FilterKeyWord();
+                            },
+                            dataType: 'json'
+                        });
+                    }
+                },
+                mounted() {
+                    this.GetData();
+                }
+            });
+        });
+    </script>
+}

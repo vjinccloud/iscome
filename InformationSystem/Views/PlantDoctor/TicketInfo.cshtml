@@ -90,7 +90,7 @@
 
 <div class="container-fluid" id="DoctorSchedule">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-success">植醫@(Model.IsAdd ? "新增" : "編輯")案件-@(OriginName) 單號：@Model.Schedule.CaseNo</h1>
+        <h1 class="h3 mb-0 text-success">植醫@(Model.IsAdd ? "新增" : "編輯")案件-@(OriginName)</h1>
     </div>
     <div class="row">
         <div class="col-12">
@@ -98,7 +98,6 @@
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Schedule.Origin" value="@Model.Schedule.Origin">
                 <input type="hidden" name="Schedule.ID" value="@Model.Schedule.ID">
-                <input type="hidden" name="Schedule.ParentID" value="@Model.Schedule.ParentID">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 bg-white">
                         <div class="card-body">
@@ -179,6 +178,25 @@
                                                 <select name="Schedule.LoginID" class="form-control" v-model="Schedule.LoginID">
                                                     <option value="">請選擇</option>
                                                     <option v-for="(s, i) in DoctorList" v-bind:key="s.LoginID" v-bind:value="s.LoginID">
+                                                        {{ s.UserName }}
+                                                    </option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                            </td>
+                                            <td>
+                                            </td>
+                                            <td>
+                                                <span>
+                                                    <span class="important">專家姓名</span>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <select name="Schedule.ExpertID" class="form-control" v-model="Schedule.ExpertID">
+                                                    <option value="">請選擇</option>
+                                                    <option v-for="(s, i) in ExpertList" v-bind:key="s.ExpertID" v-bind:value="s.ExpertID">
                                                         {{ s.UserName }}
                                                     </option>
                                                 </select>
@@ -488,9 +506,9 @@
                                             <td>
                                                 <input type="text" name="Schedule.ContinuousCrop" maxlength="100" v-model="Schedule.ContinuousCrop" />
                                                 @*<div class="form-check form-check-inline" v-for="s in EarlyCropsList" v-bind:key="s.Code" v-if="Schedule.FarmingHistory == 'Continuous'">
-                                            <input class="form-check-input" type="radio" name="Schedule.ContinuousCrop" v-bind:id="s.Code" v-bind:value="s.Code" v-model="Schedule.ContinuousCrop">
-                                            <label class="form-check-label" v-bind:for="s.Code">{{ s.Name }}</label>
-                                        </div>*@
+                    <input class="form-check-input" type="radio" name="Schedule.ContinuousCrop" v-bind:id="s.Code" v-bind:value="s.Code" v-model="Schedule.ContinuousCrop">
+                    <label class="form-check-label" v-bind:for="s.Code">{{ s.Name }}</label>
+                </div>*@
                                             </td>
                                         </tr>
                                         <tr>
@@ -592,12 +610,12 @@
                                             </td>
                                         </tr>
                                         @*<tr>
-                                    <td>
-                                        <span>排班歷程</span>
-                                    </td>
-                                    <td colspan="3">
-                                    </td>
-                                </tr>*@
+            <td>
+                <span>排班歷程</span>
+            </td>
+            <td colspan="3">
+            </td>
+        </tr>*@
                                         @if (Model.Schedule.TransDate.HasValue || Model.Schedule.AcceptCaseDate.HasValue)
                                         {
                                             <tr>
@@ -691,6 +709,7 @@
                     TransferList: @(new HtmlString(JsonConvert.SerializeObject(Model.TransferList))),
                     StatusList: @(new HtmlString(JsonConvert.SerializeObject(Model.StatusList))),
                     DoctorList: @(new HtmlString(JsonConvert.SerializeObject(Model.DoctorList))),
+                    ExpertList: @(new HtmlString(JsonConvert.SerializeObject(Model.ExpertList))),
                     Schedule: @(new HtmlString(JsonConvert.SerializeObject(Model.Schedule))),
                     ContactList: [
                         {

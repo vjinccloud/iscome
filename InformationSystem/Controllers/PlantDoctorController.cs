@@ -26,7 +26,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.WebPages;
 
 namespace InformationSystem.Controllers
 {
@@ -43,12 +42,12 @@ namespace InformationSystem.Controllers
             var data = Service_doctorSchedule.GetList(x => x.IsTransCase != true || !x.IsTransCase.HasValue);
             RecordListViewModel model = new RecordListViewModel()
             {
-                doctorSchedules = data.OrderByDescending(x => x.CreatedAt).Take(20).ToList(),
+                doctorSchedules = data.Where(x => x.Status == "Appointment").OrderBy(x => x.ReserveDatetimeStr).Take(20).ToList(),
                 TotalPage = (data.Count() / 20) + 1
             };
             if (model.RoleCode == "R08")
             {
-                model.doctorSchedules = model.doctorSchedules.Where(x => model.AllDoctors.Select(o => o.LoginID).Contains(x.LoginID)).ToList();
+                model.doctorSchedules = model.doctorSchedules.Where(x => model.AllDoctors.Select(o => o.LoginID).Contains(x.LoginID) && x.Status == "Appointment").ToList();
             }
             return View(model);
         }
@@ -92,7 +91,6 @@ namespace InformationSystem.Controllers
                     break;
             }
 
-            if (!String.IsNullOrEmpty(model.DoctorId)) filter = filter.And(x => x.LoginID == model.DoctorId);
             // 行政區
             if (!String.IsNullOrEmpty(model.District)) filter = filter.And(x => x.Zip == model.District);
             // 作物類別
@@ -107,7 +105,9 @@ namespace InformationSystem.Controllers
             if (!String.IsNullOrEmpty(model.PestType)) filter = filter.And(x => x.PestType.Contains(model.PestType));
             //後送診斷
             if (!String.IsNullOrEmpty(model.TransferDiagnosis)) filter = filter.And(x => x.TransferDiagnosis.Contains(model.TransferDiagnosis));
-            if (!String.IsNullOrEmpty(model.KeyWord)) filter = filter.And(x => x.Name.Contains(model.KeyWord) || x.Context.Contains(model.KeyWord) || x.ResultDiagnosis.Contains(model.KeyWord) || x.Recommendation.Contains(model.KeyWord));
+            if (!String.IsNullOrEmpty(model.KeyWord)) filter = filter.And(x => x.Context.Contains(model.KeyWord) || x.ResultDiagnosis.Contains(model.KeyWord) || x.Recommendation.Contains(model.KeyWord));
+            if (!String.IsNullOrEmpty(model.Name)) filter = filter.And(x => x.Name.Contains(model.Name));
+            if (!String.IsNullOrEmpty(model.CropName)) filter = filter.And(x => x.CropName.Contains(model.CropName));
 
             #endregion
             var data = Service_doctorSchedule.GetList(filter);
@@ -115,6 +115,8 @@ namespace InformationSystem.Controllers
             {
                 data = data.Where(x => model.AllDoctors.Select(o => o.LoginID).Contains(x.LoginID)).ToList();
             }
+            if (!string.IsNullOrEmpty(model.ExpertId))
+                data = data.Where(x => model.AllExperts.Select(o => o.LoginID).Contains(x.ExpertID)).ToList();
             if (!string.IsNullOrEmpty(model.CaseNo))
                 data = data.Where(x => x.CaseNo.Contains(model.CaseNo)).ToList();
 
@@ -147,12 +149,12 @@ namespace InformationSystem.Controllers
                     其他資材 = x.OtherMedicines,
                     耕作歷史 = Service_defCode.GetDetail("FarmingHistory", x.FarmingHistory)?.Name ?? "",
                     前期作物 = x.ContinuousCrop,
-                    害物種類 = string.Join(",", Service_defCode.GetList("PestType").Where(o => x.PestTypeArr.Contains(o.Code)).Select(o => o.Name)) + (!string.IsNullOrEmpty(x.OtherPest) ? $",{x.OtherPest}" : ""),
+                    害物種類 = string.Join(",", Service_defCode.GetList("PestType").Where(o => x.PestTypeArr.Contains(o.Code)).Select(o => o.Name)) + (!string.IsNullOrEmpty(x.OtherPest) ? $",{"其它 - 資材使用問題"}" : ""),
                     診斷結果 = x.ResultDiagnosis,
                     防治建議類別 = Service_defCode.GetDetail("PreventionRecommendations", x.RecommendationCategory)?.Name ?? "",
                     後送診斷 = Service_defCode.GetDetail("TransferDiagnosis", x.TransferDiagnosis)?.Name ?? "",
                     實際診斷日期 = x.DateDiagnosisStr,
-                    植物醫師 = x.DoctorDiagnosis,
+                    植物醫師 = x.LoginID,
                     狀態 = Service_defCode.GetDetail("PlantDoctorRecordStatus", x.Status)?.Name ?? "",
                     植醫備註 = x.DoctorComment,
                 }).ToList();
@@ -161,8 +163,8 @@ namespace InformationSystem.Controllers
                 return File(ExcelHelper.RenderDataTableToExcel(ExcelHelper.ConvertToDataTable(actRegister), numList), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"植醫診斷紀錄_{DateTime.Now.ToString("yyyyMMddHHmm")}.xlsx");
             }
 
-            model.doctorSchedules = data.OrderByDescending(x => x.CreatedAt).Skip((model.Page - 1) * 3).Take(3).ToList();
-            model.TotalPage = (data.Count() / 3) + 1;
+            model.doctorSchedules = data.OrderByDescending(x => x.CreatedAt).Skip((model.Page - 1) * 20).Take(20).ToList();
+            model.TotalPage = (data.Count() / 20) + 1;
 
             return View(model);
         }
@@ -1633,7 +1635,7 @@ namespace InformationSystem.Controllers
         /// 後台新增案件
         /// </summary>
         /// <returns></returns>
-        public ActionResult BackAdd(string cID = "", bool revisit = false)
+        public ActionResult BackAdd(string cID = "")
         {
             InfoListViewModel model = new InfoListViewModel();
             model.Schedule.Origin = "PlantDoctor";
@@ -1652,6 +1654,7 @@ namespace InformationSystem.Controllers
             model.MapApiKey = ConfigurationManager.AppSettings["MapApiKey"];
 
             var allDoctors = Service_sysUserInfo.GetEnableDoctorList();
+            var allExperts = Service_sysUserInfo.GetEnableExpertList();
             var getUserId = SessionHelper.Get("LoginID");
             if (!string.IsNullOrEmpty(getUserId) && allDoctors.Any(x => x.LoginID == getUserId && x.RoleID == "R08"))
             {
@@ -1665,6 +1668,7 @@ namespace InformationSystem.Controllers
             else allDoctors = allDoctors.Where(x => x.RoleID == "R05").ToList();
 
             model.DoctorList = allDoctors;
+            model.ExpertList = allExperts;
 
             if (!string.IsNullOrEmpty(cID))
             {
@@ -1679,6 +1683,7 @@ namespace InformationSystem.Controllers
                         OtherUnit = schedule.OtherUnit,
                         OrgName = schedule.OrgName,
                         LoginID = schedule.LoginID,
+                        ExpertID = schedule.ExpertID,
                         Inquiry = schedule.Inquiry,
                         UnqualifiedUnit = schedule.UnqualifiedUnit,
                         Name = schedule.Name,
@@ -1693,7 +1698,6 @@ namespace InformationSystem.Controllers
                         FarmingMethod = schedule.FarmingMethod,
                         ContactMethod = schedule.ContactMethod,
                         OnsetLocation = schedule.OnsetLocation,
-                        ParentID = (revisit && !cID.IsEmpty()) ? long.Parse(cID) : (long?) null,
                     };
                     model.Schedule = copySchedule;
                 }

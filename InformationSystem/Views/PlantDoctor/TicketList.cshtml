@@ -18,7 +18,7 @@
 
 <div class="container-fluid" id="TicketList">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-success">植醫掛號</h1>
+        <h1 class="h3 mb-0 text-success">專家 / 植醫掛號</h1>
     </div>
     <div class="row">
         <div class="col-12">
@@ -89,28 +89,43 @@
                                         </th>
                                         <td>
                                             <div class="form-inline">
-                                                <select name="CropType" class="form-control mr-2" style="width: 150px;" v-model="CropType">
-                                                    <option value="" selected>請選擇</option>
-                                                    <option v-for="(s, i) in CropTypeList" v-bind:key="'Crop_' + s.ID" v-bind:value="s.Name">
-                                                        {{ s.Name }}
-                                                    </option>
-                                                    <option value="Other">其他</option>
-                                                </select>
+                                                <div class="d-flex flex-column position-relative">
+                                                    <select name="CropType" class="form-control mr-2" style="flex:40%" v-model="CropType">
+                                                        <option value="">請選擇</option>
+                                                        <option v-for="(s, i) in CropTypeList" v-bind:key="'CropType_' + s.ID" v-bind:value="s.Name">
+                                                            {{ s.Name }}
+                                                        </option>
+                                                        <option value="Other">其他</option>
+                                                    </select>
+                                                </div>
+                                                <div class="d-flex flex-column position-relative">
+                                                    <select name="CropName" class="form-control ml-2" style="flex:40%" v-model="CropName">
+                                                        <option value="">請選擇</option>
+                                                        <option v-for="(s, i) in CropList" v-bind:key="'Crop_' + s.ID" v-bind:value="s.Name">{{ s.Name }}</option>
+                                                    </select>
+                                                </div>
                                                 <input type="text" name="Crop" class="form-control" style="flex:auto" v-show="CropType == 'Other'" />
                                             </div>
                                         </td>
                                         <th>
-                                            <label>作物名稱：</label>
+                                            <label>專家姓名：</label>
+                                        </th>
+                                        <td>
+                                            <select name="ExpertId" class="form-control" style="width: 150px;" v-model="ExpertId">
+                                                <option value="" selected>請選擇</option>
+                                                <option v-for="(s, i) in AllExperts" v-bind:key="s.LoginID" v-bind:value="s.LoginID">
+                                                    {{ s.UserName }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <label>關鍵字：</label>
                                         </th>
                                         <td>
                                             <div class="form-inline">
-                                                <select name="CropType" class="form-control mr-2" style="width: 150px;" v-model="CropType">
-                                                    <option value="" selected>請選擇</option>
-                                                    <option v-for="(s, i) in CropTypeList" v-bind:key="'Crop_' + s.ID" v-bind:value="s.Name">
-                                                    </option>
-                                                    <option value="Other">其他</option>
-                                                </select>
-                                                <input type="text" name="Crop" class="form-control" style="flex:auto" v-show="CropType == 'Other'" />
+                                                <input type="text" name="KeyWord" class="form-control" v-model="KeyWord" />
                                             </div>
                                         </td>
                                         <th>
@@ -128,12 +143,15 @@
                                     </tr>
                                     <tr>
                                         <th>
-                                            <label>關鍵字：</label>
+                                            <label>後送診斷：</label>
                                         </th>
                                         <td>
-                                            <div class="form-inline">
-                                                <input type="text" name="KeyWord" class="form-control" v-model="KeyWord" />
-                                            </div>
+                                            <select name="TransferDiagnosis" class="form-control" style="width: 150px;" v-model="TransferDiagnosis">
+                                                <option value="">全部</option>
+                                                <option v-for="(s, i) in TransferList" v-bind:key="s.Code" v-bind:value="s.Code">
+                                                    {{ s.Name }}
+                                                </option>
+                                            </select>
                                         </td>
                                         <th>
                                             <label>來源：</label>
@@ -149,15 +167,12 @@
                                     </tr>
                                     <tr>
                                         <th>
-                                            <label>後送診斷：</label>
+                                            <label>農民姓名：</label>
                                         </th>
                                         <td>
-                                            <select name="TransferDiagnosis" class="form-control" style="width: 150px;" v-model="TransferDiagnosis">
-                                                <option value="">全部</option>
-                                                <option v-for="(s, i) in TransferList" v-bind:key="s.Code" v-bind:value="s.Code">
-                                                    {{ s.Name }}
-                                                </option>
-                                            </select>
+                                            <div class="form-inline">
+                                                <input type="text" name="Name" class="form-control" v-model="Name" />
+                                            </div>
                                         </td>
                                         <th>
                                             <label>案號：</label>
@@ -165,16 +180,6 @@
                                         <td>
                                             <div class="form-inline">
                                                 <input type="text" name="CaseNo" class="form-control" v-model="CaseNo" />
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <label>農友姓名：</label>
-                                        </th>
-                                        <td>
-                                            <div class="form-inline">
-                                                <input type="text" name="KeyWord" class="form-control" v-model="KeyWord" />
                                             </div>
                                         </td>
                                     </tr>
@@ -212,6 +217,7 @@
                                             <th scope="col">建立日期</th>
                                             <th scope="col">預約看診日期</th>
                                             <th scope="col">行政區</th>
+                                            <th scope="col">專家姓名</th>
                                             <th scope="col">植物醫師</th>
                                             <th scope="col">姓名</th>
                                             <th scope="col">作物種類</th>
@@ -231,6 +237,7 @@
                                             <td>{{ record.CreatedAtStr }}</td>
                                             <td>{{ getDate(record.ReserveDatetimeStr, 'YYYY-MM-DD') }}</td>
                                             <td>{{ record.District }}</td>
+                                            <td>{{ getExpertName(record.ExpertID) }}</td>
                                             <td>{{ getDoctorName(record.LoginID) }}</td>
                                             <td>
                                                 <div class="form-inline">
@@ -257,7 +264,6 @@
                                                         <button type="button" class="btn btn-warning m-2" v-on:click="transDoc(record)">轉案</button>
                                                     }
                                                     <button type="button" class="btn btn-info m-2" v-on:click="openCopyRecord(record)">複製</button>
-                                                    <button type="button" class="btn btn-success m-2" v-on:click="openRevisitRecord(record)">回診</button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -394,13 +400,16 @@
                     District: @(new HtmlString(JsonConvert.SerializeObject(Model.District??""))),
                     CropType: @(new HtmlString(JsonConvert.SerializeObject(Model.CropType ?? ""))),
                     Crop: @(new HtmlString(JsonConvert.SerializeObject(Model.Crop))),
+                    CropName: @(new HtmlString(JsonConvert.SerializeObject(Model.CropName))),
                     Status: @(new HtmlString(JsonConvert.SerializeObject(Model.Status ?? ""))),
                     Origin: @(new HtmlString(JsonConvert.SerializeObject(Model.Origin ?? ""))),
                     TransferDiagnosis: @(new HtmlString(JsonConvert.SerializeObject(Model.TransferDiagnosis ?? ""))),
                     CaseNo: @(new HtmlString(JsonConvert.SerializeObject(Model.CaseNo ?? ""))),
+                    Name: @(new HtmlString(JsonConvert.SerializeObject(Model.Name ?? ""))),
                     PestType: @(new HtmlString(JsonConvert.SerializeObject(Model.PestType ?? ""))),
                     KeyWord: @(new HtmlString(JsonConvert.SerializeObject(Model.KeyWord ?? ""))),
                     DoctorId: @(new HtmlString(JsonConvert.SerializeObject(Model.DoctorId ?? ""))),
+                    ExpertId: @(new HtmlString(JsonConvert.SerializeObject(Model.ExpertId ?? ""))),
                     ActionName: "",
                     // List
                     Districts: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
@@ -411,6 +420,7 @@
                     PestTypeList: @(new HtmlString(JsonConvert.SerializeObject(Model.PestTypeList))),
                     doctorSchedules: @(new HtmlString(JsonConvert.SerializeObject(Model.doctorSchedules))),
                     AllDoctors: @(new HtmlString(JsonConvert.SerializeObject(Model.AllDoctors))),
+                    AllExperts: @(new HtmlString(JsonConvert.SerializeObject(Model.AllExperts))),
                     currentPage: 1,
                     pageCount: 30,
                     choiceIndex: "",
@@ -439,6 +449,18 @@
                             };
                         });
                     },
+                    CropList() {
+                        let CropType = this.CropTypes.find(c => c.Name == this.CropType);
+                        if (CropType) {
+                            return CropType.Crops.map(c => {
+                                return {
+                                    ID: c.ID,
+                                    Name: c.Name
+                                }
+                            });
+                        }
+                        return [];
+                    }
                 },
                 methods: {
                     async changeDistrict(val) {
@@ -466,6 +488,10 @@
                     getDoctorName(doctorId) {
                         let _doctor = this.AllDoctors.find(s => s.LoginID == doctorId);
                         return _doctor ? _doctor.UserName : '';
+                    },
+                    getExpertName(expertId) {
+                        let _expert = this.AllExperts.find(s => s.LoginID == expertId);
+                        return _expert ? _expert.UserName : '';
                     },
                     getDistrict(district) {
                         let d = this.Districts.find(d => d.Zip == district);
@@ -495,9 +521,6 @@
                     },
                     openCopyRecord(record) {
                         window.open('/PlantDoctor/BackAdd?cID=' + record.ID);
-                    },
-                    openRevisitRecord(record) {
-                        window.open('/PlantDoctor/BackAdd?cID=' + record.ID + '&revisit=true');
                     },
                     transDoc(record) {
                         EditModal.SetDetail(record);
@@ -571,6 +594,7 @@
                     OriginDocId: '',
                     ScheduleId: '',
                     DoctorId: '',
+                    ExpertId: '',
                     District: '',
                     TransReason: '',
                     TransRemark: '',
@@ -609,6 +633,7 @@
                         this.ScheduleId = '';
                         this.OriginDocId = '';
                         this.DoctorId = '';
+                        this.ExpertId = '';
                         this.District = '';
                         this.TransReason = '';
                         this.TransRemark = '';
@@ -636,6 +661,12 @@
                                 title: '植物醫師未選擇'
                             });
                         }
+                        if (!this.ExpertId) {
+                            return Swal.fire({
+                                icon: 'error',
+                                title: '專家未選擇'
+                            });
+                        }
                         if (!this.TransReason) {
                             return Swal.fire({
                                 icon: 'error',
@@ -650,6 +681,7 @@
                                     __RequestVerificationToken: this.token,
                                     ScheduleId: self.ScheduleId,
                                     DoctorId: self.DoctorId,
+                                    ExpertId: self.ExpertId,
                                     District: self.District,
                                     TransReason: self.TransReason,
                                     TransRemark: self.TransRemark
@@ -680,10 +712,11 @@
                     this.Reset();
                 }
             });
+
+            function SetPage(page) {
+                $('#setPage').val(page);
+                $('#form').submit();
+            }
         });
-        function SetPage(page) {
-            $('#setPage').val(page);
-            $('#form').submit();
-        }
     </script>
 }

@@ -36,6 +36,15 @@ namespace InformationSystem.ViewModel.PlantDoctor
                 Districts = Districts.Where(x => selectDistrict.Contains(x.Zip)).ToList();
                 RoleCode = thisDoctor.RoleID;
             }
+
+            AllExperts = Service_sysUserInfo.GetEnableExpertList();
+            var getExpoertId = SessionHelper.Get("ExpertID");
+            if (!string.IsNullOrEmpty(getUserId) && AllExperts.Any(x => x.LoginID == getExpoertId && x.RoleID == "R10"))
+            {
+                AllExperts = AllExperts.Where(x => x.LoginID == getExpoertId).ToList();
+                var thisExpert = AllExperts.Where(x => x.LoginID == getExpoertId).FirstOrDefault();
+            }
+
             OriginList = Service_defCode.GetList("PlantDoctorRecordOrigin");
             StatusList = Service_defCode.GetList("PlantDoctorRecordStatus");
             TransferList = Service_defCode.GetList("TransferDiagnosis");
@@ -104,7 +113,17 @@ namespace InformationSystem.ViewModel.PlantDoctor
         /// 案號
         /// </summary>
         public string CaseNo { get; set; }
-        
+
+        /// <summary>
+        /// 農民姓名
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// 作物名稱
+        /// </summary>
+        public string CropName { get; set; }
+
         /// <summary>
         /// 行政區
         /// </summary>
@@ -139,7 +158,12 @@ namespace InformationSystem.ViewModel.PlantDoctor
         /// 植物醫師帳號
         /// </summary>
         public string DoctorId { get; set; }
-        
+
+        /// <summary>
+        /// 專家帳號
+        /// </summary>
+        public string ExpertId { get; set; }
+         
         /// <summary>
         /// 後送診斷
         /// </summary>
@@ -183,6 +207,10 @@ namespace InformationSystem.ViewModel.PlantDoctor
         /// 全植物醫師
         /// </summary>
         public List<sysUserSelect> AllDoctors { get; set; }
+        /// <summary>
+        /// 全植物醫師
+        /// </summary>
+        public List<sysUserSelect> AllExperts { get; set; }
         public string RoleCode { get; set; }
         public string ActionName { get; set; } = "";
     }

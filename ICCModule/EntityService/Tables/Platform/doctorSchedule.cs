@@ -445,6 +445,12 @@ namespace ICCModule.Entity.Tables.Platform
         [Column]
         public string LoginID { get; set; } = "";
 
+        /// <summary> 專家
+        /// 
+        /// </summary> 
+        [Column]
+        public string ExpertID { get; set; } = ""; 
+
         /// <summary> 植物醫生
         /// 
         /// </summary> 
@@ -642,22 +648,9 @@ namespace ICCModule.Entity.Tables.Platform
         {
             get
             {
-                if (ParentID != null)
-                {
-                    return $"{(ReserveDatetime.Year - 1911).ToString() + ReserveDatetime.ToString("MMdd")}-{CropName}-{District}-{MonthIndex}(回診1)";
-                }
-                else
-                {
-                    return $"{(ReserveDatetime.Year - 1911).ToString() + ReserveDatetime.ToString("MMdd")}-{CropName}-{District}-{MonthIndex}";
-                }
+                return $"{(ReserveDatetime.Year - 1911).ToString() + ReserveDatetime.ToString("MMdd")}-{CropName}-{District}-{MonthIndex}";
             }
         }
-
-        /// <summary> 
-        /// 前次案件
-        /// </summary> 
-        [Column]
-        public long? ParentID { get; set; }
 
         /// <summary>
         /// 取回對應的排班

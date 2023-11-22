@@ -263,6 +263,7 @@
                                                     {
                                                         <button type="button" class="btn btn-warning m-2" v-on:click="transDoc(record)">轉案</button>
                                                     }
+                                                    <button type="button" class="btn btn-success m-2" v-on:click="returnRecord(record)">回診</button>
                                                     <button type="button" class="btn btn-info m-2" v-on:click="openCopyRecord(record)">複製</button>
                                                 </div>
                                             </td>
@@ -389,6 +390,11 @@
 
 @section Script {
     <script type="text/javascript">
+        function SetPage(page) {
+            $('#setPage').val(page);
+            $('#form').submit();
+        }
+
         $(document).ready(function () {
             const TicketList = new Vue({
                 el: "#TicketList",
@@ -410,6 +416,7 @@
                     KeyWord: @(new HtmlString(JsonConvert.SerializeObject(Model.KeyWord ?? ""))),
                     DoctorId: @(new HtmlString(JsonConvert.SerializeObject(Model.DoctorId ?? ""))),
                     ExpertId: @(new HtmlString(JsonConvert.SerializeObject(Model.ExpertId ?? ""))),
+                    WebMeetingUrl: @(new HtmlString(JsonConvert.SerializeObject(Model.WebMeetingUrl ?? ""))),
                     ActionName: "",
                     // List
                     Districts: @(new HtmlString(JsonConvert.SerializeObject(Model.Districts))),
@@ -521,6 +528,9 @@
                     },
                     openCopyRecord(record) {
                         window.open('/PlantDoctor/BackAdd?cID=' + record.ID);
+                    },
+                    returnRecord(record) {
+                        window.open('/PlantDoctor/ReturnAdd?cID=' + record.ID);
                     },
                     transDoc(record) {
                         EditModal.SetDetail(record);
@@ -712,11 +722,6 @@
                     this.Reset();
                 }
             });
-
-            function SetPage(page) {
-                $('#setPage').val(page);
-                $('#form').submit();
-            }
         });
     </script>
 }

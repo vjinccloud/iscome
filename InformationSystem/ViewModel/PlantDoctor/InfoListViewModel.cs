@@ -146,7 +146,10 @@ namespace InformationSystem.ViewModel.PlantDoctor
         /// 植物醫生名單
         /// </summary>
         public List<sysUserSelect> DoctorList { get; set; }
-
+        /// <summary>
+        /// 專家名單
+        /// </summary>
+        public List<sysUserSelect> ExpertList { get; set; }
         /// <summary>
         /// 最近使用農藥、肥料 圖或影片
         /// </summary>

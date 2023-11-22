@@ -51,6 +51,7 @@ namespace InformationSystem.Controllers
                     }
                 }
             }
+            filter = filter.And(x => x.Origin != "PlantDoctor_Return");
 
             var sameYear = (req.StartDate.HasValue && req.EndDate.HasValue && req.StartDate.Value.Year == req.EndDate.Value.Year);
             var data = new List<DoctorCropStatisticDataModel>();
@@ -79,7 +80,7 @@ namespace InformationSystem.Controllers
             }
             else if (req.QueryType == 2)
             {
-                data = Service_doctorSchedule.GetList(filter.And(x => x.ParentID == null)).GroupBy(x => new { x.CropName, x.ReserveDatetime.Year }).Select(x => new DoctorCropStatisticDataModel
+                data = Service_doctorSchedule.GetList(filter).GroupBy(x => new { x.CropName, x.ReserveDatetime.Year }).Select(x => new DoctorCropStatisticDataModel
                 {
                     Title = x.Key.CropName + (sameYear ? "" : $"({x.Key.Year})"),
                     Jan = x.Where(o => o.ReserveDatetime.Month == 1).GroupBy(o => new { o.MemberInfoID, o.Name }).Sum(o => (decimal)o.Average(p => p.PlantingArea)),

@@ -108,6 +108,7 @@ namespace InformationSystem.Controllers
             if (!String.IsNullOrEmpty(model.KeyWord)) filter = filter.And(x => x.Context.Contains(model.KeyWord) || x.ResultDiagnosis.Contains(model.KeyWord) || x.Recommendation.Contains(model.KeyWord));
             if (!String.IsNullOrEmpty(model.Name)) filter = filter.And(x => x.Name.Contains(model.Name));
             if (!String.IsNullOrEmpty(model.CropName)) filter = filter.And(x => x.CropName.Contains(model.CropName));
+            if (!String.IsNullOrEmpty(model.DoctorId)) filter = filter.And(x => x.LoginID.Contains(model.DoctorId));
 
             #endregion
             var data = Service_doctorSchedule.GetList(filter);
@@ -163,8 +164,8 @@ namespace InformationSystem.Controllers
                 return File(ExcelHelper.RenderDataTableToExcel(ExcelHelper.ConvertToDataTable(actRegister), numList), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"植醫診斷紀錄_{DateTime.Now.ToString("yyyyMMddHHmm")}.xlsx");
             }
 
-            model.doctorSchedules = data.OrderByDescending(x => x.CreatedAt).Skip((model.Page - 1) * 20).Take(20).ToList();
-            model.TotalPage = (data.Count() / 20) + 1;
+            model.doctorSchedules = data.OrderByDescending(x => x.CreatedAt).Skip((model.Page - 1) * 10).Take(10).ToList();
+            model.TotalPage = (data.Count() / 10) + 1;
 
             return View(model);
         }
@@ -273,7 +274,7 @@ namespace InformationSystem.Controllers
                 var ds = new DataSet();
 
                 //■□
-                dct.Add("@CaseNo", $"{(thisRecord.ReserveDatetime.Year - 1911).ToString() + thisRecord.ReserveDatetime.ToString("MMdd") }-{thisRecord.CropName}-{thisRecord.District}-{thisRecord.MonthIndex}");
+                dct.Add("@CaseNo", $"{(thisRecord.ReserveDatetime.Year - 1911).ToString() + thisRecord.ReserveDatetime.ToString("MMdd")}-{thisRecord.CropName}-{thisRecord.District}-{thisRecord.MonthIndex}");
                 dct.Add("@ResverveDate", thisRecord.ReserveDatetime.ToString("yyyy年MM月dd日"));
                 dct.Add("@DateDiagnosis", (thisRecord.DateDiagnosis.HasValue ? thisRecord.DateDiagnosis.Value.ToString("yyyy年MM月dd日") : ""));
 
@@ -388,7 +389,7 @@ namespace InformationSystem.Controllers
                 {
                     ds.Tables.Add(ExcelHelper.ConvertToDataTable(new List<PlantDoctorWord>(), "@RecentlyFertilizer"));
                 }
-                var param = DocHelper.SetWord($"{(thisRecord.ReserveDatetime.Year - 1911).ToString() + thisRecord.ReserveDatetime.ToString("MMdd") }_{thisRecord.CropName}_{thisRecord.District}_{thisRecord.MonthIndex}.docx", dct, ds);
+                var param = DocHelper.SetWord($"{(thisRecord.ReserveDatetime.Year - 1911).ToString() + thisRecord.ReserveDatetime.ToString("MMdd")}_{thisRecord.CropName}_{thisRecord.District}_{thisRecord.MonthIndex}.docx", dct, ds);
 
                 return Json(param);
             }
@@ -655,7 +656,7 @@ namespace InformationSystem.Controllers
             model.DoctorList = allDoctors;
             return View(model);
         }
-        
+
         /// <summary>
         /// 新增或編輯
         /// </summary>
@@ -733,7 +734,7 @@ namespace InformationSystem.Controllers
             }
 
             #region 上傳檔案
-            
+
             var _oldFile = Service_FileManagement.GetList("doctor_Schedule", model.Schedule.ID.ToString());
             if (_oldFile.Any())
             {
@@ -1684,6 +1685,7 @@ namespace InformationSystem.Controllers
                         OrgName = schedule.OrgName,
                         LoginID = schedule.LoginID,
                         ExpertID = schedule.ExpertID,
+                        WebMeetingUrl = schedule.WebMeetingUrl,
                         Inquiry = schedule.Inquiry,
                         UnqualifiedUnit = schedule.UnqualifiedUnit,
                         Name = schedule.Name,
@@ -1698,6 +1700,88 @@ namespace InformationSystem.Controllers
                         FarmingMethod = schedule.FarmingMethod,
                         ContactMethod = schedule.ContactMethod,
                         OnsetLocation = schedule.OnsetLocation,
+                    };
+                    model.Schedule = copySchedule;
+                }
+            }
+
+            return View("TicketInfo", model);
+        }
+
+        /// <summary>
+        /// 後台回診案件
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult ReturnAdd(string cID = "")
+        {
+            InfoListViewModel model = new InfoListViewModel();
+            model.Schedule.Origin = "PlantDoctor";
+            var am = Service_defCode.GetList("PlantDoctorAm");
+            var pm = Service_defCode.GetList("PlantDoctorPm");
+            var ReserveTimeList = new List<string>();
+            foreach (defCode d in am)
+            {
+                ReserveTimeList.Add(d.Code);
+            }
+            foreach (defCode d in pm)
+            {
+                ReserveTimeList.Add(d.Code);
+            }
+            model.ReserveTimeList = ReserveTimeList;
+            model.MapApiKey = ConfigurationManager.AppSettings["MapApiKey"];
+
+            var allDoctors = Service_sysUserInfo.GetEnableDoctorList();
+            var allExperts = Service_sysUserInfo.GetEnableExpertList();
+            var getUserId = SessionHelper.Get("LoginID");
+            if (!string.IsNullOrEmpty(getUserId) && allDoctors.Any(x => x.LoginID == getUserId && x.RoleID == "R08"))
+            {
+                allDoctors = allDoctors.Where(x => x.LoginID == getUserId).ToList();
+
+                var thisDoctor = allDoctors.Where(x => x.LoginID == getUserId).FirstOrDefault();
+                var selectDistrict = (thisDoctor.District ?? "").Split(',').ToList();
+                model.Districts = model.Districts.Where(x => selectDistrict.Contains(x.Zip)).ToList();
+            }
+            else if (!string.IsNullOrEmpty(model.Schedule.OrgDistrict)) allDoctors = allDoctors.Where(x => x.RoleID != "R08" || (x.District ?? "").Contains(model.Schedule.OrgDistrict)).ToList();
+            else allDoctors = allDoctors.Where(x => x.RoleID == "R05").ToList();
+
+            model.DoctorList = allDoctors;
+            model.ExpertList = allExperts;
+
+            if (!string.IsNullOrEmpty(cID))
+            {
+                doctorSchedule schedule = Service_doctorSchedule.GetDetail(Convert.ToInt64(cID));
+                if (schedule != null)
+                {
+                    int mCount;
+                    mCount = Service_doctorSchedule.GetList().Where(x => x.CropName == schedule.CropName
+                     && x.District == schedule.District && x.Origin == "PlantDoctor_Return").Count();
+                    mCount++;
+
+                    var copySchedule = new doctorSchedule
+                    {
+                        Origin = "PlantDoctor_Return",
+                        OrgType = schedule.OrgType,
+                        OrgDistrict = schedule.OrgDistrict,
+                        OtherUnit = schedule.OtherUnit,
+                        OrgName = schedule.OrgName,
+                        LoginID = schedule.LoginID,
+                        ExpertID = schedule.ExpertID,
+                        WebMeetingUrl = schedule.WebMeetingUrl,
+                        Inquiry = schedule.Inquiry,
+                        UnqualifiedUnit = schedule.UnqualifiedUnit,
+                        Name = schedule.Name,
+                        MemberInfoID = schedule.MemberInfoID,
+                        Sexy = schedule.Sexy,
+                        District = schedule.District,
+                        Zip = schedule.Zip,
+                        CropType = schedule.CropType,
+                        CropName = schedule.CropName,
+                        Mobile = schedule.Mobile,
+                        PlantingArea = schedule.PlantingArea,
+                        FarmingMethod = schedule.FarmingMethod,
+                        ContactMethod = schedule.ContactMethod,
+                        OnsetLocation = schedule.OnsetLocation,
+                        ReturnOfConsultation = "(回診" + mCount.ToString("00") + ")",
                     };
                     model.Schedule = copySchedule;
                 }

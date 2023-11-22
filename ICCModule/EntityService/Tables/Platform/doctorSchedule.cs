@@ -449,7 +449,13 @@ namespace ICCModule.Entity.Tables.Platform
         /// 
         /// </summary> 
         [Column]
-        public string ExpertID { get; set; } = ""; 
+        public string ExpertID { get; set; } = "";
+
+        /// <summary> 視訊會議連結
+        /// 
+        /// </summary> 
+        [Column]
+        public string WebMeetingUrl { get; set; }
 
         /// <summary> 植物醫生
         /// 
@@ -648,9 +654,13 @@ namespace ICCModule.Entity.Tables.Platform
         {
             get
             {
-                return $"{(ReserveDatetime.Year - 1911).ToString() + ReserveDatetime.ToString("MMdd")}-{CropName}-{District}-{MonthIndex}";
+                return $"{(ReserveDatetime.Year - 1911).ToString() + ReserveDatetime.ToString("MMdd")}-{CropName}-{District}-{MonthIndex}{ReturnOfConsultation}";
             }
+            set { }
         }
+
+        [Column]
+        public string ReturnOfConsultation { get; set; }
 
         /// <summary>
         /// 取回對應的排班

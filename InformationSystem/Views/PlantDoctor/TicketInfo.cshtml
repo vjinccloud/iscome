@@ -4,6 +4,7 @@
     string Title = String.Empty;
     string OriginName = String.Empty;
     string ActionPath = "/PlantDoctor/TicketInfo";
+    string mCaseNo = "案號：" + Model.Schedule.CaseNo;
     switch (Model.Schedule.Origin.ToLower())
     {
         case "member":
@@ -13,6 +14,10 @@
         case "plantdoctor":
             Title = "BackAdd";
             OriginName = "後台新增";
+            break;
+        case "plantdoctor_return":
+            Title = "BackAdd";
+            OriginName = "後台新增 " + mCaseNo;
             break;
         case "drugtest":
             Title = "BackAdd";
@@ -96,6 +101,7 @@
         <div class="col-12">
             <form id="form" method="post" action="@ActionPath" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
+                <input type="hidden" name="Schedule.ReturnOfConsultation" value="@Model.Schedule.ReturnOfConsultation">
                 <input type="hidden" name="Schedule.Origin" value="@Model.Schedule.Origin">
                 <input type="hidden" name="Schedule.ID" value="@Model.Schedule.ID">
                 <div class="card shadow mb-4">
@@ -201,6 +207,16 @@
                                                     </option>
                                                 </select>
                                             </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="important">視訊會議連結</span>
+                                            </td>
+                                            <td colspan="3">
+                                                <div class="d-flex flex-column position-relative">
+                                                    <input type="text" name="Schedule.WebMeetingUrl" class="form-control" v-model="Schedule.WebMeetingUrl" maxlength="255" />
+                                                </div>
+                                            </td>                                            
                                         </tr>
                                         <tr>
                                             <td>

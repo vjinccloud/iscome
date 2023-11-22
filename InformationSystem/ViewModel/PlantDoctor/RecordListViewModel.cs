@@ -163,7 +163,12 @@ namespace InformationSystem.ViewModel.PlantDoctor
         /// 專家帳號
         /// </summary>
         public string ExpertId { get; set; }
-         
+
+        /// <summary>
+        /// 視訊會議連結
+        /// </summary>
+        public string WebMeetingUrl { get; set; }         
+
         /// <summary>
         /// 後送診斷
         /// </summary>

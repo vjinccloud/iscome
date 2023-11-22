@@ -70,6 +70,7 @@ namespace ICCModule.Entity.Tables.Platform
         /// </summary>
         [Column]
         public string DoctorId { get; set; }
+
         public string DoctorName { get; set; }
 
         /// <summary> 植醫排程對應ID
